@@ -1,0 +1,1416 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>keuanganKU Final</title>
+    
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#000000">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    
+    <style>
+        /* ================= VARIABLES & THEME ================= */
+        :root {
+            --wa-bg: #000000; 
+            --wa-card: #111b21; 
+            --wa-header: #111b21;
+            --wa-green: #00a884;
+            --text-light: #e9edef;
+            --text-muted: #5a6a73; 
+            --border-color: #2a3942;
+            --danger: #ff3b30; 
+            --gold: #FFD700; 
+            --blue: #00a8ff;
+            --purple: #9b59b6;
+        }
+
+        html, body { height: 100%; }
+        
+        body {
+            font-family: 'Montserrat', sans-serif; font-weight: 500;
+            margin: 0; background-color: var(--wa-bg); color: var(--text-light);
+            display: flex; flex-direction: column; overflow: hidden; 
+        }
+        .hidden { display: none !important; }
+
+        /* ================= HEADER ================= */
+        header {
+            background-color: var(--wa-header); color: var(--text-light);
+            padding: 12px 20px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
+            display: flex; justify-content: space-between; align-items: center;
+            z-index: 9999; position: relative;
+        }
+        .app-title { margin: 0; font-size: 20px; font-weight: 600; letter-spacing: 0.5px; }
+        .clock-text { font-size: 10px; color: var(--text-muted); font-weight: 500; margin-top: 3px; }
+        
+        .header-actions { display: flex; align-items: center; gap: 5px; }
+        .mem-info { display: flex; align-items: center; font-size: 11px; color: var(--text-muted); font-weight: 500; margin-right: 5px; }
+        .mem-info svg { width: 16px; height: 16px; margin-right: 4px; }
+        
+        .icon-btn { background: none; border: none; color: var(--text-light); cursor: pointer; padding: 8px; display: flex; align-items: center; border-radius: 50%; transition: 0.2s;}
+        .icon-btn:hover { background-color: rgba(255,255,255,0.05); }
+        .icon-btn svg { width: 22px; height: 22px; }
+
+        .svg-x { width: 16px; height: 16px; stroke: var(--danger); stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; transition: 0.2s; cursor: pointer; }
+        .svg-x:hover { transform: scale(1.2); }
+
+        /* ================= DROPDOWN MENU UTAMA ================= */
+        .dropdown-wrapper { position: relative; }
+        .dropdown-content {
+            position: absolute; top: 45px; right: 0; background-color: var(--wa-card);
+            min-width: 180px; border-radius: 10px; box-shadow: 0 8px 24px rgba(0,0,0,0.9);
+            z-index: 10000; overflow: hidden; border: 1px solid var(--border-color);
+        }
+        .dropdown-item {
+            display: flex; align-items: center; gap: 10px; padding: 14px 15px;
+            color: var(--text-light); font-size: 13px; font-weight: 500; cursor: pointer; border-bottom: 1px solid var(--border-color);
+        }
+        .dropdown-item svg { width: 18px !important; height: 18px !important; }
+        .dropdown-item:last-child { border-bottom: none; }
+        .dropdown-item:hover { background-color: rgba(255,255,255,0.05); }
+        .text-danger { color: var(--danger) !important; }
+
+        /* ================= TABS ================= */
+        .nav-tabs {
+            display: flex; background-color: var(--wa-header); text-transform: uppercase; font-weight: 600; font-size: 12px;
+            border-bottom: 1px solid var(--border-color); position: relative; z-index: 10; flex-shrink: 0;
+        }
+        .tab { flex: 1; padding: 15px 0; text-align: center; cursor: pointer; border-bottom: 3px solid transparent; transition: 0.3s; color: var(--text-muted); }
+        .tab-debit.active { color: var(--wa-green); border-bottom: 3px solid var(--wa-green); }
+        .tab-kredit.active { color: var(--danger); border-bottom: 3px solid var(--danger); }
+        .tab-plot.active { color: var(--gold); border-bottom: 3px solid var(--gold); }
+        .tab-rekap.active { color: var(--blue); border-bottom: 3px solid var(--blue); }
+
+        /* ================= LAYOUT & KARTU WARNA DINAMIS ================= */
+        .page { display: flex; flex-direction: column; flex: 1; min-height: 0; }
+        .content { flex: 1; overflow: hidden; padding: 15px; display: flex; flex-direction: column; padding-bottom: 0; }
+        
+        #pemasukan, #pengeluaran { overflow-y: auto; padding-bottom: 15px; }
+        #plot, #rekap { overflow-y: hidden; padding-bottom: 10px; } 
+
+        .card { background: var(--wa-card); padding: 20px; border-radius: 12px; margin-bottom: 12px; border: 1px solid var(--border-color); flex-shrink: 0;}
+        
+        .card-flex { display: flex; flex-direction: column; flex: 1; min-height: 0; flex-shrink: 1; padding-bottom: 10px; margin-bottom: 0; overflow: hidden; }
+
+        #pemasukan .card { border: 1px solid var(--wa-green); }
+        #pengeluaran .card { border: 1px solid var(--danger); }
+        #plot .card { border: 1px solid var(--gold); }
+
+        /* ================= FORMS & INPUTS ================= */
+        .form-group { margin-bottom: 12px; position: relative;}
+        label { display: block; margin-bottom: 4px; font-size: 13px; font-weight: 500; color: var(--text-light); }
+        input {
+            width: 100%; padding: 12px; background-color: var(--wa-bg); color: var(--text-light); 
+            border-radius: 8px; box-sizing: border-box; font-size: 14px; font-family: 'Montserrat', sans-serif; font-weight: 500; outline: none; transition: 0.3s;
+        }
+        input[readonly] { cursor: pointer; } 
+        
+        #pemasukan input, #pemasukan .custom-select-trigger { border: 1px solid var(--wa-green); }
+        #pengeluaran input, #pengeluaran .custom-select-trigger { border: 1px solid var(--danger); }
+        #plot input { border: 1px solid var(--gold); }
+        #rekap input { border: 1px solid var(--blue); }
+
+        .search-icon { position: absolute; left: 14px; top: 12px; width: 18px; height: 18px; color: var(--text-muted); pointer-events: none; }
+        .clear-search { position: absolute; right: 14px; top: 12px; display: flex; justify-content: center; align-items: center; }
+
+        .custom-select-container { position: relative; user-select: none; width: 100%; }
+        .custom-select-trigger {
+            width: 100%; padding: 12px; background-color: var(--wa-bg); color: var(--text-light);
+            border-radius: 8px; font-size: 14px; font-weight: 500; cursor: pointer; display: flex; justify-content: space-between; align-items: center; box-sizing: border-box; 
+        }
+        .custom-select-trigger::after { content: '▼'; font-size: 10px; color: var(--text-muted); }
+        
+        .custom-select-options {
+            position: absolute; top: 100%; left: 0; right: 0; background-color: var(--wa-card);
+            border: 1px solid var(--border-color); border-radius: 8px; margin-top: 5px; z-index: 999; 
+            overflow-y: auto; max-height: 220px; box-shadow: 0 5px 20px rgba(0,0,0,0.9);
+        }
+        
+        .custom-option { padding: 12px; border-bottom: 1px solid var(--border-color); cursor: pointer; color: var(--text-light); font-size: 14px; font-weight: 500; }
+        .custom-option:hover { background-color: rgba(255, 255, 255, 0.1); }
+        
+        button.btn-main {
+            width: 100%; padding: 14px; border: none; border-radius: 8px; color: #000; font-weight: 600; font-size: 13px; cursor: pointer; font-family: 'Montserrat', sans-serif; text-transform: uppercase; margin-top: 5px;
+        }
+        button.btn-main:disabled { opacity: 0.6; cursor: not-allowed; }
+        .btn-green { background-color: var(--wa-green); }
+        .btn-red { background-color: var(--danger); color: #fff !important; }
+        .btn-gold { background-color: var(--gold); }
+        .btn-blue { background-color: var(--blue); }
+
+        /* ================= REKAP & SALDO ================= */
+        .balance-box { text-align: center; padding: 12px; background: #111b21; color: var(--text-light); border: 1px solid var(--blue); border-radius: 12px; margin-bottom: 8px; position: relative;}
+        .balance-box h2 { margin: 2px 0 8px 0; color: var(--blue); font-size: 24px; font-weight: 700;}
+        
+        .wallet-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 8px; }
+        
+        .wallet-card { background: var(--wa-card); padding: 6px 2px; border-radius: 8px; text-align: center; border: 1px solid var(--blue); display: flex; flex-direction: column; justify-content: center; } 
+        .wallet-card small { font-size: 7px; color: var(--text-muted); font-weight: 700; margin-bottom: 2px; letter-spacing: 0.5px;} 
+        .wallet-card span { font-size: 10px; color: var(--text-light); font-weight: 700; } 
+
+        /* ================= KOTAK HISTORY FULL & SANGAT RAPI ================= */
+        .history-columns { display: flex; gap: 8px; flex: 1; min-height: 0; flex-shrink: 1;}
+        .history-col {
+            flex: 1; background: var(--wa-card); border-radius: 12px; 
+            padding: 8px; padding-bottom: 0;
+            border: 1px solid var(--border-color);
+            display: flex; flex-direction: column; min-width: 0; box-sizing: border-box; overflow: hidden; 
+        }
+        
+        #history-debit { border-color: var(--wa-green); }
+        #history-debit h4 { color: var(--wa-green); border-bottom: 1px solid var(--wa-green); background-color: transparent !important; }
+        
+        #history-kredit { border-color: var(--danger); }
+        #history-kredit h4 { color: var(--danger); border-bottom: 1px solid var(--danger); background-color: transparent !important; }
+
+        .history-col h4 { 
+            margin: 0 0 6px 0; padding: 0 0 6px 0; text-align: center; font-size: 12px; font-weight: 700; text-transform: uppercase; 
+        } 
+        
+        .history-col ul { list-style: none; padding: 0; margin: 0; overflow-y: auto; flex: 1; min-height: 0; padding-bottom: 8px; }
+        .history-col ul::-webkit-scrollbar { width: 3px; }
+        .history-col ul::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 3px; }
+
+        .history-col li { display: flex; justify-content: space-between; align-items: flex-start; padding: 10px 0; border-bottom: 1px solid var(--border-color); gap: 6px; }
+        .history-col li:last-child { border-bottom: none; padding-bottom: 0; }
+        
+        .editable { cursor: pointer; transition: 0.2s; flex: 1; min-width: 0; } 
+        .mutasi-text { color: var(--blue); font-weight: 700; }
+
+        /* ================= PLOT LIST SCROLLABLE ================= */
+        #plot-list {
+            overflow-y: auto;
+            flex: 1;
+            min-height: 0;
+            padding-right: 5px;
+            padding-bottom: 20px; 
+        }
+        
+        #plot-list::-webkit-scrollbar { width: 3px; }
+        #plot-list::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 3px; }
+
+        /* ================= MODALS & POP-UPS ================= */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(4px);
+            display: flex; justify-content: center; align-items: center; z-index: 20000;
+        }
+        .modal-box { background: var(--wa-card); padding: 25px 20px; border-radius: 16px; width: 85%; max-width: 320px; text-align: center; border: 1px solid var(--border-color); box-shadow: 0 15px 35px rgba(0,0,0,1); }
+        .modal-actions { display: flex; gap: 10px; justify-content: center; margin-top:15px; }
+        .modal-btn { flex: 1; padding: 12px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-family: 'Montserrat', sans-serif; font-size: 12px; text-transform: uppercase; transition: 0.2s;}
+        .modal-btn.cancel { background: transparent !important; color: var(--text-light) !important; border: 1px solid var(--border-color) !important; }
+        .modal-btn.ok { background: var(--wa-green); color: #000; }
+
+        #modal-input { width: 100%; padding: 12px; margin-bottom: 20px; border-radius: 8px; border: 1px solid var(--border-color); background: #000; color: var(--text-light); text-align: center; font-size: 16px; font-weight: 500; box-sizing: border-box;}
+
+        #edit-modal .modal-box { padding: 25px 20px; }
+        #edit-modal .form-group { margin-bottom: 12px; text-align: left; }
+        #edit-modal label { color: var(--text-muted); font-size: 11px; margin-bottom: 4px; }
+        #edit-modal input { padding: 10px; font-size: 13px; font-weight: 500; border: 1px solid var(--border-color); background:#000; color:#fff; border-radius:8px;}
+
+        #custom-picker .modal-actions { margin-top: 10px; }
+
+        .charts-grid { display: flex; flex-direction: column; gap: 15px; margin-bottom: 20px; align-items: center; }
+        .chart-box { width: 100%; max-width: 250px; background: var(--wa-bg); border-radius: 12px; padding: 15px; border: 1px solid var(--border-color); display: flex; flex-direction: column; align-items: center; justify-content: center;}
+        .chart-title { font-size: 11px; font-weight: 700; color: var(--text-muted); margin-bottom: 10px; text-transform: uppercase;}
+        .chart-wrapper { width: 100%; max-width: 140px; position: relative; margin: 0 auto;}
+
+        .picker-box { background: var(--wa-card); padding: 20px; border-radius: 16px; width: 85%; max-width: 320px; border: 1px solid var(--border-color); box-shadow: 0 15px 35px rgba(0,0,0,1); }
+        .picker-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .picker-nav { background: none; border: none; color: var(--text-light); font-size: 20px; cursor: pointer; padding: 5px 15px; font-weight: bold; }
+        .picker-title { font-weight: 600; font-size: 15px; color: var(--text-light); }
+        
+        .picker-days-header { display: flex; width: 100%; text-align: center; font-size: 11px; color: var(--text-muted); font-weight: 600; margin-bottom: 10px; }
+        .picker-days-header span { flex: 1; }
+        
+        .picker-grid { display: flex; flex-wrap: wrap; width: 100%; }
+        .picker-item { padding: 10px 0; text-align: center; font-size: 13px; font-weight: 500; cursor: pointer; border-radius: 8px; transition: 0.2s; color: var(--text-light); box-sizing: border-box; }
+        
+        #cp-grid-days .picker-item { width: 14.28%; } 
+        
+        .picker-months-grid { display: flex; flex-wrap: wrap; width: 100%; margin-top: 10px; }
+        #cp-month-view .picker-item { width: 33.33%; margin-bottom: 5px; }
+        
+        .picker-item:hover { background: rgba(255,255,255,0.1); }
+        .picker-item.selected { font-weight: 700; color: #fff !important; }
+
+        /* ================= WATERMARK PEMBUAT ================= */
+        .creator-watermark {
+            position: fixed;
+            bottom: 8px;
+            left: 12px;
+            font-size: 9px;
+            color: var(--text-muted);
+            z-index: 9999;
+            pointer-events: none; 
+            text-shadow: 0 1px 2px rgba(0,0,0,0.8); 
+            letter-spacing: 0.3px;
+        }
+        .creator-watermark .fam {
+            font-size: 8px;
+            font-weight: 500;
+        }
+        .creator-watermark .barla {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-light);
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <div style="display: flex; flex-direction: column;">
+        <h2 class="app-title">keuanganKU</h2>
+        <div id="realtime-clock" class="clock-text">Memuat Waktu...</div>
+    </div>
+    <div class="header-actions">
+        <div class="mem-info">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect><rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect><line x1="6" y1="6" x2="6.01" y2="6"></line><line x1="6" y1="18" x2="6.01" y2="18"></line></svg>
+            <span id="storage-pct">0%</span>
+        </div>
+        <div class="dropdown-wrapper">
+            <button class="icon-btn" id="kebab-btn" onclick="toggleMenu(event)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg>
+            </button>
+            <div id="dropdown-menu" class="dropdown-content hidden">
+                <div class="dropdown-item" onclick="backupToCloud()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/>
+                        <polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/>
+                    </svg> Backup ke Cloud
+                </div>
+                <div class="dropdown-item" onclick="loadFromCloud()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/>
+                        <polyline points="8 16 12 20 16 16"/><line x1="12" y1="12" x2="12" y2="20"/>
+                    </svg> Load dari Cloud
+                </div>
+                <div class="dropdown-item" onclick="exportToExcel()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1-2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+                        <polyline points="17 21 17 13 7 13 7 21"/>
+                        <polyline points="7 3 7 8 15 8"/>
+                    </svg> Save ke Excel
+                </div>
+                <label for="file-import" class="dropdown-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 15v4a2 2 0 0 1-2-2H5a2 2 0 0 1-2-2v-4"/>
+                        <polyline points="7 10 12 15 17 10"/>
+                        <line x1="12" y1="15" x2="12" y2="3"/>
+                    </svg> Load dari Excel
+                </label>
+                <div class="dropdown-item text-danger" onclick="promptClearData()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="3 6 5 6 21 6"/>
+                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                    </svg> Hapus Semua Data
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+<div class="nav-tabs">
+    <div class="tab tab-debit active" onclick="showPage(event, 'pemasukan')">DEBIT</div>
+    <div class="tab tab-kredit" onclick="showPage(event, 'pengeluaran')">KREDIT</div>
+    <div class="tab tab-plot" onclick="showPage(event, 'plot')">PLOT</div>
+    <div class="tab tab-rekap" onclick="showPage(event, 'rekap')">REKAP</div>
+</div>
+
+<div class="content">
+    <div id="pemasukan" class="page">
+        <div class="card">
+            <h3 style="margin:0 0 15px 0; color:var(--wa-green); font-size:16px;">+ Catat Pemasukan</h3>
+            <div class="form-group"><label>Tanggal</label><input type="text" id="in-date" readonly onclick="openPicker('in-date', 'date', 'var(--wa-green)')"></div>
+            <div class="form-group"><label>Keterangan</label><input type="text" id="in-desc" placeholder="Gaji, Jualan, dll" autocomplete="off"></div>
+            <div class="form-group">
+                <label>Sumber Dana</label>
+                <div class="custom-select-container">
+                    <div class="custom-select-trigger" id="in-wallet-trigger" onclick="toggleCustomSelect('in-wallet-opts', event)">Tunai</div>
+                    <div class="custom-select-options hidden" id="in-wallet-opts">
+                        <div class="custom-option" onclick="setCustomVal('in-wallet','in-wallet-trigger','in-wallet-opts','Tunai')">Tunai</div>
+                        <div class="custom-option" onclick="setCustomVal('in-wallet','in-wallet-trigger','in-wallet-opts','Bank')">Bank</div>
+                        <div class="custom-option" onclick="setCustomVal('in-wallet','in-wallet-trigger','in-wallet-opts','e-Wallet')">e-Wallet</div>
+                    </div>
+                </div>
+                <input type="hidden" id="in-wallet" value="Tunai">
+            </div>
+            <div class="form-group"><label>Jumlah (Rp)</label><input type="text" inputmode="numeric" id="in-amount" placeholder="0"></div>
+            <button class="btn-main btn-green" id="btn-save-in" onclick="saveData(event, 'income')">Simpan Pemasukan</button>
+        </div>
+    </div>
+
+    <div id="pengeluaran" class="page hidden">
+        <div class="card">
+            <h3 style="margin:0 0 15px 0; color:var(--danger); font-size:16px;">- Catat Pengeluaran</h3>
+            <div class="form-group"><label>Tanggal</label><input type="text" id="out-date" readonly onclick="openPicker('out-date', 'date', 'var(--danger)')"></div>
+            <div class="form-group"><label>Keterangan</label><input type="text" id="out-desc" placeholder="Wifi, Makan, dll" autocomplete="off"></div>
+            <div class="form-group">
+                <label>Sumber Dana</label>
+                <div class="custom-select-container">
+                    <div class="custom-select-trigger" id="out-wallet-trigger" onclick="toggleCustomSelect('out-wallet-opts', event)">Tunai</div>
+                    <div class="custom-select-options hidden" id="out-wallet-opts">
+                        <div class="custom-option" onclick="setCustomVal('out-wallet','out-wallet-trigger','out-wallet-opts','Tunai')">Tunai</div>
+                        <div class="custom-option" onclick="setCustomVal('out-wallet','out-wallet-trigger','out-wallet-opts','Bank')">Bank</div>
+                        <div class="custom-option" onclick="setCustomVal('out-wallet','out-wallet-trigger','out-wallet-opts','e-Wallet')">e-Wallet</div>
+                    </div>
+                </div>
+                <input type="hidden" id="out-wallet" value="Tunai">
+            </div>
+            <div class="form-group">
+                <label>Ambil dari Plot</label>
+                <div class="custom-select-container">
+                    <div class="custom-select-trigger" id="out-plot-trigger" onclick="toggleCustomSelect('out-plot-opts', event)" style="color:var(--text-muted)">-- Tanpa Plot --</div>
+                    <div class="custom-select-options hidden" id="out-plot-opts"></div>
+                </div>
+                <input type="hidden" id="out-plot" value="">
+            </div>
+            <div class="form-group"><label>Jumlah (Rp)</label><input type="text" inputmode="numeric" id="out-amount" placeholder="0"></div>
+            <button class="btn-main btn-red" id="btn-save-out" onclick="saveData(event, 'expense')">Simpan Pengeluaran</button>
+        </div>
+    </div>
+
+    <div id="plot" class="page hidden">
+        <div class="card">
+            <h3 style="margin:0 0 15px 0; color:var(--gold); font-size:16px;">Alokasi Anggaran</h3>
+            <div class="form-group"><label>Nama Anggaran</label><input type="text" id="plot-name" placeholder="Makan, Listrik, dll" autocomplete="off"></div>
+            <div class="form-group"><label>Target Per Bulan (Rp)</label><input type="text" inputmode="numeric" id="plot-amount" placeholder="0"></div>
+            <button class="btn-main btn-gold" onclick="savePlot()">Tambah Plot</button>
+        </div>
+        <div class="card card-flex">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-shrink:0;">
+                <h4 style="margin:0; font-size:13px;">Riwayat Plot:</h4>
+                <input type="text" id="plot-month-filter" readonly onclick="openPicker('plot-month-filter', 'month', 'var(--gold)')" style="width:110px; padding:6px; font-size:11px; text-align:center;">
+            </div>
+            <div id="plot-list"></div>
+        </div>
+    </div>
+
+    <div id="rekap" class="page hidden">
+        <div class="form-group" style="position:relative; margin-bottom: 8px;">
+            <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input type="text" id="rekap-search" placeholder="Cari transaksi..." autocomplete="off" oninput="updateRekap()" style="padding-left:40px; padding-top:10px; padding-bottom:10px; border: 1px solid var(--blue);">
+            <div class="clear-search hidden" id="clear-search-btn" onclick="clearSearch()"><svg class="svg-x" viewBox="0 0 24 24" fill="none"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></div>
+        </div>
+
+        <div id="rekap-focus-hide">
+            <div class="card" style="padding:10px; margin-bottom: 8px; border-color:var(--blue);">
+                <label style="font-size:11px; margin-bottom: 4px;">PILIH TANGGAL RIWAYAT:</label>
+                <input type="text" id="rekap-date-picker" readonly onclick="openPicker('rekap-date-picker', 'date', 'var(--blue)')" style="padding:10px;">
+            </div>
+            
+            <div class="balance-box">
+                <small style="font-size: 9px; letter-spacing: 1px;">SISA SALDO GLOBAL</small>
+                <h2 id="total-balance">Rp 0</h2>
+                
+                <div style="display: flex; justify-content: space-around; border-top: 1px solid var(--border-color); padding-top: 10px; margin-top: 6px;">
+                    <div style="text-align:center;">
+                        <small style="color:var(--wa-green); font-weight:700; font-size: 8px; display:block; margin-bottom: 1px;">PEMASUKAN</small>
+                        <span class="income-text" id="total-in" style="font-size: 11px;">Rp 0</span>
+                    </div>
+                    <div style="text-align:center;">
+                        <small style="color:var(--danger); font-weight:700; font-size: 8px; display:block; margin-bottom: 1px;">PENGELUARAN</small>
+                        <span class="expense-text" id="total-out" style="font-size: 11px;">Rp 0</span>
+                    </div>
+                </div>
+                
+                <div class="dropdown-wrapper" style="position: absolute; top: 8px; right: 8px;">
+                    <button class="icon-btn" onclick="toggleBalanceMenu(event)" style="padding: 4px;">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg>
+                    </button>
+                    <div id="balance-dropdown" class="dropdown-content hidden" style="top: 35px; right: 0; min-width: 140px;">
+                        <div class="dropdown-item" onclick="openChartModal()">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M18 9l-5 5-4-4-4 4"/></svg> Tampilkan Grafik
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="wallet-grid">
+                <div class="wallet-card"><small>TUNAI</small><span id="bal-tunai">0</span></div>
+                <div class="wallet-card"><small>BANK</small><span id="bal-bank">0</span></div>
+                <div class="wallet-card"><small>E-WALLET</small><span id="bal-ewallet">0</span></div>
+            </div>
+            
+            <button class="btn-main btn-blue" onclick="openMutationModal()" style="margin-top: 0; margin-bottom:10px; border-radius: 12px; padding: 12px;">⇄ Mutasi Saldo (Transfer)</button>
+        </div>
+
+        <div class="history-columns">
+            <div class="history-col" id="history-debit">
+                <h4>DEBIT</h4>
+                <ul id="list-income"></ul>
+            </div>
+            <div class="history-col" id="history-kredit">
+                <h4>KREDIT / MUTASI</h4>
+                <ul id="list-expense"></ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="chart-modal" class="modal-overlay hidden">
+    <div class="modal-box" style="width: 90%; max-width: 360px; border: 1px solid var(--blue); padding: 25px 20px;">
+        <h3 style="margin-top:0; margin-bottom: 20px; color:var(--blue); font-size:16px;">Status Keuangan Saat Ini</h3>
+        
+        <div class="charts-grid">
+            <div class="chart-box"><span class="chart-title">Arus Kas</span><div class="chart-wrapper"><canvas id="cashChart"></canvas></div></div>
+            <div class="chart-box"><span class="chart-title">Portofolio</span><div class="chart-wrapper"><canvas id="portChart"></canvas></div></div>
+        </div>
+        
+        <button class="modal-btn cancel" style="width: 100%; border-color: var(--blue) !important; margin-top: 0;" onclick="closeChartModal()">Tutup Grafik</button>
+    </div>
+</div>
+
+<div id="mutation-modal" class="modal-overlay hidden">
+    <div class="modal-box" style="border: 1px solid var(--blue); padding: 20px;">
+        <h3 style="margin-top:0; margin-bottom: 15px; color:var(--blue); font-size:16px;">⇄ Mutasi Saldo</h3>
+        
+        <div class="form-group" style="text-align:left; margin-bottom: 10px;">
+            <label>Dari Dompet</label>
+            <div class="custom-select-container">
+                <div class="custom-select-trigger" id="mut-from-trigger" onclick="toggleCustomSelect('mut-from-opts', event)" style="border: 1px solid var(--blue); padding: 10px;">Tunai</div>
+                <div class="custom-select-options hidden" id="mut-from-opts">
+                    <div class="custom-option" onclick="setCustomVal('mut-from','mut-from-trigger','mut-from-opts','Tunai')">Tunai</div>
+                    <div class="custom-option" onclick="setCustomVal('mut-from','mut-from-trigger','mut-from-opts','Bank')">Bank</div>
+                    <div class="custom-option" onclick="setCustomVal('mut-from','mut-from-trigger','mut-from-opts','e-Wallet')">e-Wallet</div>
+                </div>
+            </div>
+            <input type="hidden" id="mut-from" value="Tunai">
+        </div>
+
+        <div class="form-group" style="text-align:left; margin-bottom: 10px;">
+            <label>Ke Dompet</label>
+            <div class="custom-select-container">
+                <div class="custom-select-trigger" id="mut-to-trigger" onclick="toggleCustomSelect('mut-to-opts', event)" style="border: 1px solid var(--blue); padding: 10px;">Bank</div>
+                <div class="custom-select-options hidden" id="mut-to-opts">
+                    <div class="custom-option" onclick="setCustomVal('mut-to','mut-to-trigger','mut-to-opts','Tunai')">Tunai</div>
+                    <div class="custom-option" onclick="setCustomVal('mut-to','mut-to-trigger','mut-to-opts','Bank')">Bank</div>
+                    <div class="custom-option" onclick="setCustomVal('mut-to','mut-to-trigger','mut-to-opts','e-Wallet')">e-Wallet</div>
+                </div>
+            </div>
+            <input type="hidden" id="mut-to" value="Bank">
+        </div>
+
+        <div class="form-group" style="text-align:left; margin-bottom: 15px;">
+            <label>Jumlah (Rp)</label>
+            <input type="text" inputmode="numeric" id="mut-amount" placeholder="0" style="border: 1px solid var(--blue); padding: 10px;">
+        </div>
+        <div class="modal-actions">
+            <button class="modal-btn cancel" style="border-color: var(--blue) !important;" onclick="closeMutationModal()">Batal</button>
+            <button class="modal-btn btn-blue" onclick="processMutation()" style="color:#000;">Transfer</button>
+        </div>
+    </div>
+</div>
+
+<div id="custom-modal" class="modal-overlay hidden">
+    <div class="modal-box">
+        <p id="modal-text"></p>
+        <input type="text" id="modal-input" class="hidden">
+        <div class="modal-actions">
+            <button id="modal-btn-cancel" class="modal-btn cancel hidden">BATAL</button>
+            <button id="modal-btn-ok" class="modal-btn ok">OK</button>
+        </div>
+    </div>
+</div>
+
+<div id="import-modal" class="modal-overlay hidden">
+    <div class="modal-box">
+        <h3 style="margin-top:0;">Metode Impor</h3>
+        <p style="font-size:12px; color:var(--text-muted); margin-bottom: 15px;">Pilih cara memproses data Excel lama.</p>
+        <div style="display:flex; flex-direction:column; gap:8px;">
+            <button class="modal-btn btn-green" style="color:#000;" onclick="executeImport('ringkas')">Import Ringkas (Hemat Memori)</button>
+            <button class="modal-btn" style="background:#2a3942; color:#fff;" onclick="executeImport('semua')">Import Semua (Muat Detail)</button>
+            <button class="modal-btn cancel" onclick="document.getElementById('import-modal').classList.add('hidden'); document.getElementById('file-import').value = '';">Batal</button>
+        </div>
+    </div>
+</div>
+
+<div id="edit-modal" class="modal-overlay hidden">
+    <div class="modal-box">
+        <h3 id="edit-modal-title" style="margin-top:0; margin-bottom: 15px;">Edit Data</h3>
+        <div class="form-group" style="text-align:left;"><label>Tanggal</label><input type="text" id="edit-date" readonly onclick="openPicker('edit-date','date','var(--blue)')"></div>
+        <div class="form-group" style="text-align:left;"><label>Keterangan</label><input type="text" id="edit-desc" autocomplete="off"></div>
+        
+        <div class="form-group" style="text-align:left;" id="edit-wallet-container">
+            <label>Sumber Dana</label>
+            <div class="custom-select-container">
+                <div class="custom-select-trigger" id="edit-wallet-trigger" onclick="toggleCustomSelect('edit-wallet-opts', event)">Tunai</div>
+                <div class="custom-select-options hidden" id="edit-wallet-opts">
+                    <div class="custom-option" onclick="setCustomVal('edit-wallet','edit-wallet-trigger','edit-wallet-opts','Tunai')">Tunai</div>
+                    <div class="custom-option" onclick="setCustomVal('edit-wallet','edit-wallet-trigger','edit-wallet-opts','Bank')">Bank</div>
+                    <div class="custom-option" onclick="setCustomVal('edit-wallet','edit-wallet-trigger','edit-wallet-opts','e-Wallet')">e-Wallet</div>
+                </div>
+            </div>
+            <input type="hidden" id="edit-wallet" value="Tunai">
+        </div>
+
+        <div class="form-group" style="text-align:left; display:none;" id="edit-plot-container">
+            <label>Plot</label>
+            <div class="custom-select-container">
+                <div class="custom-select-trigger" id="edit-plot-trigger" onclick="toggleCustomSelect('edit-plot-opts', event)">-- Tanpa Plot --</div>
+                <div class="custom-select-options hidden" id="edit-plot-opts"></div>
+            </div>
+            <input type="hidden" id="edit-plot-val" value="">
+        </div>
+
+        <div class="form-group" style="text-align:left;"><label>Jumlah (Rp)</label><input type="text" inputmode="numeric" id="edit-amount"></div>
+        <div class="modal-actions">
+            <button class="modal-btn cancel" onclick="document.getElementById('edit-modal').classList.add('hidden')">Batal</button>
+            <button class="modal-btn ok" id="edit-btn-save">Simpan</button>
+        </div>
+    </div>
+</div>
+
+<div id="custom-picker" class="modal-overlay hidden">
+    <div class="picker-box">
+        <div class="picker-header">
+            <button class="picker-nav" onclick="cpChange(-1)">&#10094;</button>
+            <div id="cp-title" class="picker-title">2026</div>
+            <button class="picker-nav" onclick="cpChange(1)">&#10095;</button>
+        </div>
+        <div id="cp-day-view"><div class="picker-days-header"><span>Min</span><span>Sen</span><span>Sel</span><span>Rab</span><span>Kam</span><span>Jum</span><span>Sab</span></div><div id="cp-grid-days" class="picker-grid"></div></div>
+        <div id="cp-month-view" class="picker-months-grid hidden"></div>
+        <div class="modal-actions">
+            <button class="modal-btn cancel" onclick="closePicker()">Batal</button>
+            <button class="modal-btn" style="background:#2a3942; color:#fff; font-size: 11px;" onclick="cpSetToday()" id="cp-today-btn">Hari Ini</button>
+            <button class="modal-btn ok" id="cp-setel-btn" onclick="setPickerDate()">Setel</button>
+        </div>
+    </div>
+</div>
+
+<input type="file" id="file-import" accept=".xlsx, .xls" class="hidden" onchange="importFromExcel(event)">
+
+<div class="creator-watermark">
+    created by <span class="fam">fam</span><span class="barla">BARLA</span>
+</div>
+
+<script>
+    // =========================================================
+    // 1. PENGATURAN AWAL & DATABASE (STATE MANAGEMENT)
+    // =========================================================
+    const CLOUD_URL = "https://script.google.com/macros/s/AKfycbwxWObSeHMkVY35j6im5CQ56tA-VaBxw7Aru3bDlyEztB5niOiy6kaCLmljMDhTH025/exec";
+
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('./sw.js').catch(() => console.log("SW tidak ditemukan."));
+    }
+
+    let AppState = {
+        db: { income: [], expense: [], mutations: [], plots: [] },
+        charts: { arusKas: null, portofolio: null },
+        tempImport: [],
+        grafikSaatIni: { in: 0, out: 0, tunai: 0, bank: 0, ewal: 0 }
+    };
+
+    function muatDatabase() {
+        try {
+            const dataTersimpan = localStorage.getItem('myMoneyDB');
+            if (dataTersimpan) {
+                const parsed = JSON.parse(dataTersimpan);
+                AppState.db.income = parsed.income || [];
+                AppState.db.expense = parsed.expense || [];
+                AppState.db.mutations = parsed.mutations || [];
+                AppState.db.plots = parsed.plots || [];
+            }
+        } catch (e) {
+            console.error("Gagal memuat database:", e);
+        }
+    }
+
+    function simpanDatabase() {
+        const dataString = JSON.stringify(AppState.db);
+        localStorage.setItem('myMoneyDB', dataString);
+        
+        const persen = ((dataString.length * 2) / (5 * 1024 * 1024) * 100).toFixed(1);
+        const elemenPersen = document.getElementById('storage-pct');
+        if (elemenPersen) {
+            elemenPersen.innerText = (persen > 100 ? 100 : persen) + '%';
+            elemenPersen.style.color = persen > 90 ? 'var(--danger)' : 'var(--wa-green)';
+        }
+    }
+
+    function jalankanJam() {
+        const waktu = new Date();
+        const hari = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+        const bulan = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Ags', 'Sep', 'Okt', 'Nov', 'Des'];
+        const elemenJam = document.getElementById('realtime-clock');
+        if (elemenJam) {
+            elemenJam.innerText = `${hari[waktu.getDay()]}, ${waktu.getDate()} ${bulan[waktu.getMonth()]} ${waktu.getFullYear()} • ${String(waktu.getHours()).padStart(2, '0')}:${String(waktu.getMinutes()).padStart(2, '0')}:${String(waktu.getSeconds()).padStart(2, '0')}`;
+        }
+    }
+    setInterval(jalankanJam, 1000);
+
+    // =========================================================
+    // KODE CLOUD BACKUP & LOAD (GOOGLE SHEETS INTEGRATION)
+    // =========================================================
+    function backupToCloud() {
+        document.getElementById('dropdown-menu').classList.add('hidden');
+        if(!CLOUD_URL || CLOUD_URL.includes("ISI_DENGAN")) {
+            return showPopup('alert', "Penyimpanan Cloud belum disetel! Hubungkan ke Google Sheets terlebih dahulu.", 'red');
+        }
+        
+        showPopup('alert', "Mengunggah data ke Cloud...\nMohon tunggu sebentar.", 'blue');
+        
+        fetch(CLOUD_URL, {
+            method: 'POST',
+            body: JSON.stringify(AppState.db)
+        })
+        .then(res => res.text())
+        .then(res => {
+            showPopup('alert', "Data berhasil diamankan ke Cloud!", 'green');
+        })
+        .catch(err => {
+            showPopup('alert', "Gagal mengunggah! Pastikan koneksi internet aktif.", 'red');
+        });
+    }
+
+    function loadFromCloud() {
+        document.getElementById('dropdown-menu').classList.add('hidden');
+        if(!CLOUD_URL || CLOUD_URL.includes("ISI_DENGAN")) {
+            return showPopup('alert', "Penyimpanan Cloud belum disetel! Hubungkan ke Google Sheets terlebih dahulu.", 'red');
+        }
+
+        showPopup('alert', "Mengunduh data dari Cloud...\nMohon tunggu sebentar.", 'blue');
+        
+        fetch(CLOUD_URL)
+        .then(res => res.json())
+        .then(data => {
+            if(data && data.income) {
+                AppState.db = data;
+                simpanDatabase();
+                updateRekap();
+                updatePlotList();
+                showPopup('alert', "Data berhasil dipulihkan dari Cloud!", 'green');
+            } else {
+                showPopup('alert', "Data di Cloud kosong atau format salah.", 'red');
+            }
+        })
+        .catch(err => {
+            showPopup('alert', "Gagal mengunduh! Pastikan koneksi internet aktif.", 'red');
+        });
+    }
+
+    // =========================================================
+    // 2. ALAT BANTU (UTILITIES)
+    // =========================================================
+    const Utils = {
+        buatId: () => Date.now().toString(36) + Math.random().toString(36).substr(2, 5),
+        formatRp: (angka) => "Rp " + (angka || 0).toLocaleString('id-ID'),
+        amanHTML: (teks) => teks ? String(teks).replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c])) : "-",
+        tglHariIni: () => {
+            const d = new Date();
+            const year = d.getFullYear();
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        },
+        formatTglTampil: (ymd) => { const p = ymd.split('-'); return `${p[2]}/${p[1]}/${p[0]}`; },
+        formatRibuanInput: (e) => {
+            const input = e.target;
+            let cursorPos = input.selectionStart;
+            const originalLength = input.value.length;
+            let bersih = input.value.replace(/[^0-9]/g, '');
+            input.value = bersih ? parseInt(bersih, 10).toLocaleString('id-ID') : '';
+            const newLength = input.value.length;
+            cursorPos = cursorPos + (newLength - originalLength);
+            input.setSelectionRange(cursorPos, cursorPos);
+        }
+    };
+
+    ['in-amount', 'out-amount', 'plot-amount', 'mut-amount', 'edit-amount'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.addEventListener('input', Utils.formatRibuanInput);
+    });
+
+    // =========================================================
+    // 3. KONTROL TAMPILAN (UI NAVIGATION)
+    // =========================================================
+    function showPage(event, idHalaman) {
+        document.getElementById('dropdown-menu').classList.add('hidden');
+        document.getElementById('balance-dropdown').classList.add('hidden');
+        
+        document.querySelectorAll('.page').forEach(p => p.classList.add('hidden'));
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        
+        document.getElementById(idHalaman).classList.remove('hidden');
+        event.currentTarget.classList.add('active');
+        
+        if (idHalaman === 'rekap') updateRekap();
+        if (idHalaman === 'plot') updatePlotList();
+        
+        if (idHalaman === 'pengeluaran') {
+            const kotakOpsi = document.getElementById('out-plot-opts');
+            let opsiHTML = `<div class="custom-option" style="color:var(--text-muted);" onclick="setCustomVal('out-plot','out-plot-trigger','out-plot-opts','')">-- Tanpa Plot --</div>`;
+            AppState.db.plots.forEach(p => {
+                opsiHTML += `<div class="custom-option" onclick="setCustomVal('out-plot','out-plot-trigger','out-plot-opts','${p.id}', this.innerText)">${Utils.amanHTML(p.name)}</div>`;
+            });
+            kotakOpsi.innerHTML = opsiHTML;
+            setCustomVal('out-plot', 'out-plot-trigger', 'out-plot-opts', '');
+            document.getElementById('out-plot-trigger').innerText = '-- Tanpa Plot --';
+        }
+    }
+
+    function toggleCustomSelect(optId, e) {
+        e.stopPropagation();
+        document.querySelectorAll('.custom-select-options').forEach(el => {
+            if (el.id !== optId) el.classList.add('hidden');
+        });
+        document.getElementById(optId).classList.toggle('hidden');
+    }
+
+    function setCustomVal(inputId, triggerId, optId, nilai, namaTampil = null) {
+        document.getElementById(inputId).value = nilai;
+        const triggerEl = document.getElementById(triggerId);
+        triggerEl.innerText = namaTampil || (nilai === "" ? "-- Tanpa Plot --" : nilai);
+        triggerEl.style.color = nilai === "" ? 'var(--text-muted)' : 'var(--text-light)';
+        document.getElementById(optId).classList.add('hidden');
+    }
+
+    function toggleMenu(e) { e.stopPropagation(); document.getElementById('dropdown-menu').classList.toggle('hidden'); }
+    function toggleBalanceMenu(e) { e.stopPropagation(); document.getElementById('balance-dropdown').classList.toggle('hidden'); }
+
+    document.addEventListener('click', e => {
+        const menu = document.getElementById('dropdown-menu');
+        if (menu && !menu.classList.contains('hidden') && !e.target.closest('#kebab-btn')) menu.classList.add('hidden');
+        
+        const balMenu = document.getElementById('balance-dropdown');
+        if (balMenu && !balMenu.classList.contains('hidden') && !e.target.closest('.balance-box')) balMenu.classList.add('hidden');
+        
+        document.querySelectorAll('.custom-select-options').forEach(el => {
+            if (!el.classList.contains('hidden') && !e.target.closest('.custom-select-container')) el.classList.add('hidden');
+        });
+    });
+
+    function showPopup(mode, pesan, warnaTema = 'green', callback = null, nilaiAwal = null, isAngka = false) {
+        const overlay = document.getElementById('custom-modal'), 
+              teks = document.getElementById('modal-text'), 
+              input = document.getElementById('modal-input'), 
+              btnBatal = document.getElementById('modal-btn-cancel'), 
+              btnOk = document.getElementById('modal-btn-ok');
+        
+        teks.innerText = pesan; 
+        overlay.classList.remove('hidden');
+        
+        input.classList.add('hidden');
+        btnBatal.classList.add('hidden');
+        input.value = ''; 
+        input.oninput = null;
+        
+        if (warnaTema === 'red') {
+            btnOk.style.backgroundColor = 'var(--danger)';
+            btnOk.style.color = '#fff';
+        } else if (warnaTema === 'gold') {
+            btnOk.style.backgroundColor = 'var(--gold)';
+            btnOk.style.color = '#000';
+        } else if (warnaTema === 'blue') {
+            btnOk.style.backgroundColor = 'var(--blue)';
+            btnOk.style.color = '#000';
+        } else {
+            btnOk.style.backgroundColor = 'var(--wa-green)';
+            btnOk.style.color = '#000';
+        }
+
+        if (mode === 'edit') {
+            btnBatal.classList.remove('hidden'); 
+            input.classList.remove('hidden');
+            if (isAngka) {
+                input.inputMode = "numeric";
+                input.value = parseInt(nilaiAwal, 10).toLocaleString('id-ID');
+                input.oninput = Utils.formatRibuanInput;
+            } else {
+                input.inputMode = "text"; 
+                input.value = nilaiAwal;
+            }
+            btnOk.onclick = () => { overlay.classList.add('hidden'); if(callback) callback(input.value); };
+            btnBatal.onclick = () => overlay.classList.add('hidden');
+        } else if (mode === 'confirm') {
+            btnBatal.classList.remove('hidden'); 
+            btnOk.onclick = () => { overlay.classList.add('hidden'); if(callback) callback(); };
+            btnBatal.onclick = () => overlay.classList.add('hidden');
+        } else {
+            btnOk.onclick = () => { overlay.classList.add('hidden'); if(callback) callback(); };
+        }
+    }
+
+    // =========================================================
+    // 4. LOGIKA CRUD (CORE ENGINE)
+    // =========================================================
+    function getSaldoDompet(namaDompet) {
+        let saldo = 0;
+        AppState.db.income.forEach(i => { if (i.wallet === namaDompet) saldo += i.amount; });
+        AppState.db.expense.forEach(e => { if (e.wallet === namaDompet) saldo -= e.amount; });
+        AppState.db.mutations.forEach(m => {
+            if (m.from === namaDompet) saldo -= m.amount;
+            if (m.to === namaDompet) saldo += m.amount;
+        });
+        return saldo;
+    }
+
+    function saveData(event, tipe) {
+        const btn = event.target;
+        btn.disabled = true;
+        setTimeout(() => btn.disabled = false, 1500);
+
+        const pfx = tipe === 'income' ? 'in' : 'out';
+        const tgl = document.getElementById(`${pfx}-date`).dataset.rawDate;
+        const ket = document.getElementById(`${pfx}-desc`).value.trim();
+        const nom = Math.abs(Number(document.getElementById(`${pfx}-amount`).value.replace(/\./g, '')));
+        const dmp = document.getElementById(`${pfx}-wallet`).value;
+        const plt = tipe === 'expense' ? document.getElementById('out-plot').value : null;
+
+        if (!tgl || isNaN(nom) || nom <= 0 || !ket) {
+            return showPopup('alert', "Mohon lengkapi semua data dengan benar!", 'red');
+        }
+
+        if (tipe === 'expense') {
+            if (getSaldoDompet(dmp) < nom) {
+                return showPopup('alert', `Saldo [${dmp}] tidak mencukupi untuk pengeluaran ini!`, 'red');
+            }
+        }
+
+        AppState.db[tipe].push({ id: Utils.buatId(), date: tgl, desc: ket, amount: nom, wallet: dmp, plotId: plt });
+        simpanDatabase();
+        
+        document.getElementById(`${pfx}-amount`).value = '';
+        document.getElementById(`${pfx}-desc`).value = '';
+        setCustomVal(`${pfx}-wallet`, `${pfx}-wallet-trigger`, `${pfx}-wallet-opts`, 'Tunai');
+        if (tipe === 'expense') setCustomVal('out-plot', 'out-plot-trigger', 'out-plot-opts', '');
+        
+        updateRekap();
+        showPopup('alert', "Catatan berhasil disimpan!", tipe === 'expense' ? 'red' : 'green');
+    }
+
+    function editData(tipe, idItem) {
+        if (tipe === 'mutations') return showPopup('alert', "Mutasi tidak bisa diedit. Hapus (✕) riwayatnya dan buat ulang jika salah.", 'blue');
+        
+        const data = AppState.db[tipe].find(i => i.id === idItem);
+        if (!data) return;
+
+        const elTitle = document.getElementById('edit-modal-title');
+        elTitle.innerText = tipe === 'income' ? 'Edit Pemasukan' : 'Edit Pengeluaran';
+        elTitle.style.color = tipe === 'income' ? 'var(--wa-green)' : 'var(--danger)';
+        
+        document.getElementById('edit-date').dataset.rawDate = data.date;
+        document.getElementById('edit-date').value = Utils.formatTglTampil(data.date);
+        document.getElementById('edit-desc').value = data.desc;
+        document.getElementById('edit-amount').value = data.amount.toLocaleString('id-ID');
+        setCustomVal('edit-wallet', 'edit-wallet-trigger', 'edit-wallet-opts', data.wallet || 'Tunai');
+        
+        const wadahPlot = document.getElementById('edit-plot-container');
+        if (tipe === 'expense') {
+            wadahPlot.style.display = 'block';
+            let opsiPlotHTML = `<div class="custom-option" style="color:var(--text-muted);" onclick="setCustomVal('edit-plot-val','edit-plot-trigger','edit-plot-opts','')">-- Tanpa Plot --</div>`;
+            AppState.db.plots.forEach(p => {
+                opsiPlotHTML += `<div class="custom-option" onclick="setCustomVal('edit-plot-val','edit-plot-trigger','edit-plot-opts','${p.id}', this.innerText)">${Utils.amanHTML(p.name)}</div>`;
+            });
+            document.getElementById('edit-plot-opts').innerHTML = opsiPlotHTML;
+            
+            if (data.plotId) {
+                const plotAsli = AppState.db.plots.find(pl => pl.id === data.plotId);
+                setCustomVal('edit-plot-val', 'edit-plot-trigger', 'edit-plot-opts', data.plotId, plotAsli ? Utils.amanHTML(plotAsli.name) : '');
+            } else {
+                setCustomVal('edit-plot-val', 'edit-plot-trigger', 'edit-plot-opts', '');
+                document.getElementById('edit-plot-trigger').innerText = '-- Tanpa Plot --';
+            }
+        } else {
+            wadahPlot.style.display = 'none';
+        }
+
+        document.getElementById('edit-modal').classList.remove('hidden');
+        
+        document.getElementById('edit-btn-save').onclick = () => {
+            const nomBaru = Math.abs(Number(document.getElementById('edit-amount').value.replace(/\./g, '')));
+            if (isNaN(nomBaru) || nomBaru <= 0) return showPopup('alert', "Jumlah uang tidak valid!", 'red');
+
+            const dompetBaru = document.getElementById('edit-wallet').value;
+            
+            const nominalLama = data.amount;
+            const dompetLama = data.wallet;
+            const plotLama = data.plotId;
+
+            data.amount = nomBaru;
+            data.wallet = dompetBaru;
+            data.date = document.getElementById('edit-date').dataset.rawDate;
+            data.desc = document.getElementById('edit-desc').value.trim();
+            if (tipe === 'expense') data.plotId = document.getElementById('edit-plot-val').value;
+
+            if (getSaldoDompet('Tunai') < 0 || getSaldoDompet('Bank') < 0 || getSaldoDompet('e-Wallet') < 0) {
+                data.amount = nominalLama;
+                data.wallet = dompetLama;
+                if (tipe === 'expense') data.plotId = plotLama;
+                return showPopup('alert', "Batal: Mengubah data ini akan menyebabkan saldo dompet minus!", 'red');
+            }
+            
+            simpanDatabase();
+            document.getElementById('edit-modal').classList.add('hidden');
+            updateRekap();
+            updatePlotList();
+        };
+    }
+
+    function deleteItem(event, tipe, idItem) {
+        event.stopPropagation();
+        
+        const dataTarget = AppState.db[tipe].find(x => x.id === idItem);
+        if (tipe === 'income' && (getSaldoDompet(dataTarget.wallet) - dataTarget.amount < 0)) {
+            return showPopup('alert', `Batal: Menghapus riwayat ini akan menyebabkan saldo dompet [${dataTarget.wallet}] minus!`, 'red');
+        }
+        if (tipe === 'mutations' && (getSaldoDompet(dataTarget.to) - dataTarget.amount < 0)) {
+            return showPopup('alert', `Batal: Menghapus mutasi ini akan menyebabkan saldo dompet [${dataTarget.to}] minus!`, 'red');
+        }
+
+        showPopup('confirm', "Yakin ingin menghapus riwayat ini?", 'red', () => {
+            AppState.db[tipe] = AppState.db[tipe].filter(x => x.id !== idItem);
+            simpanDatabase();
+            updateRekap();
+            updatePlotList();
+        });
+    }
+
+    function openMutationModal() {
+        document.getElementById('mutation-modal').classList.remove('hidden');
+        setCustomVal('mut-from', 'mut-from-trigger', 'mut-from-opts', 'Tunai');
+        setCustomVal('mut-to', 'mut-to-trigger', 'mut-to-opts', 'Bank');
+    }
+    
+    function closeMutationModal() {
+        document.getElementById('mutation-modal').classList.add('hidden');
+        document.getElementById('mut-amount').value = '';
+    }
+
+    function processMutation() {
+        const asal = document.getElementById('mut-from').value;
+        const tujuan = document.getElementById('mut-to').value;
+        
+        const nominal = Number(document.getElementById('mut-amount').value.replace(/\./g, ''));
+        
+        if (asal === tujuan) return showPopup('alert', 'Dompet asal dan tujuan tidak boleh sama!', 'red');
+        if (isNaN(nominal) || nominal <= 0) return showPopup('alert', 'Masukkan jumlah uang yang benar!', 'red');
+        if (getSaldoDompet(asal) < nominal) return showPopup('alert', `Saldo [${asal}] tidak mencukupi!`, 'red');
+
+        const tglMutasi = document.getElementById('rekap-date-picker').dataset.rawDate || Utils.tglHariIni();
+
+        AppState.db.mutations.push({ id: Utils.buatId(), date: tglMutasi, from: asal, to: tujuan, amount: nominal });
+        simpanDatabase();
+        closeMutationModal();
+        updateRekap();
+        showPopup('alert', 'Mutasi Berhasil!', 'green');
+    }
+
+    function savePlot() {
+        const nama = document.getElementById('plot-name').value.trim();
+        const target = Math.abs(Number(document.getElementById('plot-amount').value.replace(/\./g, '')));
+        
+        if (!nama || isNaN(target) || target <= 0) return showPopup('alert', "Isi Nama & Nominal Target Plot dengan benar!", 'red');
+        
+        AppState.db.plots.push({ id: Utils.buatId(), name: nama, target: target });
+        simpanDatabase();
+        
+        document.getElementById('plot-name').value = '';
+        document.getElementById('plot-amount').value = '';
+        updatePlotList();
+        showPopup('alert', "Alokasi Dibuat!", 'gold');
+    }
+
+    function editPlot(idPlot, jenis) {
+        const plot = AppState.db.plots.find(x => x.id === idPlot);
+        const isAngka = jenis === 'target';
+        
+        showPopup('edit', `Ubah ${isAngka ? 'Target (Rp)' : 'Nama'} Plot:`, 'gold', val => {
+            if (!val) return;
+            if (isAngka) {
+                const newTarget = Math.abs(Number(val.replace(/\./g, '')));
+                if (isNaN(newTarget) || newTarget <= 0) return showPopup('alert', 'Nominal target tidak valid!', 'red');
+                plot[jenis] = newTarget;
+            } else {
+                plot[jenis] = val.trim();
+            }
+            simpanDatabase();
+            updatePlotList();
+        }, plot[jenis], isAngka);
+    }
+
+    function deletePlot(idPlot) {
+        showPopup('confirm', "Yakin menghapus plot ini? (Data pengeluaran tidak akan dihapus, hanya dilepas dari plot)", 'red', () => {
+            AppState.db.plots = AppState.db.plots.filter(p => p.id !== idPlot);
+            AppState.db.expense.forEach(e => { if (e.plotId === idPlot) e.plotId = ""; });
+            simpanDatabase();
+            updatePlotList();
+        });
+    }
+
+    // =========================================================
+    // 5. RENDER ENGINE (UI UPDATES)
+    // =========================================================
+    function updatePlotList() {
+        const filterBulan = document.getElementById('plot-month-filter').dataset.rawDate;
+        const wadah = document.getElementById('plot-list');
+        
+        if (AppState.db.plots.length === 0) {
+            wadah.innerHTML = '<div style="text-align:center; color:var(--border-color); font-size:12px; padding:10px 0;">- Belum ada alokasi -</div>';
+            return;
+        }
+
+        const pengeluaranBulanIni = AppState.db.expense.filter(e => e.date.startsWith(filterBulan));
+        
+        let htmlList = '';
+        AppState.db.plots.forEach(p => {
+            const totalPakai = pengeluaranBulanIni.reduce((sum, e) => e.plotId === p.id ? sum + e.amount : sum, 0);
+            const persen = p.target > 0 ? Math.min((totalPakai / p.target) * 100, 100) : (totalPakai > 0 ? 100 : 0);
+            
+            htmlList += `
+            <div style="margin-bottom:12px; border-bottom:1px solid var(--border-color); padding-bottom:12px; display:flex; flex-direction:column; gap:8px;">
+                <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                    <strong class="editable" onclick="editPlot('${p.id}','name')" style="font-size:14px; word-break:break-word; flex:1; padding-right:10px;">${Utils.amanHTML(p.name)}</strong>
+                    <div onclick="deletePlot('${p.id}')" style="flex-shrink:0;"><svg class="svg-x" viewBox="0 0 24 24" fill="none"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></div>
+                </div>
+                <div style="display:flex; justify-content:space-between; font-size:11px; color:var(--text-light); font-weight:500;">
+                    <span class="editable" onclick="editPlot('${p.id}','target')" style="color: var(--text-muted);">Target: ${Utils.formatRp(p.target)}</span>
+                    <span>Pakai: ${Utils.formatRp(totalPakai)}</span>
+                </div>
+                <div class="progress-container" style="height: 6px; background: #000; border-radius: 3px; overflow: hidden;"><div class="progress-bar" style="height: 100%; width:${persen}%; background: ${persen >= 100 ? 'var(--danger)' : 'var(--gold)'};"></div></div>
+            </div>`;
+        });
+        wadah.innerHTML = htmlList;
+    }
+
+    function clearSearch() {
+        document.getElementById('rekap-search').value = '';
+        updateRekap();
+    }
+
+    function updateRekap() {
+        const tglSortir = document.getElementById('rekap-date-picker').dataset.rawDate;
+        const kunci = document.getElementById('rekap-search').value.toLowerCase().trim();
+        
+        const elMasuk = document.getElementById('list-income');
+        const elKeluar = document.getElementById('list-expense');
+        
+        if (kunci) {
+            document.getElementById('rekap-focus-hide').classList.add('hidden');
+            document.getElementById('clear-search-btn').classList.remove('hidden');
+        } else {
+            document.getElementById('rekap-focus-hide').classList.remove('hidden');
+            document.getElementById('clear-search-btn').classList.add('hidden');
+        }
+
+        const gabungan = [
+            ...AppState.db.income.map(i => ({...i, type:'income'})),
+            ...AppState.db.expense.map(e => ({...e, type:'expense'})),
+            ...AppState.db.mutations.map(m => ({...m, type:'mutations', desc:`Mutasi: ${m.from} ➔ ${m.to}`}))
+        ].filter(item => kunci ? (item.desc.toLowerCase().includes(kunci) || item.amount.toString().includes(kunci)) : item.date === tglSortir);
+
+        let htmlMasuk = '', htmlKeluar = '';
+        let countIn = 0, countOut = 0;
+
+        gabungan.forEach(item => {
+            const isIn = item.type === 'income';
+            const isMut = item.type === 'mutations';
+            
+            const barisHTML = `
+            <li>
+                <div class="editable" onclick="editData('${item.type}','${item.id}')">
+                    <div style="font-size:12px; font-weight:600; word-wrap: break-word; line-height:1.3; margin-bottom: 3px;">
+                        ${kunci ? `<small style="color:var(--text-muted)">${Utils.formatTglTampil(item.date)}</small><br>` : ''}
+                        ${Utils.amanHTML(item.desc)}
+                    </div>
+                    <div style="font-size:11px; font-weight:700;" class="${isMut ? 'mutasi-text' : (isIn ? 'income-text' : 'expense-text')}">
+                        ${isMut ? '⇄' : (isIn ? '+' : '-')} ${Utils.formatRp(item.amount)} 
+                        <br><small style="color:var(--text-muted); font-weight:500; font-size: 9px;">(${isMut ? 'Transfer' : item.wallet})</small>
+                    </div>
+                </div>
+                <div onclick="deleteItem(event, '${item.type}','${item.id}')" style="padding-left: 6px;">
+                    <svg class="svg-x" viewBox="0 0 24 24" fill="none"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                </div>
+            </li>`;
+            
+            if (isIn) {
+                htmlMasuk += barisHTML;
+                countIn++;
+            } else {
+                htmlKeluar += barisHTML;
+                countOut++;
+            }
+        });
+
+        if (countIn === 0) htmlMasuk = '<li style="justify-content:center; color:var(--text-muted); font-size:11px; border: none; padding-top: 20px;">- Kosong -</li>';
+        if (countOut === 0) htmlKeluar = '<li style="justify-content:center; color:var(--text-muted); font-size:11px; border: none; padding-top: 20px;">- Kosong -</li>';
+
+        elMasuk.innerHTML = htmlMasuk;
+        elKeluar.innerHTML = htmlKeluar;
+
+        const sTunai = getSaldoDompet('Tunai');
+        const sBank = getSaldoDompet('Bank');
+        const sEwal = getSaldoDompet('e-Wallet');
+        
+        let globalIn = 0, globalOut = 0;
+        AppState.db.income.forEach(i => globalIn += i.amount);
+        AppState.db.expense.forEach(e => globalOut += e.amount);
+
+        document.getElementById('total-balance').innerText = Utils.formatRp(sTunai + sBank + sEwal);
+        document.getElementById('bal-tunai').innerText = Utils.formatRp(sTunai);
+        document.getElementById('bal-bank').innerText = Utils.formatRp(sBank);
+        document.getElementById('bal-ewallet').innerText = Utils.formatRp(sEwal);
+        
+        document.getElementById('total-in').innerText = Utils.formatRp(globalIn);
+        document.getElementById('total-out').innerText = Utils.formatRp(globalOut);
+
+        AppState.grafikSaatIni = { in: globalIn, out: globalOut, tunai: sTunai, bank: sBank, ewal: sEwal };
+    }
+
+    // =========================================================
+    // 6. GRAFIK (CHART.JS)
+    // =========================================================
+    function openChartModal() {
+        document.getElementById('balance-dropdown').classList.add('hidden');
+        document.getElementById('chart-modal').classList.remove('hidden');
+        setTimeout(renderGrafik, 50);
+    }
+
+    function closeChartModal() { document.getElementById('chart-modal').classList.add('hidden'); }
+
+    function renderGrafik() {
+        const d = AppState.grafikSaatIni;
+        if (AppState.charts.arusKas) AppState.charts.arusKas.destroy();
+        if (AppState.charts.portofolio) AppState.charts.portofolio.destroy();
+
+        const kasKosong = d.in === 0 && d.out === 0;
+        AppState.charts.arusKas = new Chart(document.getElementById('cashChart').getContext('2d'), {
+            type: 'doughnut',
+            data: { 
+                labels: kasKosong ? ['Kosong'] : ['Debit', 'Kredit'], 
+                datasets: [{ data: kasKosong ? [1] : [d.in, d.out], backgroundColor: kasKosong ? ['#2a3942'] : ['#00a884', '#ff3b30'], borderWidth: 0 }] 
+            },
+            options: { cutout: '70%', plugins: { legend: { display: false } }, animation: { duration: 500 } }
+        });
+
+        const portTotal = d.tunai + d.bank + d.ewal;
+        const portKosong = portTotal <= 0;
+        AppState.charts.portofolio = new Chart(document.getElementById('portChart').getContext('2d'), {
+            type: 'doughnut',
+            data: { 
+                labels: portKosong ? ['Kosong'] : ['Tunai', 'Bank', 'e-Wallet'], 
+                datasets: [{ data: portKosong ? [1] : [Math.max(d.tunai, 0), Math.max(d.bank, 0), Math.max(d.ewal, 0)], backgroundColor: portKosong ? ['#2a3942'] : ['#00a884', '#00a8ff', '#9b59b6'], borderWidth: 0 }] 
+            },
+            options: { cutout: '70%', plugins: { legend: { display: false } }, animation: { duration: 500 } }
+        });
+    }
+
+    // =========================================================
+    // 7. EXPORT / IMPORT EXCEL (SHEET.JS)
+    // =========================================================
+    function exportToExcel() {
+        document.getElementById('dropdown-menu').classList.add('hidden');
+        const gabungan = [
+            ...AppState.db.income.map(x => ({Tanggal: x.date, Tipe: 'DEBIT', Dompet: x.wallet || 'Tunai', Keterangan: x.desc, Jumlah: x.amount})),
+            ...AppState.db.expense.map(x => ({Tanggal: x.date, Tipe: 'KREDIT', Dompet: x.wallet || 'Tunai', Keterangan: x.desc, Jumlah: x.amount})),
+            ...AppState.db.mutations.map(x => ({Tanggal: x.date, Tipe: 'MUTASI', Dari: x.from, Ke: x.to, Keterangan: 'Transfer Mutasi', Jumlah: x.amount}))
+        ].sort((a, b) => new Date(a.Tanggal) - new Date(b.Tanggal));
+
+        if (!gabungan.length) return showPopup('alert', "Belum ada catatan untuk diekspor!", 'red');
+        
+        const ws = XLSX.utils.json_to_sheet(gabungan);
+        const wb = XLSX.utils.book_new(); 
+        XLSX.utils.book_append_sheet(wb, ws, "RekapKeuangan");
+        XLSX.writeFile(wb, `keuanganKU_Backup_${Utils.tglHariIni()}.xlsx`);
+    }
+
+    function parseExcelDate(val) {
+        if (!val) return Utils.tglHariIni();
+        if (!isNaN(val)) return new Date(Math.round((val - 25569) * 86400 * 1000)).toISOString().split('T')[0];
+        if (typeof val === 'string') {
+            let p = val.split(/[-/]/);
+            if (p.length === 3) {
+                if (p[2].length === 4) return `${p[2]}-${p[1].padStart(2,'0')}-${p[0].padStart(2,'0')}`;
+                if (p[0].length === 4) return `${p[0]}-${p[1].padStart(2,'0')}-${p[2].padStart(2,'0')}`;
+            }
+        }
+        return Utils.tglHariIni();
+    }
+
+    function importFromExcel(e) {
+        document.getElementById('dropdown-menu').classList.add('hidden');
+        const file = e.target.files[0]; 
+        if (!file) return;
+        
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+            try {
+                const wb = XLSX.read(new Uint8Array(ev.target.result), { type: 'array' });
+                AppState.tempImport = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);
+                document.getElementById('import-modal').classList.remove('hidden');
+            } catch (err) { 
+                showPopup('alert', "Format File Excel tidak dikenali.", 'red'); 
+            } finally {
+                e.target.value = '';
+            }
+        }; 
+        reader.readAsArrayBuffer(file);
+    }
+
+    function executeImport(mode) {
+        document.getElementById('import-modal').classList.add('hidden'); 
+        
+        if (mode === 'semua') {
+            AppState.tempImport.forEach(r => {
+                const tipe = String(r.Tipe).toUpperCase();
+                const d = parseExcelDate(r.Tanggal);
+                const nom = Math.abs(Number(r.Jumlah));
+                
+                if (isNaN(nom) || nom <= 0) return; 
+
+                const ket = r.Keterangan || 'Tanpa Keterangan';
+                
+                if (tipe === 'DEBIT' && !AppState.db.income.some(i => i.date === d && i.amount === nom && i.desc === ket)) {
+                    AppState.db.income.push({ id: Utils.buatId(), date: d, desc: ket, amount: nom, wallet: r.Dompet || 'Tunai' });
+                }
+                if (tipe === 'KREDIT' && !AppState.db.expense.some(e => e.date === d && e.amount === nom && e.desc === ket)) {
+                    AppState.db.expense.push({ id: Utils.buatId(), date: d, desc: ket, amount: nom, wallet: r.Dompet || 'Tunai' });
+                }
+                if (tipe === 'MUTASI' && !AppState.db.mutations.some(m => m.date === d && m.amount === nom && m.from === r.Dari && m.to === r.Ke)) {
+                    AppState.db.mutations.push({ id: Utils.buatId(), date: d, from: r.Dari || 'Tunai', to: r.Ke || 'Bank', amount: nom });
+                }
+            });
+        } else {
+            let kalkulasi = { 'Tunai': 0, 'Bank': 0, 'e-Wallet': 0 };
+            AppState.tempImport.forEach(r => {
+                const tipe = String(r.Tipe).toUpperCase();
+                const nom = Math.abs(Number(r.Jumlah));
+                
+                if (!isNaN(nom)) {
+                    if (tipe === 'DEBIT') kalkulasi[r.Dompet || 'Tunai'] += nom;
+                    if (tipe === 'KREDIT') kalkulasi[r.Dompet || 'Tunai'] -= nom;
+                }
+            });
+            Object.keys(kalkulasi).forEach(dompet => {
+                if (kalkulasi[dompet] > 0) AppState.db.income.push({ id: Utils.buatId(), date: Utils.tglHariIni(), desc: `Saldo Impor Excel`, amount: kalkulasi[dompet], wallet: dompet });
+                else if (kalkulasi[dompet] < 0) AppState.db.expense.push({ id: Utils.buatId(), date: Utils.tglHariIni(), desc: `Koreksi Excel`, amount: Math.abs(kalkulasi[dompet]), wallet: dompet });
+            });
+        }
+        
+        simpanDatabase(); 
+        AppState.tempImport = []; 
+        updateRekap(); 
+        updatePlotList();
+        showPopup('alert', "Data Excel berhasil diimpor!", 'green');
+    }
+
+    function promptClearData() {
+        document.getElementById('dropdown-menu').classList.add('hidden');
+        showPopup('confirm', "HAPUS RIWAYAT!!", 'red', () => {
+            localStorage.removeItem('myMoneyDB'); 
+            AppState.db = { income: [], expense: [], mutations: [], plots: [] };
+            simpanDatabase(); updateRekap(); updatePlotList();
+            showPopup('alert', "Data Dikosongkan.", 'green');
+        });
+    }
+
+    // =========================================================
+    // 8. DATE PICKER KHUSUS (MODAL KALENDER)
+    // =========================================================
+    const Picker = { mode: 'date', curr: new Date(), sel: new Date(), targetId: '', theme: '' };
+    const NamaBln = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+    const BlnPdk = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Ags', 'Sep', 'Okt', 'Nov', 'Des'];
+
+    function inisiasiKalenderAwal() {
+        const hrIni = Utils.tglHariIni();
+        ['in-date', 'out-date', 'rekap-date-picker'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) { el.dataset.rawDate = hrIni; el.value = Utils.formatTglTampil(hrIni); }
+        });
+        const blnIni = hrIni.substring(0, 7);
+        const elPlot = document.getElementById('plot-month-filter');
+        if (elPlot) { elPlot.dataset.rawDate = blnIni; elPlot.value = `${BlnPdk[parseInt(blnIni.split('-')[1], 10)-1]} ${blnIni.split('-')[0]}`; }
+    }
+
+    function openPicker(idInput, mode, warnaTema) {
+        Picker.targetId = idInput; Picker.mode = mode; Picker.theme = warnaTema;
+        const valLama = document.getElementById(idInput).dataset.rawDate;
+        Picker.sel = new Date(mode === 'month' ? valLama + "-01T00:00:00" : valLama + "T00:00:00"); 
+        Picker.curr = new Date(Picker.sel);
+        
+        document.getElementById('cp-day-view').classList.toggle('hidden', mode !== 'date'); 
+        document.getElementById('cp-month-view').classList.toggle('hidden', mode === 'date');
+        document.getElementById('cp-today-btn').innerText = mode === 'date' ? 'Hari Ini' : 'Bulan Ini';
+        
+        const btnSet = document.getElementById('cp-setel-btn'); 
+        btnSet.style.backgroundColor = warnaTema; 
+        btnSet.style.color = '#000';
+        
+        renderKalender(); 
+        document.getElementById('custom-picker').classList.remove('hidden');
+    }
+    
+    function closePicker() { document.getElementById('custom-picker').classList.add('hidden'); }
+    function cpChange(arah) { Picker.mode === 'date' ? Picker.curr.setMonth(Picker.curr.getMonth() + arah) : Picker.curr.setFullYear(Picker.curr.getFullYear() + arah); renderKalender(); }
+    function cpSelectDay(t) { Picker.sel = new Date(Picker.curr.getFullYear(), Picker.curr.getMonth(), t); renderKalender(); }
+    function cpSelectMonth(b) { Picker.sel = new Date(Picker.curr.getFullYear(), b, 1); renderKalender(); }
+    function cpSetToday() { const d = new Date(); Picker.sel = new Date(d.getFullYear(), d.getMonth(), Picker.mode === 'date' ? d.getDate() : 1); Picker.curr = new Date(Picker.sel); setPickerDate(); }
+    
+    function setPickerDate() {
+        const year = Picker.sel.getFullYear();
+        const month = String(Picker.sel.getMonth() + 1).padStart(2, '0');
+        const day = String(Picker.sel.getDate()).padStart(2, '0');
+        
+        const el = document.getElementById(Picker.targetId);
+        
+        if (Picker.mode === 'date') {
+            const ymd = `${year}-${month}-${day}`; 
+            el.dataset.rawDate = ymd; 
+            el.value = Utils.formatTglTampil(ymd);
+        } else {
+            const ym = `${year}-${month}`; 
+            el.dataset.rawDate = ym; 
+            el.value = `${BlnPdk[Picker.sel.getMonth()]} ${year}`;
+        }
+        
+        closePicker();
+        if (Picker.targetId === 'rekap-date-picker') updateRekap();
+        if (Picker.targetId === 'plot-month-filter') updatePlotList();
+    }
+    
+    function renderKalender() {
+        if (Picker.mode === 'date') {
+            document.getElementById('cp-title').innerText = `${NamaBln[Picker.curr.getMonth()]} ${Picker.curr.getFullYear()}`;
+            const wadah = document.getElementById('cp-grid-days');
+            let selHtml = '';
+            
+            const hari1 = new Date(Picker.curr.getFullYear(), Picker.curr.getMonth(), 1).getDay();
+            const totHari = new Date(Picker.curr.getFullYear(), Picker.curr.getMonth() + 1, 0).getDate();
+            
+            for (let i = 0; i < hari1; i++) selHtml += `<div class="picker-item empty"></div>`;
+            for (let i = 1; i <= totHari; i++) {
+                const isSel = (i === Picker.sel.getDate() && Picker.curr.getMonth() === Picker.sel.getMonth() && Picker.curr.getFullYear() === Picker.sel.getFullYear());
+                selHtml += `<div class="picker-item ${isSel ? 'selected' : ''}" style="${isSel ? `background:${Picker.theme};` : ''}" onclick="cpSelectDay(${i})">${i}</div>`;
+            }
+            wadah.innerHTML = selHtml;
+        } else {
+            document.getElementById('cp-title').innerText = `${Picker.curr.getFullYear()}`;
+            const wadah = document.getElementById('cp-month-view');
+            let selHtml = '';
+            for (let i = 0; i < 12; i++) {
+                const isSel = (i === Picker.sel.getMonth() && Picker.curr.getFullYear() === Picker.sel.getFullYear());
+                selHtml += `<div class="picker-item ${isSel ? 'selected' : ''}" style="${isSel ? `background:${Picker.theme};` : ''}" onclick="cpSelectMonth(${i})">${BlnPdk[i]}</div>`;
+            }
+            wadah.innerHTML = selHtml;
+        }
+    }
+
+    // =========================================================
+    // 9. STARTUP BINDING (RUN ON LOAD)
+    // =========================================================
+    window.addEventListener('DOMContentLoaded', () => {
+        muatDatabase();
+        inisiasiKalenderAwal();
+        updatePlotList();
+        updateRekap();
+        jalankanJam();
+    });
+</script>
+
+</body>
+</html>
