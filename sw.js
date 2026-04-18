@@ -1,4 +1,4 @@
-const CACHE_NAME = 'keuangan-nila-v5';
+const CACHE_NAME = 'keuangan-nila-v6';
 const ASSETS_TO_CACHE = [
     './',
     './index.html',
