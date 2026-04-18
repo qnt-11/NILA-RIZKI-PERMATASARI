@@ -241,9 +241,9 @@
         </div>
         
         <button class="icon-btn" onclick="backupToCloud()" style="padding: 4px 6px; flex-direction: column; gap: 2px; background: transparent;">
-            <svg viewBox="0 0 24 24" width="22" height="22">
-                <path fill="var(--cloud)" d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.36 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96z"/>
-                <path fill="#000000" d="M12 8l4 4h-3v4h-2v-4H8z"/>
+            <svg viewBox="0 0 24 24" width="22" height="22" xmlns="http://www.w3.org/2000/svg">
+                <path fill="var(--cloud)" d="M17.5 19C19.985 19 22 16.985 22 14.5C22 12.15 20.211 10.22 17.934 10.018C17.332 6.623 14.939 4 12 4C8.91 4 6.452 6.29 5.568 9.176C2.936 9.615 1 11.895 1 14.5C1 17.537 3.463 20 6.5 20H17.5V19Z"/>
+                <path fill="#000" d="M12 7L7 12H10V16H14V12H17L12 7Z"/>
             </svg>
             <span style="font-size: 7px; font-weight: 700; color: var(--cloud); letter-spacing: 0.5px;">UPLOAD</span>
         </button>
@@ -264,8 +264,11 @@
                 <div class="dropdown-item" onclick="loadFromCloud()">
                     <svg viewBox="0 0 24 24" fill="var(--cloud)" width="18" height="18"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.36 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM17 13l-5 5-5-5h3V9h4v4h3z"/></svg> Load Cloud
                 </div>
+                <div class="dropdown-item" onclick="openAboutModal()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="var(--purple)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg> About
+                </div>
                 <div class="dropdown-item text-danger" onclick="promptClearData()">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg> Hapus Semua Data
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg> Hapus Semua Data
                 </div>
             </div>
         </div>
@@ -401,6 +404,47 @@
         <div class="form-group" style="text-align:left;"><label>Ke Dompet</label><div class="custom-select-container"><div class="custom-select-trigger" id="mut-to-trigger" onclick="toggleCustomSelect('mut-to-opts', event)" style="border: 1px solid var(--blue); padding: 10px;">Bank</div><div class="custom-select-options hidden" id="mut-to-opts"></div></div><input type="hidden" id="mut-to" value="Bank"></div>
         <div class="form-group" style="text-align:left; margin-bottom: 15px;"><label>Jumlah (Rp)</label><input type="text" inputmode="numeric" id="mut-amount" placeholder="0" style="border: 1px solid var(--blue); padding: 10px;"></div>
         <div class="modal-actions"><button class="modal-btn cancel" style="border-color: var(--blue) !important;" onclick="closeMutationModal()">Batal</button><button class="modal-btn btn-blue" onclick="processMutation()" style="color:#fff;">Transfer</button></div>
+    </div>
+</div>
+
+<div id="about-modal" class="modal-overlay hidden">
+    <div class="modal-box" style="border: 1px solid var(--purple); padding: 25px 20px; text-align: left; max-height: 85vh; overflow-y: auto;">
+        <div style="text-align: center; margin-bottom: 20px;">
+            <h2 style="font-family: 'Pacifico', cursive; color: var(--danger); margin: 0; font-size: 28px;">keuanganNila</h2>
+            <small style="color: var(--text-muted); font-weight: 700; letter-spacing: 1px;">VERSI 2.0 (FINAL BUILD)</small>
+        </div>
+
+        <div style="font-size: 13px; line-height: 1.6; color: var(--text-light);">
+            <div style="font-style: italic; border-left: 3px solid var(--danger); padding-left: 10px; background: rgba(199, 21, 133, 0.1); padding-top: 10px; padding-bottom: 10px; margin-bottom: 15px; border-radius: 0 8px 8px 0;">
+                💌 Diciptakan secara khusus dan eksklusif untuk istriku tercinta, <strong>NILA RIZKI PERMATASARI.</strong><br>
+                Semoga aplikasi ini bisa mempermudah kamu dalam mengatur keuangan rumah tangga kita, menjadikannya lebih rapi, terkontrol, dan selalu membawa keberkahan.
+            </div>
+
+            <hr style="border: none; border-top: 1px solid var(--border-color); opacity: 0.5; margin: 15px 0;">
+
+            <p style="margin-top: 0;"><strong>keuanganNila</strong> adalah aplikasi manajemen finansial pribadi yang simpel, <em>aesthetic</em>, dan dirancang dengan sistem keamanan data tingkat tinggi.</p>
+            
+            <p style="color: var(--purple); font-weight: 700; margin-bottom: 5px;">🚀 FITUR UNGGULAN:</p>
+            <ul style="padding-left: 18px; margin-top: 0;">
+                <li><strong>Anti-Amnesia:</strong> Backup ganda otomatis via Excel & Google Cloud.</li>
+                <li><strong>Strict Budgeting:</strong> Sistem "Plot" pintar dengan lampu peringatan agar belanja bulanan selalu <em>on-track</em>.</li>
+                <li><strong>Smart Search:</strong> Cari riwayat transaksi lewat nominal atau keterangan secepat kilat.</li>
+            </ul>
+
+            <p style="color: var(--purple); font-weight: 700; margin-bottom: 5px;">🔒 PRIVASI & KEAMANAN:</p>
+            <p style="margin-top: 0;">Data keuangan keluarga adalah rahasia kita. Aplikasi ini beroperasi 100% <em>offline</em>. Seluruh riwayat hanya tersimpan di memori lokal HP dan brankas Google Sheets pribadi. Tidak ada server pihak ketiga yang bisa mengintip.</p>
+
+            <hr style="border: none; border-top: 1px solid var(--border-color); opacity: 0.5; margin: 15px 0;">
+
+            <div style="background: rgba(155, 89, 182, 0.1); padding: 12px; border-radius: 8px; border-left: 3px solid var(--purple); text-align: center;">
+                <small style="color: var(--text-muted); display: block;">Dibuat penuh cinta oleh:</small>
+                <strong style="color: var(--purple); font-size: 15px;">fam BARLA</strong>
+            </div>
+            
+            <p style="text-align: center; color: var(--text-muted); font-size: 10px; margin-top: 20px;">Hak Cipta © 2026 - All Rights Reserved</p>
+        </div>
+        
+        <button class="modal-btn" style="width: 100%; background: var(--purple); color: #fff; margin-top: 15px; border: none;" onclick="closeAboutModal()">TUTUP</button>
     </div>
 </div>
 
@@ -540,7 +584,7 @@
     });
 
     // =========================================================
-    // 3. LOGIKA POPUP NOTIFIKASI
+    // 3. LOGIKA POPUP NOTIFIKASI & ABOUT
     // =========================================================
     function showPopup(mode, pesan, warnaTema = 'var(--wa-green)', callback = null, nilaiAwal = null, isAngka = false) {
         const overlay = document.getElementById('custom-modal'), 
@@ -568,11 +612,9 @@
                 btnBatal.style.color = '#000';
             }
             btnBatal.style.border = 'none';
-
             btnOk.style.backgroundColor = 'transparent';
             btnOk.style.color = 'var(--text-light)';
             btnOk.style.border = '1px solid var(--border-color)';
-
             btnOk.onclick = () => { overlay.classList.add('hidden'); if(callback) callback(); };
             btnBatal.onclick = () => overlay.classList.add('hidden');
         } else {
@@ -583,7 +625,6 @@
                 btnOk.style.color = '#000';
             }
             btnOk.style.border = 'none';
-            
             btnBatal.style.backgroundColor = 'transparent';
             btnBatal.style.color = 'var(--text-light)';
             btnBatal.style.border = `1px solid var(--border-color)`;
@@ -611,6 +652,14 @@
         }
     }
 
+    function openAboutModal() {
+        document.getElementById('dropdown-menu').classList.add('hidden');
+        document.getElementById('about-modal').classList.remove('hidden');
+    }
+    function closeAboutModal() {
+        document.getElementById('about-modal').classList.add('hidden');
+    }
+
     // =========================================================
     // 4. KODE CLOUD BACKUP & LOAD 
     // =========================================================
@@ -624,10 +673,13 @@
         
         fetch(CLOUD_URL, {
             method: 'POST',
-            body: JSON.stringify(AppState.db),
-            cache: 'no-store' 
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: JSON.stringify(AppState.db)
         })
-        .then(res => res.text())
+        .then(res => {
+            if(!res.ok) throw new Error("Gagal menyambung");
+            return res.text();
+        })
         .then(res => {
             showPopup('alert', "Data berhasil di-Upload ke Cloud!", 'var(--cloud)');
         })
@@ -641,12 +693,14 @@
         if(!CLOUD_URL || CLOUD_URL.includes("ISI_DENGAN")) {
             return showPopup('alert', "Penyimpanan Cloud belum disetel!", '#ff3b30');
         }
-
         showPopup('reverse', "Yakin ingin Load Cloud? Data di HP yang belum di-Upload akan HILANG.", 'var(--cloud)', () => {
             showPopup('alert', "Mengunduh data dari Cloud...\nMohon tunggu sebentar.", 'var(--cloud)');
-            
-            fetch(CLOUD_URL, { cache: 'no-store' })
-            .then(res => res.json())
+            const noCacheUrl = CLOUD_URL + "?t=" + new Date().getTime();
+            fetch(noCacheUrl)
+            .then(res => {
+                if(!res.ok) throw new Error("Gagal menyambung");
+                return res.json();
+            })
             .then(data => {
                 if(data && data.income) {
                     AppState.db = data; simpanDatabase(); updateRekap(); updatePlotList(); updateWalletDropdownBalances();
@@ -677,7 +731,6 @@
         dropdowns.forEach(dd => {
             const optsContainer = document.getElementById(dd.opts);
             if(!optsContainer) return;
-            
             let html = '';
             wallets.forEach(w => {
                 let displayTxt = w;
@@ -688,7 +741,6 @@
                 html += `<div class="custom-option" onclick="setCustomVal('${dd.hidden}','${dd.trigger}','${dd.opts}','${w}', '${displayTxt}')">${displayTxt}</div>`;
             });
             optsContainer.innerHTML = html;
-
             const currentVal = document.getElementById(dd.hidden).value;
             if(currentVal && wallets.includes(currentVal)) {
                 let triggerTxt = currentVal;
@@ -705,21 +757,17 @@
         const dropdownMenu = document.getElementById('dropdown-menu');
         if (dropdownMenu) dropdownMenu.classList.add('hidden');
         document.getElementById('balance-dropdown').classList.add('hidden');
-        
         document.querySelectorAll('.page').forEach(p => p.classList.add('hidden'));
         document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
         document.getElementById(idHalaman).classList.remove('hidden');
         if(event) event.currentTarget.classList.add('active');
-        
         const navTabs = document.getElementById('main-nav-tabs');
         if (idHalaman === 'pemasukan') navTabs.style.borderColor = 'var(--wa-green)';
         else if (idHalaman === 'pengeluaran') navTabs.style.borderColor = 'var(--danger)';
         else if (idHalaman === 'plot') navTabs.style.borderColor = 'var(--gold)';
         else if (idHalaman === 'rekap') navTabs.style.borderColor = 'var(--blue)';
-
         if (idHalaman === 'rekap') updateRekap();
         if (idHalaman === 'plot') updatePlotList();
-        
         if (idHalaman === 'pengeluaran') {
             const kotakOpsi = document.getElementById('out-plot-opts');
             let opsiHTML = `<div class="custom-option" style="color:var(--text-muted);" onclick="setCustomVal('out-plot','out-plot-trigger','out-plot-opts','')">-- Tanpa Plot --</div>`;
@@ -735,9 +783,7 @@
 
     function toggleCustomSelect(optId, e) {
         e.stopPropagation();
-        document.querySelectorAll('.custom-select-options').forEach(el => {
-            if (el.id !== optId) el.classList.add('hidden');
-        });
+        document.querySelectorAll('.custom-select-options').forEach(el => { if (el.id !== optId) el.classList.add('hidden'); });
         document.getElementById(optId).classList.toggle('hidden');
     }
 
@@ -766,17 +812,6 @@
     // =========================================================
     // 6. LOGIKA CRUD (DENGAN ANTI-OVERBUDGET)
     // =========================================================
-    function getSaldoDompet(namaDompet) {
-        let saldo = 0;
-        AppState.db.income.forEach(i => { if (i.wallet === namaDompet) saldo += i.amount; });
-        AppState.db.expense.forEach(e => { if (e.wallet === namaDompet) saldo -= e.amount; });
-        AppState.db.mutations.forEach(m => {
-            if (m.from === namaDompet) saldo -= m.amount;
-            if (m.to === namaDompet) saldo += m.amount;
-        });
-        return saldo;
-    }
-
     function prosesSimpanAkhir(tipe, tgl, ket, nom, dmp, plt, pfx) {
         AppState.db[tipe].push({ id: Utils.buatId(), date: tgl, desc: ket, amount: nom, wallet: dmp, plotId: plt });
         simpanDatabase();
@@ -792,132 +827,98 @@
         const btn = event.target;
         btn.disabled = true;
         setTimeout(() => btn.disabled = false, 1500);
-
         const pfx = tipe === 'income' ? 'in' : 'out';
         const tgl = document.getElementById(`${pfx}-date`).dataset.rawDate;
         const ket = document.getElementById(`${pfx}-desc`).value.trim();
         const nom = Math.abs(Number(document.getElementById(`${pfx}-amount`).value.replace(/\./g, '')));
         const dmp = document.getElementById(`${pfx}-wallet`).value;
         const plt = tipe === 'expense' ? document.getElementById('out-plot').value : null;
-
-        if (!tgl || isNaN(nom) || nom <= 0 || !ket) {
-            return showPopup('alert', "Mohon lengkapi semua data dengan benar!", '#ff3b30');
-        }
-
+        if (!tgl || isNaN(nom) || nom <= 0 || !ket) return showPopup('alert', "Mohon lengkapi semua data dengan benar!", '#ff3b30');
         if (tipe === 'expense') {
-            if (getSaldoDompet(dmp) < nom) {
-                return showPopup('alert', `Saldo [${dmp}] tidak mencukupi untuk pengeluaran ini!`, '#ff3b30');
-            }
-
+            if (getSaldoDompet(dmp) < nom) return showPopup('alert', `Saldo [${dmp}] tidak mencukupi!`, '#ff3b30');
             if (plt) {
                 const plotObj = AppState.db.plots.find(p => p.id === plt);
                 if (plotObj && plotObj.target > 0) {
                     const filterBulan = tgl.substring(0, 7);
                     const pengeluaranBulanIni = AppState.db.expense.filter(e => e.date.startsWith(filterBulan) && e.plotId === plt);
                     const totalPakai = pengeluaranBulanIni.reduce((sum, e) => sum + e.amount, 0);
-                    
                     if ((totalPakai + nom) > plotObj.target) {
-                        return showPopup('confirm', `Peringatan! Pengeluaran ini membuat Plot [${Utils.amanHTML(plotObj.name)}] melebihi target bulanan. Lanjutkan simpan?`, 'var(--danger)', () => {
+                        return showPopup('confirm', `Peringatan! Pengeluaran ini membuat Plot [${Utils.amanHTML(plotObj.name)}] melebihi target. Lanjutkan?`, 'var(--danger)', () => {
                             prosesSimpanAkhir(tipe, tgl, ket, nom, dmp, plt, pfx);
                         });
                     }
                 }
             }
         }
-
         prosesSimpanAkhir(tipe, tgl, ket, nom, dmp, plt, pfx);
     }
 
     function prosesSimpanEditAkhir(data, nomBaru, dompetBaru, tglBaru, descBaru, plotBaru, tipe) {
         data.amount = nomBaru; data.wallet = dompetBaru; data.date = tglBaru; data.desc = descBaru;
         if (tipe === 'expense') data.plotId = plotBaru;
-        
         simpanDatabase(); 
         document.getElementById('edit-modal').classList.add('hidden');
         updateRekap(); updatePlotList(); updateWalletDropdownBalances();
     }
 
     function editData(tipe, idItem) {
-        if (tipe === 'mutations') return showPopup('alert', "Mutasi tidak bisa diedit. Hapus (✕) riwayatnya dan buat ulang jika salah.", 'var(--blue)');
+        if (tipe === 'mutations') return showPopup('alert', "Mutasi tidak bisa diedit. Hapus (✕) dan buat ulang.", 'var(--blue)');
         const data = AppState.db[tipe].find(i => i.id === idItem);
         if (!data) return;
-
         const titleColor = tipe === 'income' ? 'var(--wa-green)' : 'var(--danger)';
         const elTitle = document.getElementById('edit-modal-title');
         elTitle.innerText = tipe === 'income' ? 'Edit Pemasukan' : 'Edit Pengeluaran';
         elTitle.style.color = titleColor;
-        
         const btnSave = document.getElementById('edit-btn-save');
         btnSave.style.backgroundColor = titleColor;
         btnSave.style.color = tipe === 'income' ? '#000' : '#fff';
-        
         document.getElementById('edit-date').dataset.rawDate = data.date;
         document.getElementById('edit-date').value = Utils.formatTglTampil(data.date);
         document.getElementById('edit-desc').value = data.desc;
         document.getElementById('edit-amount').value = data.amount.toLocaleString('id-ID');
         document.getElementById('edit-wallet').value = data.wallet || 'Tunai';
         document.getElementById('edit-wallet-trigger').innerText = `${data.wallet || 'Tunai'} (Rp ${getSaldoDompet(data.wallet || 'Tunai').toLocaleString('id-ID')})`;
-        
         const wadahPlot = document.getElementById('edit-plot-container');
         if (tipe === 'expense') {
             wadahPlot.style.display = 'block';
-            let opsiPlotHTML = `<div class="custom-option" style="color:var(--text-muted);" onclick="setCustomVal('edit-plot-val','edit-plot-trigger','edit-plot-opts','')">-- Tanpa Plot --</div>`;
-            AppState.db.plots.forEach(p => {
-                opsiPlotHTML += `<div class="custom-option" onclick="setCustomVal('edit-plot-val','edit-plot-trigger','edit-plot-opts','${p.id}', this.innerText)">${Utils.amanHTML(p.name)}</div>`;
-            });
+            let opsiPlotHTML = `<div class="custom-option" onclick="setCustomVal('edit-plot-val','edit-plot-trigger','edit-plot-opts','')">-- Tanpa Plot --</div>`;
+            AppState.db.plots.forEach(p => opsiPlotHTML += `<div class="custom-option" onclick="setCustomVal('edit-plot-val','edit-plot-trigger','edit-plot-opts','${p.id}', this.innerText)">${Utils.amanHTML(p.name)}</div>`);
             document.getElementById('edit-plot-opts').innerHTML = opsiPlotHTML;
             if (data.plotId) {
                 const plotAsli = AppState.db.plots.find(pl => pl.id === data.plotId);
                 setCustomVal('edit-plot-val', 'edit-plot-trigger', 'edit-plot-opts', data.plotId, plotAsli ? Utils.amanHTML(plotAsli.name) : '');
-            } else {
-                setCustomVal('edit-plot-val', 'edit-plot-trigger', 'edit-plot-opts', '');
-                document.getElementById('edit-plot-trigger').innerText = '-- Tanpa Plot --';
-            }
-        } else {
-            wadahPlot.style.display = 'none';
-        }
-
+            } else { setCustomVal('edit-plot-val', 'edit-plot-trigger', 'edit-plot-opts', ''); }
+        } else { wadahPlot.style.display = 'none'; }
         updateWalletDropdownBalances();
         document.getElementById('edit-modal').classList.remove('hidden');
-        
         btnSave.onclick = () => {
             const nomBaru = Math.abs(Number(document.getElementById('edit-amount').value.replace(/\./g, '')));
-            if (isNaN(nomBaru) || nomBaru <= 0) return showPopup('alert', "Jumlah uang tidak valid!", '#ff3b30');
-
+            if (isNaN(nomBaru) || nomBaru <= 0) return showPopup('alert', "Jumlah tidak valid!", '#ff3b30');
             const dompetBaru = document.getElementById('edit-wallet').value;
             const tglBaru = document.getElementById('edit-date').dataset.rawDate;
             const descBaru = document.getElementById('edit-desc').value.trim();
             const plotBaru = tipe === 'expense' ? document.getElementById('edit-plot-val').value : null;
-            
             const nominalLama = data.amount, dompetLama = data.wallet, plotLama = data.plotId, tglLama = data.date, descLamaAsli = data.desc;
-
-            // BUG FIX (Batal Edit): Simulasi Revert Total
             data.amount = nomBaru; data.wallet = dompetBaru; data.date = tglBaru; data.desc = descBaru;
             if (tipe === 'expense') data.plotId = plotBaru;
-
             if (getSaldoDompet('Tunai') < 0 || getSaldoDompet('Bank') < 0 || getSaldoDompet('e-Wallet') < 0) {
                 data.amount = nominalLama; data.wallet = dompetLama; data.date = tglLama; data.desc = descLamaAsli;
                 if (tipe === 'expense') data.plotId = plotLama;
-                return showPopup('alert', "Batal: Mengubah data ini akan menyebabkan saldo dompet minus!", '#ff3b30');
+                return showPopup('alert', "Batal: Saldo akan minus!", '#ff3b30');
             }
-            
-            // BUG FIX (Jalur Belakang Overbudget)
             if (tipe === 'expense' && plotBaru) {
                 const plotObj = AppState.db.plots.find(p => p.id === plotBaru);
                 if (plotObj && plotObj.target > 0) {
                     const filterBulan = tglBaru.substring(0, 7);
-                    // Hitung total pakai plot baru, KECUALI item ini sendiri agar tidak dihitung ganda
                     let totalPakai = AppState.db.expense.filter(e => e.date.startsWith(filterBulan) && e.plotId === plotBaru && e.id !== idItem).reduce((sum, e) => sum + e.amount, 0);
-                    
                     if ((totalPakai + nomBaru) > plotObj.target) {
                         data.amount = nominalLama; data.wallet = dompetLama; data.date = tglLama; data.desc = descLamaAsli; data.plotId = plotLama;
-                        return showPopup('confirm', `Peringatan! Perubahan ini membuat Plot [${Utils.amanHTML(plotObj.name)}] melebihi target bulanan. Lanjutkan simpan?`, 'var(--danger)', () => {
+                        return showPopup('confirm', `Peringatan! Melebihi target Plot [${Utils.amanHTML(plotObj.name)}]. Lanjutkan?`, 'var(--danger)', () => {
                             prosesSimpanEditAkhir(data, nomBaru, dompetBaru, tglBaru, descBaru, plotBaru, tipe);
                         });
                     }
                 }
             }
-
             simpanDatabase(); document.getElementById('edit-modal').classList.add('hidden');
             updateRekap(); updatePlotList(); updateWalletDropdownBalances();
         };
@@ -926,38 +927,23 @@
     function deleteItem(event, tipe, idItem) {
         event.stopPropagation();
         const dataTarget = AppState.db[tipe].find(x => x.id === idItem);
-        if (tipe === 'income' && (getSaldoDompet(dataTarget.wallet) - dataTarget.amount < 0)) {
-            return showPopup('alert', `Batal: Menghapus riwayat ini akan menyebabkan saldo dompet [${dataTarget.wallet}] minus!`, '#ff3b30');
-        }
-        if (tipe === 'mutations' && (getSaldoDompet(dataTarget.to) - dataTarget.amount < 0)) {
-            return showPopup('alert', `Batal: Menghapus mutasi ini akan menyebabkan saldo dompet [${dataTarget.to}] minus!`, '#ff3b30');
-        }
-
+        if (tipe === 'income' && (getSaldoDompet(dataTarget.wallet) - dataTarget.amount < 0)) return showPopup('alert', `Batal: Saldo akan minus!`, '#ff3b30');
+        if (tipe === 'mutations' && (getSaldoDompet(dataTarget.to) - dataTarget.amount < 0)) return showPopup('alert', `Batal: Saldo akan minus!`, '#ff3b30');
         showPopup('delete', "HAPUS RIWAYAT!!", '#ff3b30', () => {
             AppState.db[tipe] = AppState.db[tipe].filter(x => x.id !== idItem);
             simpanDatabase(); updateRekap(); updatePlotList(); updateWalletDropdownBalances();
         });
     }
 
-    function openMutationModal() {
-        document.getElementById('mutation-modal').classList.remove('hidden');
-        updateWalletDropdownBalances();
-    }
-    
-    function closeMutationModal() {
-        document.getElementById('mutation-modal').classList.add('hidden');
-        document.getElementById('mut-amount').value = '';
-    }
+    function openMutationModal() { document.getElementById('mutation-modal').classList.remove('hidden'); updateWalletDropdownBalances(); }
+    function closeMutationModal() { document.getElementById('mutation-modal').classList.add('hidden'); document.getElementById('mut-amount').value = ''; }
 
     function processMutation() {
-        const asal = document.getElementById('mut-from').value;
-        const tujuan = document.getElementById('mut-to').value;
+        const asal = document.getElementById('mut-from').value, tujuan = document.getElementById('mut-to').value;
         const nominal = Number(document.getElementById('mut-amount').value.replace(/\./g, ''));
-        
-        if (asal === tujuan) return showPopup('alert', 'Dompet asal dan tujuan tidak boleh sama!', 'var(--blue)');
-        if (isNaN(nominal) || nominal <= 0) return showPopup('alert', 'Masukkan jumlah uang yang benar!', 'var(--blue)');
-        if (getSaldoDompet(asal) < nominal) return showPopup('alert', `Saldo [${asal}] tidak mencukupi!`, 'var(--blue)');
-
+        if (asal === tujuan) return showPopup('alert', 'Dompet asal & tujuan sama!', 'var(--blue)');
+        if (isNaN(nominal) || nominal <= 0) return showPopup('alert', 'Jumlah tidak valid!', 'var(--blue)');
+        if (getSaldoDompet(asal) < nominal) return showPopup('alert', `Saldo [${asal}] tidak cukup!`, 'var(--blue)');
         const tglMutasi = document.getElementById('rekap-date-picker').dataset.rawDate || Utils.tglHariIni();
         AppState.db.mutations.push({ id: Utils.buatId(), date: tglMutasi, from: asal, to: tujuan, amount: nominal });
         simpanDatabase(); closeMutationModal(); updateRekap(); updateWalletDropdownBalances();
@@ -965,39 +951,31 @@
     }
 
     function savePlot() {
-        const nama = document.getElementById('plot-name').value.trim();
-        const target = Math.abs(Number(document.getElementById('plot-amount').value.replace(/\./g, '')));
-        if (!nama || isNaN(target) || target <= 0) return showPopup('alert', "Isi Nama & Target Plot dengan benar!", 'var(--gold)');
-        
+        const nama = document.getElementById('plot-name').value.trim(), target = Math.abs(Number(document.getElementById('plot-amount').value.replace(/\./g, '')));
+        if (!nama || isNaN(target) || target <= 0) return showPopup('alert', "Isi Nama & Target dengan benar!", 'var(--gold)');
         AppState.db.plots.push({ id: Utils.buatId(), name: nama, target: target });
-        simpanDatabase();
-        document.getElementById('plot-name').value = '';
-        document.getElementById('plot-amount').value = '';
+        simpanDatabase(); document.getElementById('plot-name').value = ''; document.getElementById('plot-amount').value = '';
         updatePlotList(); showPopup('alert', "Alokasi Dibuat!", 'var(--gold)');
     }
 
     function editPlot(idPlot, jenis) {
-        const plot = AppState.db.plots.find(x => x.id === idPlot);
-        const isAngka = jenis === 'target';
-        
-        showPopup('edit', `Ubah ${isAngka ? 'Target (Rp)' : 'Nama'} Plot:`, 'var(--gold)', val => {
+        const plot = AppState.db.plots.find(x => x.id === idPlot), isAngka = jenis === 'target';
+        showPopup('edit', `Ubah ${isAngka ? 'Target' : 'Nama'} Plot:`, 'var(--gold)', val => {
             if (!val) return;
             if (isAngka) {
                 const newTarget = Math.abs(Number(val.replace(/\./g, '')));
-                if (isNaN(newTarget) || newTarget <= 0) return showPopup('alert', 'Nominal target tidak valid!', 'var(--gold)');
+                if (isNaN(newTarget) || newTarget <= 0) return showPopup('alert', 'Target tidak valid!', 'var(--gold)');
                 plot[jenis] = newTarget;
-            } else {
-                plot[jenis] = val.trim();
-            }
+            } else { plot[jenis] = val.trim(); }
             simpanDatabase(); updatePlotList(); updateRekap();
         }, plot[jenis], isAngka);
     }
 
     function deletePlot(idPlot) {
-        showPopup('delete', "Yakin menghapus plot ini? (Data pengeluaran tidak dihapus, hanya dilepas dari plot)", '#ff3b30', () => {
+        showPopup('delete', "Hapus plot ini? (Data riwayat tetap ada)", '#ff3b30', () => {
             AppState.db.plots = AppState.db.plots.filter(p => p.id !== idPlot);
             AppState.db.expense.forEach(e => { if (e.plotId === idPlot) e.plotId = ""; });
-            simpanDatabase(); updatePlotList(); updateRekap(); // Bug Tambahan (Ghost Plot)
+            simpanDatabase(); updatePlotList(); updateRekap();
         });
     }
 
@@ -1008,14 +986,12 @@
         const filterBulan = document.getElementById('plot-month-filter').dataset.rawDate;
         const wadah = document.getElementById('plot-list');
         if (AppState.db.plots.length === 0) { wadah.innerHTML = '<div style="text-align:center; color:var(--border-color); font-size:12px; padding:10px 0;">- Belum ada alokasi -</div>'; return; }
-
         const pengeluaranBulanIni = AppState.db.expense.filter(e => e.date.startsWith(filterBulan));
         let htmlList = '';
         AppState.db.plots.forEach(p => {
             const totalPakai = pengeluaranBulanIni.reduce((sum, e) => e.plotId === p.id ? sum + e.amount : sum, 0);
             const persen = p.target > 0 ? Math.min((totalPakai / p.target) * 100, 100) : (totalPakai > 0 ? 100 : 0);
-            htmlList += `
-            <div style="margin-bottom:12px; border-bottom:1px solid var(--border-color); padding-bottom:12px; display:flex; flex-direction:column; gap:8px;">
+            htmlList += `<div style="margin-bottom:12px; border-bottom:1px solid var(--border-color); padding-bottom:12px; display:flex; flex-direction:column; gap:8px;">
                 <div style="display:flex; justify-content:space-between; align-items:flex-start;">
                     <strong class="editable" onclick="editPlot('${p.id}','name')" style="font-size:14px; word-break:break-word; flex:1; padding-right:10px;">${Utils.amanHTML(p.name)}</strong>
                     <div onclick="deletePlot('${p.id}')" style="flex-shrink:0;"><svg class="svg-x" viewBox="0 0 24 24" fill="none"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></div>
@@ -1033,52 +1009,27 @@
     function clearSearch() { document.getElementById('rekap-search').value = ''; updateRekap(); }
 
     function updateRekap() {
-        const tglSortir = document.getElementById('rekap-date-picker').dataset.rawDate;
-        const kunciRaw = document.getElementById('rekap-search').value.toLowerCase().trim();
-        const kunciBersih = kunciRaw.replace(/\./g, '');
-        
-        const elMasuk = document.getElementById('list-income');
-        const elKeluar = document.getElementById('list-expense');
-        
-        if (kunciRaw) {
-            document.getElementById('rekap-focus-hide').classList.add('hidden');
-            document.getElementById('clear-search-btn').classList.remove('hidden');
-        } else {
-            document.getElementById('rekap-focus-hide').classList.remove('hidden');
-            document.getElementById('clear-search-btn').classList.add('hidden');
-        }
-
-        const gabungan = [
-            ...AppState.db.income.map(i => ({...i, type:'income'})),
-            ...AppState.db.expense.map(e => ({...e, type:'expense'})),
-            ...AppState.db.mutations.map(m => ({...m, type:'mutations', desc:`Mutasi: ${m.from} ➔ ${m.to}`}))
-        ].filter(item => {
-            if (kunciRaw) return item.desc.toLowerCase().includes(kunciRaw) || item.amount.toString().includes(kunciBersih);
-            return item.date === tglSortir;
-        });
-
+        const tglSortir = document.getElementById('rekap-date-picker').dataset.rawDate, kunciRaw = document.getElementById('rekap-search').value.toLowerCase().trim(), kunciBersih = kunciRaw.replace(/\./g, '');
+        const elMasuk = document.getElementById('list-income'), elKeluar = document.getElementById('list-expense');
+        if (kunciRaw) { document.getElementById('rekap-focus-hide').classList.add('hidden'); document.getElementById('clear-search-btn').classList.remove('hidden'); } 
+        else { document.getElementById('rekap-focus-hide').classList.remove('hidden'); document.getElementById('clear-search-btn').classList.add('hidden'); }
+        const gabungan = [...AppState.db.income.map(i => ({...i, type:'income'})), ...AppState.db.expense.map(e => ({...e, type:'expense'})), ...AppState.db.mutations.map(m => ({...m, type:'mutations', desc:`Mutasi: ${m.from} ➔ ${m.to}`}))]
+            .filter(item => kunciRaw ? (item.desc.toLowerCase().includes(kunciRaw) || item.amount.toString().includes(kunciBersih)) : item.date === tglSortir);
         let htmlMasuk = '', htmlKeluar = ''; let countIn = 0, countOut = 0;
-
         gabungan.forEach(item => {
-            const isIn = item.type === 'income'; const isMut = item.type === 'mutations';
-            const barisHTML = `<li><div class="editable" onclick="editData('${item.type}','${item.id}')">
-                    <div style="font-size:12px; font-weight:600; word-wrap: break-word; line-height:1.3; margin-bottom: 3px;">
-                        ${kunciRaw ? `<small style="color:var(--text-muted)">${Utils.formatTglTampil(item.date)}</small><br>` : ''}${Utils.amanHTML(item.desc)}</div>
-                    <div style="font-size:11px; font-weight:700;" class="${isMut ? 'mutasi-text' : (isIn ? 'income-text' : 'expense-text')}">
-                        ${isMut ? '⇄' : (isIn ? '+' : '-')} ${Utils.formatRp(item.amount)} <br><small style="color:var(--text-muted); font-weight:500; font-size: 9px;">(${isMut ? 'Transfer' : item.wallet})</small></div></div>
+            const isIn = item.type === 'income', isMut = item.type === 'mutations';
+            const barisHTML = `<li><div class="editable" onclick="editData('${item.type}','${item.id}')"><div style="font-size:12px; font-weight:600; word-wrap: break-word; line-height:1.3; margin-bottom: 3px;">
+                ${kunciRaw ? `<small style="color:var(--text-muted)">${Utils.formatTglTampil(item.date)}</small><br>` : ''}${Utils.amanHTML(item.desc)}</div>
+                <div style="font-size:11px; font-weight:700;" class="${isMut ? 'mutasi-text' : (isIn ? 'income-text' : 'expense-text')}">
+                ${isMut ? '⇄' : (isIn ? '+' : '-')} ${Utils.formatRp(item.amount)} <br><small style="color:var(--text-muted); font-weight:500; font-size: 9px;">(${isMut ? 'Transfer' : item.wallet})</small></div></div>
                 <div onclick="deleteItem(event, '${item.type}','${item.id}')" style="padding-left: 6px;"><svg class="svg-x" viewBox="0 0 24 24" fill="none"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></div></li>`;
             if (isIn) { htmlMasuk += barisHTML; countIn++; } else { htmlKeluar += barisHTML; countOut++; }
         });
-
-        if (countIn === 0) htmlMasuk = '<li style="justify-content:center; color:var(--text-muted); font-size:11px; border: none; padding-top: 20px;">- Kosong -</li>';
-        if (countOut === 0) htmlKeluar = '<li style="justify-content:center; color:var(--text-muted); font-size:11px; border: none; padding-top: 20px;">- Kosong -</li>';
-
-        elMasuk.innerHTML = htmlMasuk; elKeluar.innerHTML = htmlKeluar;
-
+        elMasuk.innerHTML = htmlMasuk || '<li style="justify-content:center; color:var(--text-muted); font-size:11px; border: none; padding-top: 20px;">- Kosong -</li>';
+        elKeluar.innerHTML = htmlKeluar || '<li style="justify-content:center; color:var(--text-muted); font-size:11px; border: none; padding-top: 20px;">- Kosong -</li>';
         const sTunai = getSaldoDompet('Tunai'), sBank = getSaldoDompet('Bank'), sEwal = getSaldoDompet('e-Wallet');
         let globalIn = 0, globalOut = 0;
         AppState.db.income.forEach(i => globalIn += i.amount); AppState.db.expense.forEach(e => globalOut += e.amount);
-
         document.getElementById('total-balance').innerText = Utils.formatRp(sTunai + sBank + sEwal);
         document.getElementById('bal-tunai').innerText = Utils.formatRp(sTunai);
         document.getElementById('bal-bank').innerText = Utils.formatRp(sBank);
@@ -1095,7 +1046,6 @@
         const d = AppState.grafikSaatIni;
         if (AppState.charts.arusKas) AppState.charts.arusKas.destroy();
         if (AppState.charts.portofolio) AppState.charts.portofolio.destroy();
-
         let pengeluaranMap = {}; let totalKeluar = 0;
         AppState.db.expense.forEach(e => {
             let pName = "Lainnya";
@@ -1103,232 +1053,89 @@
             if (!pengeluaranMap[pName]) pengeluaranMap[pName] = 0;
             pengeluaranMap[pName] += e.amount; totalKeluar += e.amount;
         });
-
         let labelsRinci = [], dataRinci = [], colorRinci = [];
         const warnaPalette = ['#C71585', '#6495ED', '#66CDAA', '#9370DB', '#ff9f43', '#00d2d3', '#ff5e57', '#5f27cd', '#10ac84', '#c8d6e5'];
         let colorIndex = 0;
-
         for (let key in pengeluaranMap) { labelsRinci.push(key); dataRinci.push(pengeluaranMap[key]); colorRinci.push(warnaPalette[colorIndex % warnaPalette.length]); colorIndex++; }
         if (totalKeluar === 0) { labelsRinci = ['Kosong']; dataRinci = [1]; colorRinci = ['#2a3942']; }
-
-        AppState.charts.arusKas = new Chart(document.getElementById('cashChart').getContext('2d'), {
-            type: 'doughnut', data: { labels: labelsRinci, datasets: [{ data: dataRinci, backgroundColor: colorRinci, borderWidth: 0 }] },
-            options: { cutout: '70%', plugins: { legend: { display: false } }, animation: { duration: 500 } }
-        });
-
-        const portTotal = d.tunai + d.bank + d.ewal;
-        const portKosong = portTotal <= 0;
-        AppState.charts.portofolio = new Chart(document.getElementById('portChart').getContext('2d'), {
-            type: 'doughnut', data: { labels: portKosong ? ['Kosong'] : ['Tunai', 'Bank', 'e-Wallet'], datasets: [{ data: portKosong ? [1] : [Math.max(d.tunai, 0), Math.max(d.bank, 0), Math.max(d.ewal, 0)], backgroundColor: portKosong ? ['#2a3942'] : ['#66CDAA', '#9370DB', '#9b59b6'], borderWidth: 0 }] },
-            options: { cutout: '70%', plugins: { legend: { display: false } }, animation: { duration: 500 } }
-        });
+        AppState.charts.arusKas = new Chart(document.getElementById('cashChart').getContext('2d'), { type: 'doughnut', data: { labels: labelsRinci, datasets: [{ data: dataRinci, backgroundColor: colorRinci, borderWidth: 0 }] }, options: { cutout: '70%', plugins: { legend: { display: false } }, animation: { duration: 500 } } });
+        const portTotal = d.tunai + d.bank + d.ewal, portKosong = portTotal <= 0;
+        AppState.charts.portofolio = new Chart(document.getElementById('portChart').getContext('2d'), { type: 'doughnut', data: { labels: portKosong ? ['Kosong'] : ['Tunai', 'Bank', 'e-Wallet'], datasets: [{ data: portKosong ? [1] : [Math.max(d.tunai, 0), Math.max(d.bank, 0), Math.max(d.ewal, 0)], backgroundColor: portKosong ? ['#2a3942'] : ['#66CDAA', '#9370DB', '#9b59b6'], borderWidth: 0 }] }, options: { cutout: '70%', plugins: { legend: { display: false } }, animation: { duration: 500 } } });
     }
 
     // =========================================================
-    // 8. EXCEL IMPORT / EXPORT (BUG FIX: PLOT AMNESIA, TIMEZONE, DUPLICATES)
+    // 8. EXCEL IMPORT / EXPORT (BUG FIX: PLOT AMNESIA, TIMEZONE)
     // =========================================================
     function exportToExcel() {
         document.getElementById('dropdown-menu').classList.add('hidden');
-        
-        const gabungan = [
-            ...AppState.db.income.map(x => ({ID: x.id, Tanggal: x.date, Tipe: 'DEBIT', Dompet: x.wallet || 'Tunai', Keterangan: x.desc, Jumlah: x.amount, PlotID: ''})),
-            ...AppState.db.expense.map(x => ({ID: x.id, Tanggal: x.date, Tipe: 'KREDIT', Dompet: x.wallet || 'Tunai', Keterangan: x.desc, Jumlah: x.amount, PlotID: x.plotId || ''})),
-            ...AppState.db.mutations.map(x => ({ID: x.id, Tanggal: x.date, Tipe: 'MUTASI', Dari: x.from, Ke: x.to, Keterangan: 'Transfer Mutasi', Jumlah: x.amount, PlotID: ''}))
-        ].sort((a, b) => new Date(a.Tanggal) - new Date(b.Tanggal));
-
-        if (!gabungan.length) return showPopup('alert', "Belum ada catatan untuk diekspor!", 'var(--excel)');
-        
-        const wsTrans = XLSX.utils.json_to_sheet(gabungan);
-        const wb = XLSX.utils.book_new(); 
+        const gabungan = [...AppState.db.income.map(x => ({ID: x.id, Tanggal: x.date, Tipe: 'DEBIT', Dompet: x.wallet || 'Tunai', Keterangan: x.desc, Jumlah: x.amount, PlotID: ''})), ...AppState.db.expense.map(x => ({ID: x.id, Tanggal: x.date, Tipe: 'KREDIT', Dompet: x.wallet || 'Tunai', Keterangan: x.desc, Jumlah: x.amount, PlotID: x.plotId || ''})), ...AppState.db.mutations.map(x => ({ID: x.id, Tanggal: x.date, Tipe: 'MUTASI', Dari: x.from, Ke: x.to, Keterangan: 'Transfer Mutasi', Jumlah: x.amount, PlotID: ''}))].sort((a, b) => new Date(a.Tanggal) - new Date(b.Tanggal));
+        if (!gabungan.length) return showPopup('alert', "Belum ada catatan!", 'var(--excel)');
+        const wsTrans = XLSX.utils.json_to_sheet(gabungan), wb = XLSX.utils.book_new(); 
         XLSX.utils.book_append_sheet(wb, wsTrans, "RekapKeuangan");
-        
-        // BUG FIX (Amnesia Plot): Buat Sheet ke-2 untuk menyelamatkan pengaturan Plot
-        if(AppState.db.plots.length > 0) {
-            const plotData = AppState.db.plots.map(p => ({ID: p.id, Nama: p.name, Target: p.target}));
-            const wsPlot = XLSX.utils.json_to_sheet(plotData);
-            XLSX.utils.book_append_sheet(wb, wsPlot, "Daftar_Plot");
-        }
-        
+        if(AppState.db.plots.length > 0) { const plotData = AppState.db.plots.map(p => ({ID: p.id, Nama: p.name, Target: p.target})); const wsPlot = XLSX.utils.json_to_sheet(plotData); XLSX.utils.book_append_sheet(wb, wsPlot, "Daftar_Plot"); }
         XLSX.writeFile(wb, `keuanganNILA_Backup_${Utils.tglHariIni()}.xlsx`);
     }
 
     function parseExcelDate(val) {
         if (!val) return Utils.tglHariIni();
-        if (!isNaN(val)) {
-            // BUG FIX (Timezone Shift): Menyesuaikan dengan waktu lokal HP agar tanggal tidak bergeser mundur
-            const d = new Date(Math.round((val - 25569) * 86400 * 1000));
-            d.setMinutes(d.getMinutes() + d.getTimezoneOffset());
-            const year = d.getFullYear();
-            const month = String(d.getMonth() + 1).padStart(2, '0');
-            const day = String(d.getDate()).padStart(2, '0');
-            return `${year}-${month}-${day}`;
-        }
-        if (typeof val === 'string') {
-            let p = val.split(/[-/]/);
-            if (p.length === 3) {
-                if (p[2].length === 4) return `${p[2]}-${p[1].padStart(2,'0')}-${p[0].padStart(2,'0')}`;
-                if (p[0].length === 4) return `${p[0]}-${p[1].padStart(2,'0')}-${p[2].padStart(2,'0')}`;
-            }
-        }
+        if (!isNaN(val)) { const d = new Date(Math.round((val - 25569) * 86400 * 1000)); d.setMinutes(d.getMinutes() + d.getTimezoneOffset()); return d.toISOString().split('T')[0]; }
+        if (typeof val === 'string') { let p = val.split(/[-/]/); if (p.length === 3) { if (p[2].length === 4) return `${p[2]}-${p[1].padStart(2,'0')}-${p[0].padStart(2,'0')}`; if (p[0].length === 4) return `${p[0]}-${p[1].padStart(2,'0')}-${p[2].padStart(2,'0')}`; } }
         return Utils.tglHariIni();
     }
 
     function importFromExcel(e) {
         document.getElementById('dropdown-menu').classList.add('hidden');
-        const file = e.target.files[0]; 
-        if (!file) return;
-        const reader = new FileReader();
-        reader.onload = (ev) => {
+        const file = e.target.files[0]; if (!file) return;
+        const reader = new FileReader(); reader.onload = (ev) => {
             try {
                 const wb = XLSX.read(new Uint8Array(ev.target.result), { type: 'array' });
                 AppState.tempImport = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);
-                
-                // BUG FIX (Amnesia Plot): Membaca Sheet ke-2 jika ada
-                if(wb.SheetNames.includes("Daftar_Plot")) {
-                    AppState.tempImportPlots = XLSX.utils.sheet_to_json(wb.Sheets["Daftar_Plot"]);
-                } else {
-                    AppState.tempImportPlots = [];
-                }
-                
+                AppState.tempImportPlots = wb.SheetNames.includes("Daftar_Plot") ? XLSX.utils.sheet_to_json(wb.Sheets["Daftar_Plot"]) : [];
                 document.getElementById('import-modal').classList.remove('hidden');
-            } catch (err) { showPopup('alert', "Format File Excel tidak dikenali.", '#ff3b30'); } finally { e.target.value = ''; }
+            } catch (err) { showPopup('alert', "Format File tidak dikenali.", '#ff3b30'); } finally { e.target.value = ''; }
         }; reader.readAsArrayBuffer(file);
     }
 
     function executeImport(mode) {
         document.getElementById('import-modal').classList.add('hidden'); 
-        
-        // Memulihkan Data Plot terlebih dahulu
-        if(AppState.tempImportPlots && AppState.tempImportPlots.length > 0) {
-            AppState.tempImportPlots.forEach(p => {
-                if(!AppState.db.plots.some(x => x.id === p.ID)) {
-                    AppState.db.plots.push({ id: p.ID, name: p.Nama, target: Number(p.Target) });
-                }
-            });
-        }
-        
+        if(AppState.tempImportPlots.length > 0) { AppState.tempImportPlots.forEach(p => { if(!AppState.db.plots.some(x => x.id === p.ID)) AppState.db.plots.push({ id: p.ID, name: p.Nama, target: Number(p.Target) }); }); }
         if (mode === 'semua') {
             AppState.tempImport.forEach(r => {
-                const tipe = String(r.Tipe).toUpperCase(), d = parseExcelDate(r.Tanggal), nom = Math.abs(Number(r.Jumlah));
+                const tipe = String(r.Tipe).toUpperCase(), d = parseExcelDate(r.Tanggal), nom = Math.abs(Number(r.Jumlah)), id = r.ID || Utils.buatId();
                 if (isNaN(nom) || nom <= 0) return; 
-                const ket = r.Keterangan || 'Tanpa Keterangan', id = r.ID || Utils.buatId();
-
-                if (tipe === 'DEBIT') {
-                    if (!(r.ID ? AppState.db.income.some(i => i.id === r.ID) : AppState.db.income.some(i => i.date === d && i.amount === nom && i.desc === ket))) AppState.db.income.push({ id: id, date: d, desc: ket, amount: nom, wallet: r.Dompet || 'Tunai' });
-                }
-                if (tipe === 'KREDIT') {
-                    if (!(r.ID ? AppState.db.expense.some(e => e.id === r.ID) : AppState.db.expense.some(e => e.date === d && e.amount === nom && e.desc === ket))) AppState.db.expense.push({ id: id, date: d, desc: ket, amount: nom, wallet: r.Dompet || 'Tunai', plotId: r.PlotID || null });
-                }
-                if (tipe === 'MUTASI') {
-                    if (!(r.ID ? AppState.db.mutations.some(m => m.id === r.ID) : AppState.db.mutations.some(m => m.date === d && m.amount === nom && m.from === r.Dari && m.to === r.Ke))) AppState.db.mutations.push({ id: id, date: d, from: r.Dari || 'Tunai', to: r.Ke || 'Bank', amount: nom });
-                }
+                if (tipe === 'DEBIT' && !AppState.db.income.some(i => i.id === id)) AppState.db.income.push({ id, date: d, desc: r.Keterangan || '-', amount: nom, wallet: r.Dompet || 'Tunai' });
+                if (tipe === 'KREDIT' && !AppState.db.expense.some(e => e.id === id)) AppState.db.expense.push({ id, date: d, desc: r.Keterangan || '-', amount: nom, wallet: r.Dompet || 'Tunai', plotId: r.PlotID || null });
+                if (tipe === 'MUTASI' && !AppState.db.mutations.some(m => m.id === id)) AppState.db.mutations.push({ id, date: d, from: r.Dari || 'Tunai', to: r.Ke || 'Bank', amount: nom });
             });
         } else {
-            let kalkulasi = { 'Tunai': 0, 'Bank': 0, 'e-Wallet': 0 };
-            AppState.tempImport.forEach(r => {
-                const tipe = String(r.Tipe).toUpperCase(), nom = Math.abs(Number(r.Jumlah));
-                if (!isNaN(nom)) { if (tipe === 'DEBIT') kalkulasi[r.Dompet || 'Tunai'] += nom; if (tipe === 'KREDIT') kalkulasi[r.Dompet || 'Tunai'] -= nom; }
-            });
-            Object.keys(kalkulasi).forEach(d => {
-                if (kalkulasi[d] > 0) AppState.db.income.push({ id: Utils.buatId(), date: Utils.tglHariIni(), desc: `Saldo Impor Excel`, amount: kalkulasi[d], wallet: d });
-                else if (kalkulasi[d] < 0) AppState.db.expense.push({ id: Utils.buatId(), date: Utils.tglHariIni(), desc: `Koreksi Excel`, amount: Math.abs(kalkulasi[d]), wallet: d });
-            });
+            let kalk = { 'Tunai': 0, 'Bank': 0, 'e-Wallet': 0 };
+            AppState.tempImport.forEach(r => { if (!isNaN(Number(r.Jumlah))) { if (String(r.Tipe).toUpperCase() === 'DEBIT') kalk[r.Dompet || 'Tunai'] += Number(r.Jumlah); if (String(r.Tipe).toUpperCase() === 'KREDIT') kalk[r.Dompet || 'Tunai'] -= Number(r.Jumlah); } });
+            Object.keys(kalk).forEach(d => { if (kalk[d] > 0) AppState.db.income.push({ id: Utils.buatId(), date: Utils.tglHariIni(), desc: `Import Excel`, amount: kalk[d], wallet: d }); else if (kalk[d] < 0) AppState.db.expense.push({ id: Utils.buatId(), date: Utils.tglHariIni(), desc: `Koreksi Excel`, amount: Math.abs(kalk[d]), wallet: d }); });
         }
-        simpanDatabase(); AppState.tempImport = []; AppState.tempImportPlots = []; updateRekap(); updatePlotList(); updateWalletDropdownBalances();
-        showPopup('alert', "Data Excel berhasil diimpor!", 'var(--excel)');
+        simpanDatabase(); updateRekap(); updatePlotList(); updateWalletDropdownBalances(); showPopup('alert', "Data diimpor!", 'var(--excel)');
     }
 
     function promptClearData() {
         document.getElementById('dropdown-menu').classList.add('hidden');
-        showPopup('delete', "HAPUS SEMUA DATA?", '#ff3b30', () => {
-            localStorage.removeItem('myMoneyDB'); 
-            AppState.db = { income: [], expense: [], mutations: [], plots: [] };
-            simpanDatabase(); updateRekap(); updatePlotList(); updateWalletDropdownBalances();
-            showPopup('alert', "Data Dikosongkan.", '#ff3b30');
-        });
+        showPopup('delete', "HAPUS SEMUA DATA?", '#ff3b30', () => { localStorage.removeItem('myMoneyDB'); AppState.db = { income: [], expense: [], mutations: [], plots: [] }; simpanDatabase(); updateRekap(); updatePlotList(); updateWalletDropdownBalances(); showPopup('alert', "Data Kosong.", '#ff3b30'); });
     }
 
     // =========================================================
-    // 9. DATE PICKER KHUSUS (MODAL KALENDER)
+    // 9. DATE PICKER 
     // =========================================================
     const Picker = { mode: 'date', curr: new Date(), sel: new Date(), targetId: '', theme: '' };
-    const NamaBln = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
-    const BlnPdk = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Ags', 'Sep', 'Okt', 'Nov', 'Des'];
-
-    function inisiasiKalenderAwal() {
-        const hrIni = Utils.tglHariIni();
-        ['in-date', 'out-date', 'rekap-date-picker'].forEach(id => { const el = document.getElementById(id); if (el) { el.dataset.rawDate = hrIni; el.value = Utils.formatTglTampil(hrIni); } });
-        const blnIni = hrIni.substring(0, 7);
-        const elPlot = document.getElementById('plot-month-filter');
-        if (elPlot) { elPlot.dataset.rawDate = blnIni; elPlot.value = `${BlnPdk[parseInt(blnIni.split('-')[1], 10)-1]} ${blnIni.split('-')[0]}`; }
-    }
-
-    function openPicker(idInput, mode, warnaTema) {
-        Picker.targetId = idInput; Picker.mode = mode; Picker.theme = warnaTema;
-        const valLama = document.getElementById(idInput).dataset.rawDate;
-        Picker.sel = new Date(mode === 'month' ? valLama + "-01T00:00:00" : valLama + "T00:00:00"); Picker.curr = new Date(Picker.sel);
-        document.getElementById('cp-day-view').classList.toggle('hidden', mode !== 'date'); 
-        document.getElementById('cp-month-view').classList.toggle('hidden', mode === 'date');
-        document.getElementById('cp-today-btn').innerText = mode === 'date' ? 'Hari Ini' : 'Bulan Ini';
-        
-        const btnSet = document.getElementById('cp-setel-btn'); 
-        btnSet.style.backgroundColor = warnaTema; 
-        document.getElementById('cp-title').style.color = warnaTema;
-        
-        if(warnaTema === '#ff3b30' || warnaTema === 'var(--danger)' || warnaTema === 'var(--blue)' || warnaTema === 'var(--excel)') { btnSet.style.color = '#fff'; } else { btnSet.style.color = '#000'; }
-        
-        renderKalender(); document.getElementById('custom-picker').classList.remove('hidden');
-    }
-    
+    const NamaBln = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'], BlnPdk = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Ags', 'Sep', 'Okt', 'Nov', 'Des'];
+    function inisiasiKalenderAwal() { const hrIni = Utils.tglHariIni(); ['in-date', 'out-date', 'rekap-date-picker'].forEach(id => { const el = document.getElementById(id); if (el) { el.dataset.rawDate = hrIni; el.value = Utils.formatTglTampil(hrIni); } }); const blnIni = hrIni.substring(0, 7), elPlot = document.getElementById('plot-month-filter'); if (elPlot) { elPlot.dataset.rawDate = blnIni; elPlot.value = `${BlnPdk[parseInt(blnIni.split('-')[1], 10)-1]} ${blnIni.split('-')[0]}`; } }
+    function openPicker(id, m, w) { Picker.targetId = id; Picker.mode = m; Picker.theme = w; const val = document.getElementById(id).dataset.rawDate; Picker.sel = new Date(m === 'month' ? val + "-01T00:00:00" : val + "T00:00:00"); Picker.curr = new Date(Picker.sel); document.getElementById('cp-day-view').classList.toggle('hidden', m !== 'date'); document.getElementById('cp-month-view').classList.toggle('hidden', m === 'date'); document.getElementById('cp-today-btn').innerText = m === 'date' ? 'Hari Ini' : 'Bulan Ini'; const btnSet = document.getElementById('cp-setel-btn'); btnSet.style.backgroundColor = w; document.getElementById('cp-title').style.color = w; btnSet.style.color = (w === '#ff3b30' || w === 'var(--danger)' || w === 'var(--blue)' || w === 'var(--excel)') ? '#fff' : '#000'; renderKalender(); document.getElementById('custom-picker').classList.remove('hidden'); }
     function closePicker() { document.getElementById('custom-picker').classList.add('hidden'); }
     function cpChange(arah) { Picker.mode === 'date' ? Picker.curr.setMonth(Picker.curr.getMonth() + arah) : Picker.curr.setFullYear(Picker.curr.getFullYear() + arah); renderKalender(); }
     function cpSelectDay(t) { Picker.sel = new Date(Picker.curr.getFullYear(), Picker.curr.getMonth(), t); renderKalender(); }
     function cpSelectMonth(b) { Picker.sel = new Date(Picker.curr.getFullYear(), b, 1); renderKalender(); }
     function cpSetToday() { const d = new Date(); Picker.sel = new Date(d.getFullYear(), d.getMonth(), Picker.mode === 'date' ? d.getDate() : 1); Picker.curr = new Date(Picker.sel); setPickerDate(); }
-    
-    function setPickerDate() {
-        const year = Picker.sel.getFullYear(), month = String(Picker.sel.getMonth() + 1).padStart(2, '0'), day = String(Picker.sel.getDate()).padStart(2, '0');
-        const el = document.getElementById(Picker.targetId);
-        if (Picker.mode === 'date') { const ymd = `${year}-${month}-${day}`; el.dataset.rawDate = ymd; el.value = Utils.formatTglTampil(ymd); } 
-        else { const ym = `${year}-${month}`; el.dataset.rawDate = ym; el.value = `${BlnPdk[Picker.sel.getMonth()]} ${year}`; }
-        closePicker(); if (Picker.targetId === 'rekap-date-picker') updateRekap(); if (Picker.targetId === 'plot-month-filter') updatePlotList();
-    }
-    
-    function renderKalender() {
-        if (Picker.mode === 'date') {
-            document.getElementById('cp-title').innerText = `${NamaBln[Picker.curr.getMonth()]} ${Picker.curr.getFullYear()}`;
-            const wadah = document.getElementById('cp-grid-days'); let selHtml = '';
-            const hari1 = new Date(Picker.curr.getFullYear(), Picker.curr.getMonth(), 1).getDay();
-            const totHari = new Date(Picker.curr.getFullYear(), Picker.curr.getMonth() + 1, 0).getDate();
-            for (let i = 0; i < hari1; i++) selHtml += `<div class="picker-item empty"></div>`;
-            for (let i = 1; i <= totHari; i++) {
-                const isSel = (i === Picker.sel.getDate() && Picker.curr.getMonth() === Picker.sel.getMonth() && Picker.curr.getFullYear() === Picker.sel.getFullYear());
-                selHtml += `<div class="picker-item ${isSel ? 'selected' : ''}" style="${isSel ? `background:${Picker.theme};` : ''}" onclick="cpSelectDay(${i})">${i}</div>`;
-            }
-            wadah.innerHTML = selHtml;
-        } else {
-            document.getElementById('cp-title').innerText = `${Picker.curr.getFullYear()}`;
-            const wadah = document.getElementById('cp-month-view'); let selHtml = '';
-            for (let i = 0; i < 12; i++) {
-                const isSel = (i === Picker.sel.getMonth() && Picker.curr.getFullYear() === Picker.sel.getFullYear());
-                selHtml += `<div class="picker-item ${isSel ? 'selected' : ''}" style="${isSel ? `background:${Picker.theme};` : ''}" onclick="cpSelectMonth(${i})">${BlnPdk[i]}</div>`;
-            }
-            wadah.innerHTML = selHtml;
-        }
-    }
+    function setPickerDate() { const y = Picker.sel.getFullYear(), m = String(Picker.sel.getMonth() + 1).padStart(2, '0'), d = String(Picker.sel.getDate()).padStart(2, '0'), el = document.getElementById(Picker.targetId); if (Picker.mode === 'date') { const ymd = `${y}-${m}-${d}`; el.dataset.rawDate = ymd; el.value = Utils.formatTglTampil(ymd); } else { const ym = `${y}-${m}`; el.dataset.rawDate = ym; el.value = `${BlnPdk[Picker.sel.getMonth()]} ${y}`; } closePicker(); if (Picker.targetId === 'rekap-date-picker') updateRekap(); if (Picker.targetId === 'plot-month-filter') updatePlotList(); }
+    function renderKalender() { if (Picker.mode === 'date') { document.getElementById('cp-title').innerText = `${NamaBln[Picker.curr.getMonth()]} ${Picker.curr.getFullYear()}`; const wadah = document.getElementById('cp-grid-days'); let h = ''; const h1 = new Date(Picker.curr.getFullYear(), Picker.curr.getMonth(), 1).getDay(), tot = new Date(Picker.curr.getFullYear(), Picker.curr.getMonth() + 1, 0).getDate(); for (let i = 0; i < h1; i++) h += `<div class="picker-item empty"></div>`; for (let i = 1; i <= tot; i++) { const isS = (i === Picker.sel.getDate() && Picker.curr.getMonth() === Picker.sel.getMonth() && Picker.curr.getFullYear() === Picker.sel.getFullYear()); h += `<div class="picker-item ${isS ? 'selected' : ''}" style="${isS ? `background:${Picker.theme};` : ''}" onclick="cpSelectDay(${i})">${i}</div>`; } wadah.innerHTML = h; } else { document.getElementById('cp-title').innerText = `${Picker.curr.getFullYear()}`; const wadah = document.getElementById('cp-month-view'); let h = ''; for (let i = 0; i < 12; i++) { const isS = (i === Picker.sel.getMonth() && Picker.curr.getFullYear() === Picker.sel.getFullYear()); h += `<div class="picker-item ${isS ? 'selected' : ''}" style="${isS ? `background:${Picker.theme};` : ''}" onclick="cpSelectMonth(${i})">${BlnPdk[i]}</div>`; } wadah.innerHTML = h; } }
 
-    // =========================================================
-    // 10. STARTUP BINDING (RUN ON LOAD)
-    // =========================================================
-    window.addEventListener('DOMContentLoaded', () => {
-        muatDatabase();
-        inisiasiKalenderAwal();
-        updatePlotList();
-        updateRekap();
-        updateWalletDropdownBalances(); 
-        jalankanJam();
-    });
+    window.addEventListener('DOMContentLoaded', () => { muatDatabase(); inisiasiKalenderAwal(); updatePlotList(); updateRekap(); updateWalletDropdownBalances(); jalankanJam(); });
 </script>
-
 </body>
 </html>
