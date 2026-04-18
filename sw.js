@@ -1,44 +1,37 @@
-const CACHE_NAME = 'keuangan-nila-v2'; // Ganti versi agar HP memuat UI terbaru
+const CACHE_NAME = 'keuangan-nila-v4';
 const ASSETS_TO_CACHE = [
     './',
     './index.html',
-    './manifest.json'
+    './manifest.json',
+    './icon-192.png',
+    './icon-512.png'
 ];
 
 self.addEventListener('install', event => {
     self.skipWaiting();
     event.waitUntil(
-        caches.open(CACHE_NAME).then(cache => {
-            return cache.addAll(ASSETS_TO_CACHE);
-        })
+        caches.open(CACHE_NAME).then(cache => cache.addAll(ASSETS_TO_CACHE))
     );
 });
 
 self.addEventListener('activate', event => {
     event.waitUntil(
-        caches.keys().then(cacheNames => {
-            return Promise.all(
-                cacheNames.map(cache => {
-                    // Hapus cache versi lama
-                    if (cache !== CACHE_NAME) {
-                        return caches.delete(cache);
-                    }
-                })
-            );
-        })
+        caches.keys().then(keys => Promise.all(
+            keys.map(key => {
+                if (key !== CACHE_NAME) {
+                    return caches.delete(key);
+                }
+            })
+        ))
     );
 });
 
 self.addEventListener('fetch', event => {
-    // PERISAI ANTI-CACHE: Abaikan link Cloud Google Script agar selalu update!
+    // JANGAN cache link Google Script agar Cloud selalu fresh dan tidak error
     if (event.request.url.includes('script.google.com')) {
-        event.respondWith(fetch(event.request));
         return;
     }
-
     event.respondWith(
-        caches.match(event.request).then(response => {
-            return response || fetch(event.request);
-        })
+        caches.match(event.request).then(res => res || fetch(event.request))
     );
 });
