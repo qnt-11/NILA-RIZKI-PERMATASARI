@@ -53,7 +53,7 @@
             z-index: 9999; position: relative;
         }
         
-        .app-title { margin: 0; font-size: 20px; font-weight: 600; letter-spacing: 0.5px; display: flex; align-items: center;}
+        .app-title { margin: 0; font-size: 20px; font-weight: 600; letter-spacing: 0.5px; display: flex; align-items: center; cursor: pointer;}
         .title-accent { font-family: 'Pacifico', cursive; color: var(--danger); font-size: 24px; font-weight: 400; margin-left: 4px; line-height: 1; padding-bottom: 4px;}
         
         .clock-text { font-size: 10px; color: var(--text-muted); font-weight: 500; margin-top: 3px; }
@@ -244,7 +244,7 @@
 
 <header>
     <div style="display: flex; flex-direction: column;">
-        <h2 class="app-title">keuangan<span class="title-accent">Nila</span></h2>
+        <h2 class="app-title" onclick="resetFormulirUtama()" style="cursor: pointer;">keuangan<span class="title-accent">Nila</span></h2>
         <div id="realtime-clock" class="clock-text">Memuat Waktu...</div>
     </div>
     
@@ -446,7 +446,7 @@
     <div class="modal-box" style="border: 1px solid var(--purple); padding: 25px 20px; text-align: left; max-height: 85vh; overflow-y: auto;">
         <div style="text-align: center; margin-bottom: 20px;">
             <h2 style="font-family: 'Pacifico', cursive; color: var(--danger); margin: 0; font-size: 28px;">keuanganNila</h2>
-            <small id="app-version-display" style="color: var(--text-muted); font-weight: 700; letter-spacing: 1px;">VERSI 3.2</small>
+            <small id="app-version-display" style="color: var(--text-muted); font-weight: 700; letter-spacing: 1px;">VERSI 3.4</small>
         </div>
 
         <div style="font-size: 13px; line-height: 1.6; color: var(--text-light);">
@@ -537,7 +537,7 @@
     // =========================================================
     // 1. PENGATURAN AWAL & DATABASE 
     // =========================================================
-    const APP_VERSION = "3.2"; // TELAH DINAIKKAN AGAR SERVICE WORKER UPDATE
+    const APP_VERSION = "3.4"; // TELAH DINAIKKAN AGAR SERVICE WORKER UPDATE
 
     // LINK GOOGLE SHEETS UNTUK KEUANGAN NILA
     const CLOUD_URL = "https://script.google.com/macros/s/AKfycbytCO5WrWrBcsRWzvjQlBSdV2VoWSqhhhJR0EuPaUmHjGrfig-8VtCKv9ahzzkIXFI/exec";
@@ -863,6 +863,42 @@
     // =========================================================
     // 5. UPDATE DINAMIS & UI NAVIGATION
     // =========================================================
+    
+    // --- SUNTIKAN RESET FORMULIR UTAMA (TOMBOL PANIK) ---
+    function resetFormulirUtama() {
+        const hrIni = Utils.tglHariIni();
+        const formatHrIni = Utils.formatTglTampil(hrIni);
+
+        // Reset Tanggal
+        document.getElementById('in-date').dataset.rawDate = hrIni;
+        document.getElementById('in-date').value = formatHrIni;
+        document.getElementById('out-date').dataset.rawDate = hrIni;
+        document.getElementById('out-date').value = formatHrIni;
+
+        // Reset Input Teks & Angka
+        document.getElementById('in-desc').value = '';
+        document.getElementById('in-amount').value = '';
+        document.getElementById('out-desc').value = '';
+        document.getElementById('out-amount').value = '';
+
+        // Reset Dropdown
+        setCustomVal('in-wallet', 'in-wallet-trigger', 'in-wallet-opts', 'Tunai');
+        setCustomVal('out-wallet', 'out-wallet-trigger', 'out-wallet-opts', 'Tunai');
+        setCustomVal('out-plot', 'out-plot-trigger', 'out-plot-opts', '', '-- Tanpa Plot --', '');
+
+        updateWalletDropdownBalances();
+
+        // Redirect ke tab Debit
+        document.querySelectorAll('.page').forEach(p => p.classList.add('hidden'));
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.getElementById('pemasukan').classList.remove('hidden');
+        document.querySelector('.tab-debit').classList.add('active');
+        document.getElementById('main-nav-tabs').style.borderColor = 'var(--wa-green)'; // Fix: Kembalikan border nav-tabs ke hijau
+
+        showPopup('alert', "✨ Formulir berhasil di-reset ke Hari Ini!", 'var(--wa-green)');
+    }
+    // ----------------------------------------------------
+
     function updateWalletDropdownBalances() {
         const wallets = ['Tunai', 'Bank', 'e-Wallet'];
         const dropdowns = [
@@ -947,6 +983,16 @@
         else if (idHalaman === 'pengeluaran') navTabs.style.borderColor = 'var(--danger)';
         else if (idHalaman === 'plot') navTabs.style.borderColor = 'var(--gold)';
         else if (idHalaman === 'rekap') navTabs.style.borderColor = 'var(--blue)';
+        
+        // --- SUNTIKAN RESET TANGGAL SAAT PINDAH TAB ---
+        const hrIni = Utils.tglHariIni();
+        const formatHrIni = Utils.formatTglTampil(hrIni);
+        document.getElementById('in-date').dataset.rawDate = hrIni;
+        document.getElementById('in-date').value = formatHrIni;
+        document.getElementById('out-date').dataset.rawDate = hrIni;
+        document.getElementById('out-date').value = formatHrIni;
+        // ----------------------------------------------
+
         if (idHalaman === 'rekap') updateRekap();
         if (idHalaman === 'plot') updatePlotList();
         if (idHalaman === 'pengeluaran') {
@@ -984,6 +1030,13 @@
         document.getElementById(`${pfx}-amount`).value = '';
         document.getElementById(`${pfx}-desc`).value = '';
         if (tipe === 'expense') setCustomVal('out-plot', 'out-plot-trigger', 'out-plot-opts', '', '-- Tanpa Plot --', '');
+        
+        // --- SUNTIKAN RESET TANGGAL PASCA SIMPAN ---
+        const hrIni = Utils.tglHariIni();
+        document.getElementById(`${pfx}-date`).dataset.rawDate = hrIni;
+        document.getElementById(`${pfx}-date`).value = Utils.formatTglTampil(hrIni);
+        // -------------------------------------------
+
         updateRekap();
         updateWalletDropdownBalances();
         showPopup('alert', "Catatan berhasil disimpan!", tipe === 'expense' ? 'var(--danger)' : 'var(--wa-green)');
