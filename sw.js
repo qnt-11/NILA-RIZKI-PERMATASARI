@@ -2,7 +2,7 @@
  * SERVICE WORKER keuanganNila (FINAL ABSOLUT + NETWORK SECURITY BUGFIX)
  */
 
-const APP_VERSION = '3.8'; 
+const APP_VERSION = '4.0'; 
 
 const CACHE_STATIC = 'keuangannila-static-v' + APP_VERSION;
 const CACHE_DYNAMIC = 'keuangannila-dynamic-v' + APP_VERSION;
