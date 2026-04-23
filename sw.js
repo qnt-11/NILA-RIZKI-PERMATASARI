@@ -1,9 +1,9 @@
 /**
  * SERVICE WORKER keuanganNILA (ENTERPRISE SECURITY & CACHE LIMIT)
- * Versi 1.4
+ * Versi 1.1
  */
 
-const APP_VERSION = '1.0'; 
+const APP_VERSION = '1.1'; 
 const CACHE_PREFIX = 'keuangan-nila-';
 const CACHE_STATIC = CACHE_PREFIX + 'static-v' + APP_VERSION;
 const CACHE_DYNAMIC = CACHE_PREFIX + 'dynamic-v' + APP_VERSION;
