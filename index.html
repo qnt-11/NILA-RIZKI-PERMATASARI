@@ -9,17 +9,15 @@
     <meta name="theme-color" content="#000000">
     <link rel="apple-touch-icon" href="icon-192.png">
     
-    <link href="https://fonts.googleapis.com/css2?family=Audiowide&family=Montserrat:wght@400;500;600;700&family=Poppins:wght@700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Audiowide&family=Montserrat:wght@300;400;500;600;700&family=Poppins:wght@700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     
     <style>
         /* =========================================================
-           1. VARIABEL GLOBAL & RESET (TETAP SESUAI ASLI)
+           1. VARIABEL GLOBAL & RESET
         ========================================================= */
-        * { 
-            -webkit-tap-highlight-color: transparent; 
-        }
+        * { -webkit-tap-highlight-color: transparent; }
 
         :root {
             --wa-bg: #000000; 
@@ -34,33 +32,14 @@
             --cloud: #87CEFA;    
         }
 
-        html, body { 
-            height: 100%; 
-            overscroll-behavior-y: none; 
-            overflow-x: hidden; 
-            width: 100%; 
-            max-width: 100%; 
-        }
-        
+        html, body { height: 100%; overscroll-behavior-y: none; overflow-x: hidden; width: 100%; max-width: 100%; }
         body {
-            font-family: 'Montserrat', sans-serif; 
-            font-weight: 500;
-            margin: 0; 
-            background-color: var(--wa-bg); 
-            color: var(--text-light);
-            display: flex; 
-            flex-direction: column; 
-            overflow: hidden; 
+            font-family: 'Montserrat', sans-serif; font-weight: 500; margin: 0; 
+            background-color: var(--wa-bg); color: var(--text-light);
+            display: flex; flex-direction: column; overflow: hidden; 
         }
-        
-        body.modal-open { 
-            overflow: hidden; 
-            pointer-events: none; 
-        }
-        
-        body.modal-open .modal-overlay { 
-            pointer-events: auto; 
-        }
+        body.modal-open { overflow: hidden; pointer-events: none; }
+        body.modal-open .modal-overlay { pointer-events: auto; }
 
         .hidden { display: none !important; }
         .auto-cap { text-transform: capitalize; }
@@ -71,32 +50,18 @@
            2. HEADER & TIPOGRAFI
         ========================================================= */
         header {
-            background-color: var(--wa-header); 
-            color: var(--text-light);
-            padding: 12px 20px; 
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center;
-            z-index: 9999; 
-            position: relative; 
-            border-bottom: 1px solid var(--border-color);
+            background-color: var(--wa-header); color: var(--text-light);
+            padding: 12px 20px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
+            display: flex; justify-content: space-between; align-items: center;
+            z-index: 9999; position: relative; border-bottom: 1px solid var(--border-color);
         }
         
-        .app-title { 
-            margin: 0; 
-            display: flex; 
-            align-items: baseline; 
-            cursor: pointer; 
-            font-family: 'Audiowide', sans-serif; 
-            font-weight: 400; 
-        }
-        
+        .app-title { margin: 0; display: flex; align-items: baseline; cursor: pointer; font-family: 'Audiowide', sans-serif; font-weight: 400; }
         .letter { color: #444444; animation: ledRed 8s infinite; }
         @keyframes ledRed { 0%, 100% { color: #444444; text-shadow: none; } 5%, 15% { color: var(--danger); text-shadow: 0 0 8px var(--danger); } }
         
-        header .title-keuangan { font-size: 16px; letter-spacing: 0px; display: flex; margin-right: 6px;}
-        header .title-nila { font-size: 20px; letter-spacing: 1px; display: flex;}
+        header .title-uang { font-size: 14px; letter-spacing: 0px; display: flex; margin-right: 0;}
+        header .title-barla { font-size: 22px; font-weight: 700; letter-spacing: 1px; display: flex; margin-left: 2px;}
         
         .clock-text { font-size: 10px; color: var(--text-muted); font-weight: 500; margin-top: 3px; letter-spacing: 0.5px; }
         .header-actions { display: flex; align-items: center; gap: 8px; justify-content: flex-end;}
@@ -106,9 +71,7 @@
         @keyframes memBlink { 0%, 100% { opacity: 1; text-shadow: none;} 50% { opacity: 0.6; text-shadow: 0 0 5px var(--danger); } }
         .mem-blink { animation: memBlink 2s infinite; }
 
-        .icon-btn { 
-            background: none; border: none; color: var(--text-light); cursor: pointer; display: flex; align-items: center; justify-content: center; border-radius: 50%; transition: 0.2s; padding: 10px; margin: -5px;
-        }
+        .icon-btn { background: none; border: none; color: var(--text-light); cursor: pointer; display: flex; align-items: center; justify-content: center; border-radius: 50%; transition: 0.2s; padding: 10px; margin: -5px; }
         @media (hover: hover) { .icon-btn:hover { background-color: rgba(255,255,255,0.1); } }
         .icon-btn:active { transform: scale(0.9); opacity: 0.7; }
 
@@ -121,19 +84,16 @@
            3. DROPDOWN MENU
         ========================================================= */
         .dropdown-wrapper { position: relative; display: flex; align-items: center;}
-        
         .dropdown-content {
             position: absolute; top: 40px; right: 0; background-color: var(--wa-card);
             min-width: 180px; border-radius: 10px; box-shadow: 0 8px 24px rgba(0,0,0,0.9);
             z-index: 10000; overflow: hidden; border: 1px solid var(--border-color);
             animation: slideDown 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); transform-origin: top right;
         }
-        
         .dropdown-item {
             display: flex; align-items: center; gap: 10px; padding: 14px 15px;
             color: var(--text-light); font-size: 13px; font-weight: 500; cursor: pointer; border-bottom: 1px solid var(--border-color); transition: 0.2s;
         }
-        
         .dropdown-item svg { width: 18px !important; height: 18px !important; }
         .dropdown-item:last-child { border-bottom: none; }
         @media (hover: hover) { .dropdown-item:hover { background-color: rgba(255,255,255,0.05); } }
@@ -148,12 +108,11 @@
             position: relative; z-index: 10; flex-shrink: 0; margin: 15px 15px 0 15px; border-radius: 8px; border: 1px solid var(--border-color); 
             overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.5);
         }
-        
         .tab { flex: 1; padding: 12px 0; text-align: center; cursor: pointer; transition: 0.3s; color: var(--text-muted); border-right: 1px solid var(--border-color); position: relative;}
         .tab:last-child { border-right: none; }
         .tab-debit.active { color: var(--wa-green); background: #222222; font-weight: bold; border-bottom: 2px solid var(--wa-green);}
-        .tab-kredit.active { color: var(--danger); background: #222222; font-weight: bold; border-bottom: 2px solid var(--danger);}
         .tab-plot.active { color: #ffffff; background: #222222; font-weight: bold; border-bottom: 2px solid #ffffff;}
+        .tab-kredit.active { color: var(--danger); background: #222222; font-weight: bold; border-bottom: 2px solid var(--danger);}
         .tab-rekap.active { color: #ffffff; background: #222222; font-weight: bold; border-bottom: 2px solid #ffffff;}
         .tab:active { opacity: 0.6; }
 
@@ -162,9 +121,7 @@
         ========================================================= */
         .page { display: flex; flex-direction: column; flex: 1; min-height: 0; max-width: 600px; width: 100%; margin: 0 auto; overflow-x: hidden; }
         .content { flex: 1; overflow: hidden; padding: 15px; display: flex; flex-direction: column; padding-bottom: 0; }
-        
         #pemasukan, #pengeluaran, #plot, #rekap { overflow-y: hidden; overflow-x: hidden; padding-bottom: 10px; } 
-
         .card { background: var(--wa-card); padding: 20px; border-radius: 12px; margin-bottom: 12px; border: 1px solid var(--border-color); flex-shrink: 0; box-shadow: 0 4px 15px rgba(0,0,0,0.3);}
         .card-flex { display: flex; flex-direction: column; flex: 1; min-height: 0; flex-shrink: 1; padding-bottom: 10px; margin-bottom: 0; overflow: hidden; }
 
@@ -173,20 +130,17 @@
         ========================================================= */
         .form-group { margin-bottom: 10px; position: relative;} 
         label { display: block; margin-bottom: 4px; font-size: 11px; font-weight: 600; color: var(--text-muted); }
-        
         input {
             width: 100%; padding: 12px 10px; background-color: var(--wa-bg); color: var(--text-light) !important; 
             border-radius: 8px; box-sizing: border-box; font-size: 14px; font-family: 'Montserrat', sans-serif; font-weight: 600; outline: none; transition: 0.3s;
             border: 1px solid var(--border-color);
         }
         input:focus { border-color: var(--text-light); box-shadow: 0 0 0 2px rgba(255,255,255,0.1); }
-        
         input[readonly] { 
             cursor: pointer; caret-color: transparent; 
             background-image: url('data:image/svg+xml;utf8,<svg fill="%23888" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zm0-12H5V6h14v2z"/></svg>');
             background-repeat: no-repeat; background-position: right 10px center; background-size: 18px; padding-right: 40px;
         } 
-
         .search-icon { position: absolute; left: 14px; top: 10px; width: 18px; height: 18px; color: var(--text-muted); pointer-events: none; }
         #rekap-search { padding-right: 40px; padding-left: 40px; }
         .clear-search { position: absolute; right: 6px; top: 4px; width: 30px; height: 30px; display: flex; justify-content: center; align-items: center; cursor: pointer; }
@@ -198,18 +152,14 @@
             border: 1px solid var(--border-color); transition: 0.3s;
         }
         .custom-select-trigger::after { content: '▼'; font-size: 10px; color: var(--text-muted); flex-shrink: 0; margin-left: 10px;}
-        
         @keyframes slideDown { 0% { opacity: 0; transform: translateY(-10px); } 100% { opacity: 1; transform: translateY(0); } }
-        
         .custom-select-options {
             position: absolute; top: 100%; left: 0; right: 0; background-color: var(--wa-card);
             border: 1px solid var(--border-color); border-radius: 8px; margin-top: 5px; z-index: 999; 
             overflow-y: auto; overflow-x: hidden; max-height: 180px; overscroll-behavior: contain; box-shadow: 0 8px 24px rgba(0,0,0,0.9);
             animation: slideDown 0.2s ease-out;
         }
-
         #in-wallet-opts, #out-wallet-opts { max-height: none; overflow-y: visible; }
-
         .custom-option { padding: 14px 12px; border-bottom: 1px solid var(--border-color); cursor: pointer; color: var(--text-light); font-size: 14px; font-weight: 500; transition: 0.2s;}
         @media (hover: hover) { .custom-option:hover { background-color: rgba(255, 255, 255, 0.1); } }
         .custom-option:active { background-color: rgba(255, 255, 255, 0.15); }
@@ -230,15 +180,9 @@
         /* =========================================================
            7. REKAP & SALDO DOMPET
         ========================================================= */
-        .balance-box { 
-            text-align: center; padding: 12px; background: #111111; color: var(--text-light); border: 1px solid var(--border-color); border-radius: 12px; margin-bottom: 8px; position: relative; box-shadow: inset 0 2px 10px rgba(0,0,0,0.5);
-        }
+        .balance-box { text-align: center; padding: 12px; background: #111111; color: var(--text-light); border: 1px solid var(--border-color); border-radius: 12px; margin-bottom: 8px; position: relative; box-shadow: inset 0 2px 10px rgba(0,0,0,0.5); }
         .balance-box h2 { margin: 2px 0 8px 0; color: var(--text-light); font-size: 24px; font-weight: 700;}
-        
-        .wallet-grid { 
-            display: grid; grid-template-columns: 1fr 1fr 1fr; grid-template-rows: auto auto;
-            grid-template-areas: "bank tunai ewallet" "darurat1 tunai darurat2"; gap: 6px; margin-bottom: 8px; 
-        }
+        .wallet-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; grid-template-rows: auto auto; grid-template-areas: "bank tunai ewallet" "darurat1 tunai darurat2"; gap: 6px; margin-bottom: 8px; }
         .wallet-card { background: var(--wa-card); padding: 6px 4px; border-radius: 8px; text-align: center; border: 1px solid var(--border-color); display: flex; flex-direction: column; justify-content: center; box-shadow: 0 2px 5px rgba(0,0,0,0.3);} 
         .wallet-card small { font-size: 7px; color: var(--text-muted); font-weight: 700; margin-bottom: 4px; letter-spacing: 0.5px;} 
         .wallet-card span { font-size: 10px; color: var(--text-light); font-weight: 700; word-break: break-all; padding: 0 2px; line-height: 1.2;} 
@@ -253,11 +197,7 @@
            8. DAFTAR RIWAYAT
         ========================================================= */
         .history-columns { display: flex; gap: 8px; flex: 1; min-height: 0; flex-shrink: 1; width: 100%;}
-        .history-col {
-            flex: 1; background: var(--wa-card); border-radius: 12px; padding: 8px; padding-bottom: 0; border: 1px solid var(--border-color);
-            display: flex; flex-direction: column; min-width: 0; box-sizing: border-box; overflow-x: hidden; 
-        }
-        
+        .history-col { flex: 1; background: var(--wa-card); border-radius: 12px; padding: 8px; padding-bottom: 0; border: 1px solid var(--border-color); display: flex; flex-direction: column; min-width: 0; box-sizing: border-box; overflow-x: hidden; }
         #history-debit h4 { color: var(--wa-green); border-bottom: 1px solid var(--border-color); background-color: transparent !important; }
         #history-kredit h4 { color: var(--danger); border-bottom: 1px solid var(--border-color); background-color: transparent !important; }
         .history-col h4 { margin: 0 0 6px 0; padding: 0 0 6px 0; text-align: center; font-size: 12px; text-transform: uppercase; } 
@@ -265,12 +205,11 @@
         .history-col ul { list-style: none; padding: 0; margin: 0; overflow-y: auto; overflow-x: hidden; flex: 1; min-height: 0; padding-bottom: 30px; } 
         .history-col ul::-webkit-scrollbar { width: 3px; }
         .history-col ul::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 3px; }
-        
         .history-col li { display: flex; justify-content: space-between; align-items: flex-start; padding: 12px 0; border-bottom: 1px solid var(--border-color); gap: 12px; }
         .history-col li:last-child { border-bottom: none; padding-bottom: 0; }
+        
         .editable { cursor: pointer; transition: 0.2s; flex: 1; min-width: 0; overflow: hidden; } 
         .editable:active { opacity: 0.5; }
-        
         .history-desc-text { font-size:12px; font-weight:600; word-wrap: break-word; word-break: break-word; line-height:1.4; margin-bottom: 4px; }
         .mutasi-text { color: var(--text-light); font-weight: 700; }
         .expense-text { color: var(--danger); }
@@ -285,39 +224,19 @@
            9. MODAL & POPUP
         ========================================================= */
         @keyframes popIn { 0% { transform: scale(0.85); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
-        
-        .modal-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(2px);
-            display: flex; justify-content: center; align-items: center; z-index: 20000; touch-action: none;
-        }
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(2px); display: flex; justify-content: center; align-items: center; z-index: 20000; touch-action: none; }
         #custom-modal { background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(1px); }
-
-        .modal-box { 
-            background: var(--wa-card); padding: 25px 20px; border-radius: 16px; width: 85%; max-width: 320px; 
-            text-align: center; border: 1px solid var(--border-color); box-shadow: 0 15px 40px rgba(0,0,0,1); 
-            transition: border-color 0.3s; touch-action: auto; animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
+        .modal-box { background: var(--wa-card); padding: 25px 20px; border-radius: 16px; width: 85%; max-width: 320px; text-align: center; border: 1px solid var(--border-color); box-shadow: 0 15px 40px rgba(0,0,0,1); transition: border-color 0.3s; touch-action: auto; animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         
-        #edit-modal .modal-box, #cloud-load-modal .modal-box, #import-modal .modal-box { 
-            max-height: 85vh; overflow-y: auto; overscroll-behavior: contain; 
-        }
-        
-        #mutation-modal .modal-box {
-            overflow: visible; max-height: none; 
-        }
+        #edit-modal .modal-box, #cloud-load-modal .modal-box, #import-modal .modal-box { max-height: 85vh; overflow-y: auto; overscroll-behavior: contain; }
+        #mutation-modal .modal-box { overflow: visible; max-height: none; }
         
         .modal-actions { display: flex; gap: 10px; justify-content: center; margin-top: 15px; }
         #modal-text { white-space: pre-wrap; line-height: 1.5; font-size: 13px; font-weight: 600; margin-bottom: 10px; }
-        #modal-input { 
-            width: 100%; padding: 14px; margin-bottom: 20px; border-radius: 8px; border: 1px solid var(--border-color); background: #000; color: var(--text-light); text-align: center; font-size: 18px; font-weight: 700; box-sizing: border-box; transition: 0.3s;
-        }
+        #modal-input { width: 100%; padding: 14px; margin-bottom: 20px; border-radius: 8px; border: 1px solid var(--border-color); background: #000; color: var(--text-light); text-align: center; font-size: 18px; font-weight: 700; box-sizing: border-box; transition: 0.3s; }
         #modal-input:focus { border-color: var(--text-light); box-shadow: 0 0 0 2px rgba(255,255,255,0.1); }
-
-        .loader {
-            border: 4px solid var(--border-color); border-top: 4px solid var(--cloud); border-radius: 50%; width: 35px; height: 35px; animation: spin 1s linear infinite; margin: 10px auto 20px auto;
-        }
+        .loader { border: 4px solid var(--border-color); border-top: 4px solid var(--cloud); border-radius: 50%; width: 35px; height: 35px; animation: spin 1s linear infinite; margin: 10px auto 20px auto; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
         #edit-modal .form-group { margin-bottom: 15px; text-align: left; }
         #edit-modal label { color: var(--text-muted); font-size: 11px; margin-bottom: 6px; }
 
@@ -327,12 +246,10 @@
         .chart-wrapper { width: 100%; position: relative; margin: 0 auto;}
 
         /* =========================================================
-           10. ABOUT MODAL
+           10. ABOUT MODAL & CINTA
         ========================================================= */
-        #about-modal .modal-box { 
-            padding: 30px 20px; text-align: left; max-height: 85vh; width: 90%; max-width: 400px; overflow-y: auto; position: relative; overscroll-behavior: contain;
-        }
-        .about-glass-card { background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); backdrop-filter: blur(10px); border-radius: 16px; padding: 20px; margin-bottom: 20px; }
+        .floating-heart { position: absolute; color: rgba(255,105,180,0.3); animation: floatUp 5s linear infinite; z-index: 1; pointer-events: none;}
+        @keyframes floatUp { 0% { transform: translateY(100px) scale(0.5); opacity: 0; } 20% { opacity: 1; } 100% { transform: translateY(-50px) scale(1.2); opacity: 0; } }
 
         /* =========================================================
            11. CUSTOM PICKER
@@ -362,9 +279,14 @@
 
 <header>
     <div style="display: flex; flex-direction: column;">
-        <h2 class="app-title" onclick="promptResetFormulir()" tabindex="0">
-            <span class="title-keuangan"><span class="letter" style="animation-delay: 0.0s">k</span><span class="letter" style="animation-delay: 0.1s">e</span><span class="letter" style="animation-delay: 0.2s">u</span><span class="letter" style="animation-delay: 0.3s">a</span><span class="letter" style="animation-delay: 0.4s">n</span><span class="letter" style="animation-delay: 0.5s">g</span><span class="letter" style="animation-delay: 0.6s">a</span><span class="letter" style="animation-delay: 0.7s">n</span></span>
-            <span class="title-nila"><span class="letter" style="animation-delay: 0.8s">N</span><span class="letter" style="animation-delay: 1.0s">I</span><span class="letter" style="animation-delay: 1.2s">L</span><span class="letter" style="animation-delay: 1.4s">A</span></span>
+        <h2 class="app-title" onclick="promptResetFormulir()" tabindex="0" style="align-items: baseline;">
+            <span class="title-uang audiowide-regular" style="font-size: 14px; margin-right: 0;">keuangan</span>
+            <span class="title-barla" style="font-size: 22px; font-weight: 700; margin-left: 2px;">
+                <span class="letter" style="animation-delay: 1.4s">N</span>
+                <span class="letter" style="animation-delay: 1.6s">I</span>
+                <span class="letter" style="animation-delay: 1.8s">L</span>
+                <span class="letter" style="animation-delay: 2.0s">A</span>
+            </span>
         </h2>
         <div id="realtime-clock" class="clock-text">Memuat Waktu...</div>
     </div>
@@ -397,13 +319,12 @@
 
 <div class="nav-tabs" id="main-nav-tabs">
     <div class="tab tab-debit active audiowide-regular" onclick="showPage(event, 'pemasukan')" tabindex="0">DEBIT</div>
-    <div class="tab tab-kredit audiowide-regular" onclick="showPage(event, 'pengeluaran')" tabindex="0">KREDIT</div>
     <div class="tab tab-plot audiowide-regular" onclick="showPage(event, 'plot')" tabindex="0">PLOT</div>
+    <div class="tab tab-kredit audiowide-regular" onclick="showPage(event, 'pengeluaran')" tabindex="0">KREDIT</div>
     <div class="tab tab-rekap audiowide-regular" onclick="showPage(event, 'rekap')" tabindex="0">REKAP</div>
 </div>
 
 <div class="content">
-    
     <div id="pemasukan" class="page">
         <div class="card">
             <h3 class="audiowide-regular" style="margin:0 0 15px 0; color:var(--wa-green); font-size:16px;">+ Catat Pemasukan</h3>
@@ -419,6 +340,22 @@
             </div>
             <div class="form-group"><label for="in-amount">Jumlah (Rp)</label><input type="text" inputmode="numeric" id="in-amount" placeholder="0"></div>
             <button class="btn-main btn-green audiowide-regular" id="btn-save-in" onclick="saveData(event, 'income')">Simpan Pemasukan</button>
+        </div>
+    </div>
+
+    <div id="plot" class="page hidden">
+        <div class="card">
+            <h3 class="audiowide-regular" style="margin:0 0 15px 0; color:var(--text-light); font-size:16px;">Alokasi Anggaran</h3>
+            <div class="form-group"><label for="plot-name">Nama Anggaran</label><input type="text" id="plot-name" class="auto-cap" placeholder="Uang Makan, Uang Bensin, dll" autocomplete="off" maxlength="50"></div>
+            <div class="form-group"><label for="plot-amount">Total / Target (Rp)</label><input type="text" inputmode="numeric" id="plot-amount" placeholder="0"></div>
+            <button class="btn-main btn-white audiowide-regular" onclick="savePlot()">Tambah Plot</button>
+        </div>
+        <div class="card card-flex">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-shrink:0;">
+                <h4 class="audiowide-regular" style="margin:0; font-size:13px; color:#fff;">Riwayat Plot:</h4>
+                <input type="text" id="plot-month-filter" readonly onclick="openPicker('plot-month-filter', 'month', '#ffffff')" style="width:110px; padding:6px; font-size:11px; text-align:center; background-image:none; padding-right:6px;">
+            </div>
+            <div id="plot-list"></div>
         </div>
     </div>
 
@@ -448,22 +385,6 @@
         </div>
     </div>
 
-    <div id="plot" class="page hidden">
-        <div class="card">
-            <h3 class="audiowide-regular" style="margin:0 0 15px 0; color:var(--text-light); font-size:16px;">Alokasi Anggaran</h3>
-            <div class="form-group"><label for="plot-name">Nama Anggaran</label><input type="text" id="plot-name" class="auto-cap" placeholder="Uang Makan, Uang Bensin, dll" autocomplete="off" maxlength="50"></div>
-            <div class="form-group"><label for="plot-amount">Total / Target (Rp)</label><input type="text" inputmode="numeric" id="plot-amount" placeholder="0"></div>
-            <button class="btn-main btn-white audiowide-regular" onclick="savePlot()">Tambah Plot</button>
-        </div>
-        <div class="card card-flex">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-shrink:0;">
-                <h4 class="audiowide-regular" style="margin:0; font-size:13px; color:#fff;">Riwayat Plot:</h4>
-                <input type="text" id="plot-month-filter" readonly onclick="openPicker('plot-month-filter', 'month', '#ffffff')" style="width:110px; padding:6px; font-size:11px; text-align:center; background-image:none; padding-right:6px;">
-            </div>
-            <div id="plot-list"></div>
-        </div>
-    </div>
-
     <div id="rekap" class="page hidden">
         <div class="form-group" style="position:relative; margin-bottom: 8px;">
             <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
@@ -475,10 +396,13 @@
             <div class="balance-box">
                 <small class="audiowide-regular" style="font-size: 9px; letter-spacing: 1px; color:#888;">SISA SALDO GLOBAL</small>
                 <h2 id="total-balance">Rp 0</h2>
-                <div style="display: flex; justify-content: space-around; border-top: 1px solid var(--border-color); padding-top: 10px; margin-top: 6px;">
-                    <div style="text-align:center;"><small style="color:var(--wa-green); font-weight:700; font-size: 8px; display:block; margin-bottom: 1px;">PEMASUKAN</small><span class="income-text" id="total-in" style="font-size: 11px;">Rp 0</span></div>
-                    <div style="text-align:center;"><small style="color:var(--danger); font-weight:700; font-size: 8px; display:block; margin-bottom: 1px;">PENGELUARAN</small><span class="expense-text" id="total-out" style="font-size: 11px;">Rp 0</span></div>
+                
+                <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border-color); padding-top: 10px; margin-top: 6px;">
+                    <div style="text-align:left; flex: 1;"><small style="color:var(--wa-green); font-weight:700; font-size: 8px; display:block; margin-bottom: 1px;">PEMASUKAN</small><span class="income-text" id="total-in" style="font-size: 11px;">Rp 0</span></div>
+                    <div id="health-badge" style="font-size: 9px; font-weight: 700; padding: 4px 8px; border-radius: 12px; text-align: center; white-space: nowrap; margin: 0 4px;"></div>
+                    <div style="text-align:right; flex: 1;"><small style="color:var(--danger); font-weight:700; font-size: 8px; display:block; margin-bottom: 1px;">PENGELUARAN</small><span class="expense-text" id="total-out" style="font-size: 11px;">Rp 0</span></div>
                 </div>
+
                 <div class="dropdown-wrapper" style="position: absolute; top: 8px; right: 8px;">
                     <button class="icon-btn" onclick="toggleBalanceMenu(event)" style="padding: 4px;"><svg viewBox="0 0 24 24" fill="currentColor" width="24" height="24"><path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/></svg></button>
                     <div id="balance-dropdown" class="dropdown-content hidden" style="top: 35px; right: 0; min-width: 140px;">
@@ -497,8 +421,12 @@
             
             <div style="display: flex; gap: 8px; margin-bottom: 10px; width: 100%; align-items: stretch;">
                 <div class="card" style="padding: 8px; margin-bottom: 0; border-color: var(--border-color); flex: 1; display: flex; flex-direction: column; box-sizing: border-box; justify-content: center; border-radius: 12px;">
-                    <label id="label-bulan-pencarian" style="font-size:9px; margin-bottom: 4px; font-family: 'Montserrat', sans-serif; text-align: center;">PILIH BULAN RIWAYAT:</label>
-                    <input type="text" id="rekap-date-picker" readonly onclick="openPicker('rekap-date-picker', 'month', '#ffffff')" style="padding:8px; text-align: center; background-image:none; font-size: 13px;">
+                    <label id="label-bulan-pencarian" style="font-size:9px; margin-bottom: 4px; font-family: 'Montserrat', sans-serif; text-align: center;">RENTANG WAKTU:</label>
+                    <div style="display:flex; gap: 4px; justify-content:center; align-items: center; width: 100%;">
+                        <input type="text" id="rekap-start-date" readonly onclick="openPicker('rekap-start-date', 'date', '#ffffff')" style="padding:6px 2px; width: 100%; min-width: 0; text-align: center; background-image:none; font-size: 11px; box-sizing: border-box;">
+                        <span style="color:var(--text-muted); font-size:10px; display:flex; align-items:center; flex-shrink: 0;">-</span>
+                        <input type="text" id="rekap-end-date" readonly onclick="openPicker('rekap-end-date', 'date', '#ffffff')" style="padding:6px 2px; width: 100%; min-width: 0; text-align: center; background-image:none; font-size: 11px; box-sizing: border-box;">
+                    </div>
                 </div>
                 <button class="btn-main audiowide-regular" onclick="openMutationModal()" style="margin-top: 0; margin-bottom: 0; border-radius: 12px; flex: 1; padding: 8px; font-size: 12px; box-sizing: border-box; background-color: var(--wa-card) !important; border: 1px solid var(--border-color) !important; color: var(--text-light) !important; display:flex; align-items:center; justify-content:center;">⇄ MUTASI SALDO</button>
             </div>
@@ -569,46 +497,59 @@
 </div>
 
 <div id="about-modal" class="modal-overlay hidden" onclick="if(event.target===this) closeAboutModal()">
-    <div class="modal-box">
+    <div class="modal-box" style="padding: 30px 20px; text-align: center; max-height: 85vh; width: 90%; max-width: 350px; position: relative;">
         <button onclick="closeAboutModal()" style="position: absolute; top: 15px; right: 15px; background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 5px; transition: 0.2s; z-index: 10;" onmousedown="this.style.color='#fff'">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
         </button>
         
         <div style="text-align: center; margin-bottom: 25px; margin-top: 10px;">
-            <h2 class="app-title about-title" style="justify-content: center;">
-                <span class="title-keuangan"><span class="letter" style="animation-delay: 0.0s">k</span><span class="letter" style="animation-delay: 0.1s">e</span><span class="letter" style="animation-delay: 0.2s">u</span><span class="letter" style="animation-delay: 0.3s">a</span><span class="letter" style="animation-delay: 0.4s">n</span><span class="letter" style="animation-delay: 0.5s">g</span><span class="letter" style="animation-delay: 0.6s">a</span><span class="letter" style="animation-delay: 0.7s">n</span></span>
-                <span class="title-nila"><span class="letter" style="animation-delay: 0.8s">N</span><span class="letter" style="animation-delay: 1.0s">I</span><span class="letter" style="animation-delay: 1.2s">L</span><span class="letter" style="animation-delay: 1.4s">A</span></span>
+            <h2 class="app-title about-title" style="justify-content: center; align-items: baseline;">
+                <span class="title-uang audiowide-regular" style="font-size: 14px; margin-right: 0;">keuangan</span>
+                <span class="title-barla" style="font-size: 22px; font-weight: 700; margin-left: 2px;">
+                    <span class="letter" style="animation-delay: 1.4s">N</span>
+                    <span class="letter" style="animation-delay: 1.6s">I</span>
+                    <span class="letter" style="animation-delay: 1.8s">L</span>
+                    <span class="letter" style="animation-delay: 2.0s">A</span>
+                </span>
             </h2>
-            <small id="app-version-display" style="color: var(--text-muted); font-family: 'Montserrat', sans-serif; font-weight: 700; letter-spacing: 1px; font-size: 10px;">VERSI 1.0 ❤️</small>
+            <div style="margin-top: 8px;">
+                <span id="app-version-display" style="background: rgba(255,255,255,0.1); padding: 4px 10px; border-radius: 12px; color: #ffffff; font-family: 'Montserrat', sans-serif; font-weight: 700; letter-spacing: 1px; font-size: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.5);">VERSI 1.00 ❤️</span>
+            </div>
         </div>
         
         <div style="font-size: 13px; line-height: 1.6; color: #ffffff; font-family: 'Montserrat', sans-serif;">
-            <div class="about-glass-card" style="padding: 20px 15px;">
-                <p style="text-align: center; color: var(--text-muted); font-weight: 700; letter-spacing: 1px; margin-top: 0; margin-bottom: 12px; font-size: 11px;">DEDIKASI KHUSUS</p>
-                <div style="text-align: center; margin-bottom: 20px;">
-                    <p style="font-size: 14px; line-height: 1.5; color: #f1f5f9;">💌 Diciptakan secara khusus dan eksklusif untuk istriku tercinta, <br><strong style="color: #ffffff; font-size: 16px;">NILA RIZKI PERMATASARI</strong>.</p>
-                </div>
-                <div style="background: rgba(0,0,0,0.2); padding: 15px; border-radius: 12px; margin-bottom: 15px; text-align: center;">
-                    <p style="margin: 0; font-size: 12px; font-style: italic; color: #cbd5e1;">"Semoga aplikasi ini bisa mempermudah kamu dalam mengatur keuangan rumah tangga kita, menjadikannya lebih rapi, terkontrol, dan selalu membawa keberkahan."</p>
-                </div>
-                <div style="font-size: 12px; color: #94a3b8; text-align: center; line-height: 1.6;">
-                    <p><strong>keuanganNila</strong> adalah aplikasi manajemen finansial pribadi yang simpel, aesthetic, dan dirancang dengan sistem keamanan data tingkat tinggi.</p>
+            <div class="about-glass-card" style="position: relative; overflow: hidden; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); border-radius: 16px; padding: 25px 15px; margin-bottom: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+                <div class="floating-heart" style="left: 15%; font-size: 10px; animation-delay: 0s;">❤️</div>
+                <div class="floating-heart" style="left: 80%; font-size: 14px; animation-delay: 1.5s;">❤️</div>
+                <div class="floating-heart" style="left: 45%; font-size: 8px; animation-delay: 3s;">❤️</div>
+                
+                <p style="position: relative; z-index: 2; text-align: center; color: var(--text-muted); font-weight: 700; letter-spacing: 3px; margin-top: 0; margin-bottom: 12px; font-size: 9px;">DEDIKASI KHUSUS</p>
+                <div style="position: relative; z-index: 2; text-align: center; margin-bottom: 15px;">
+                    <p style="font-size: 11px; margin-bottom: 5px;">💌 Diciptakan secara khusus dan eksklusif untuk istriku tercinta,</p>
+                    <strong class="audiowide-regular" style="color: #ffffff; font-size: 18px; display: block; line-height: 1.4; text-shadow: 0 0 12px rgba(255,105,180,0.6), 0 2px 4px rgba(0,0,0,0.8);">NILA RIZKI PERMATASARI.</strong>
+                    <p style="font-size: 11px; font-style: italic; font-weight: 300; color: #cccccc; margin-top: 15px; line-height: 1.5;">"Semoga aplikasi ini bisa mempermudah kamu dalam mengatur keuangan rumah tangga kita, menjadikannya lebih rapi, terkontrol, dan selalu membawa keberkahan."</p>
                 </div>
             </div>
 
-            <div class="about-glass-card" style="padding: 15px;">
-                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
-                    <span style="font-size: 18px;">🔒</span>
-                    <strong style="font-size: 12px; letter-spacing: 1px; color: var(--cloud);">PRIVASI & KEAMANAN</strong>
+            <div class="about-glass-card" style="padding: 15px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); border-radius: 16px; margin-bottom: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+                <p style="font-size: 10px; text-align: center; margin-top: 0; margin-bottom: 15px; color: #dddddd;">keuanganNila adalah aplikasi manajemen finansial pribadi yang simpel, aesthetic, dan dirancang dengan sistem keamanan data tingkat tinggi.</p>
+                <p style="text-align: center; color: var(--text-muted); font-weight: 700; letter-spacing: 2px; margin-top: 0; margin-bottom: 8px; font-size: 9px;"><span style="font-size: 12px;">🔒</span> PRIVASI & KEAMANAN</p>
+                <p style="font-size: 10px; text-align: center; color: #aaaaaa; margin: 0;">Aplikasi ini beroperasi 100% offline. Riwayat tersimpan di memori lokal HP dan brankas Google Sheets pribadi.</p>
+            </div>
+            
+            <div style="display: flex; flex-direction: column; gap: 8px; align-items: center; margin-bottom: 10px;">
+                <p style="font-size: 10px; color: var(--text-muted); margin: 0 0 2px 0;">Dibuat penuh cinta oleh:</p>
+                <strong class="audiowide-regular" style="color: #ffffff; font-size: 15px; letter-spacing: 1px; margin-bottom: 10px;">Ginanjar Wr Hp</strong>
+                <div style="display: flex; align-items: center; justify-content: center; gap: 10px;">
+                    <svg viewBox="0 0 24 24" width="16" height="16" xmlns="http://www.w3.org/2000/svg"><path fill="#EA4335" d="M24 5.457v13.909c0 .904-.732 1.636-1.636 1.636h-3.819V11.728L12 16.636l-6.545-4.908v9.273H1.636A1.636 1.636 0 0 1 0 19.366V5.457c0-2.023 2.309-3.178 3.927-1.964L12 8.401l8.073-4.908c1.618-1.214 3.927-.059 3.927 1.964z"/><path fill="#34A853" d="M20.182 21H24v-9.273z"/><path fill="#FBBC05" d="M0 11.727V21h3.818v-9.273z"/><path fill="#4285F4" d="M12 16.636l6.545-4.908V5.457L12 10.364z"/><path fill="#EA4335" d="M3.818 5.457L12 10.364 20.182 5.457v6.271z"/></svg>
+                    <span style="font-weight: 500; font-size: 11px; letter-spacing: 0.5px; color: #dddddd;">n_dazmoe@yahoo.com</span>
                 </div>
-                <p style="font-size: 12px; color: #cbd5e1; margin: 0;">Aplikasi ini beroperasi 100% offline. Riwayat tersimpan di memori lokal HP dan brankas Google Sheets pribadi.</p>
+                <div style="display: flex; align-items: center; justify-content: center; gap: 10px;">
+                    <svg viewBox="0 0 24 24" width="16" height="16" xmlns="http://www.w3.org/2000/svg"><path fill="#ffffff" d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>
+                    <span style="font-weight: 500; font-size: 11px; letter-spacing: 0.5px; color: #dddddd;">github.com/qnt-11</span>
+                </div>
             </div>
-
-            <div style="text-align: center; margin-top: 25px;">
-                <p style="color: var(--text-muted); font-size: 10px; margin-bottom: 5px;">Dibuat penuh cinta oleh:</p>
-                <strong style="font-size: 14px; letter-spacing: 1px;">Ginanjar Wr Hp</strong>
-                <p style="text-align: center; color: #475569; font-size: 10px; margin-top: 15px; font-weight: 700; letter-spacing: 0.5px;">Hak Cipta © 2026 - All Rights Reserved</p>
-            </div>
+            <p style="text-align: center; color: #555555; font-size: 9px; margin-top: 25px; margin-bottom: 0; font-weight: 700; letter-spacing: 1px;">Hak Cipta © 2026 - All Rights Reserved</p>
         </div>
     </div>
 </div>
@@ -618,7 +559,7 @@
         <h3 class="audiowide-regular" style="margin-top:0; color:#fff;">Metode Impor</h3>
         <p style="font-size:12px; color:var(--text-muted); margin-bottom: 15px; line-height: 1.5;">Pilih cara memproses data Excel lama.</p>
         <div style="display:flex; flex-direction:column; gap:8px;">
-            <button class="modal-btn btn-white cancel" onclick="document.getElementById('import-modal').classList.add('hidden'); document.getElementById('file-import').value = ''; document.body.classList.remove('modal-open');">BATAL</button>
+            <button class="modal-btn btn-white cancel" onclick="document.getElementById('import-modal').classList.add('hidden'); document.getElementById('file-import').value = ''; if(document.querySelectorAll('.modal-overlay:not(.hidden)').length === 0) document.body.classList.remove('modal-open');">BATAL</button>
             <button class="modal-btn btn-white" onclick="promptImportRingkas()" style="opacity: 0.4;">Import Ringkas</button>
             <button class="modal-btn btn-white" onclick="executeImport('semua')" style="opacity: 0.4;">Import Semua</button>
         </div>
@@ -634,7 +575,7 @@
         <div class="form-group" style="text-align:left;" id="edit-wallet-container"><label>Sumber Dana</label><div class="custom-select-container"><div class="custom-select-trigger text-ellipsis" id="edit-wallet-trigger" onclick="toggleCustomSelect('edit-wallet-opts', event)">Tunai</div><div class="custom-select-options hidden" id="edit-wallet-opts"></div></div><input type="hidden" id="edit-wallet" value="Tunai"></div>
         <div class="form-group" style="text-align:left;"><label for="edit-amount">Jumlah (Rp)</label><input type="text" inputmode="numeric" id="edit-amount"></div>
         <div class="modal-actions">
-            <button class="modal-btn cancel" id="edit-btn-cancel" onclick="document.getElementById('edit-modal').classList.add('hidden'); document.body.classList.remove('modal-open');">BATAL</button>
+            <button class="modal-btn cancel" id="edit-btn-cancel" onclick="document.getElementById('edit-modal').classList.add('hidden'); if(document.querySelectorAll('.modal-overlay:not(.hidden)').length === 0) document.body.classList.remove('modal-open');">BATAL</button>
             <button class="modal-btn ok" id="edit-btn-save" style="opacity: 0.4;">SIMPAN</button>
         </div>
     </div>
@@ -673,19 +614,19 @@
     // =========================================================
     // 1. PENGATURAN AWAL & VARIABEL GLOBAL
     // =========================================================
-    const APP_VERSION = "1.0 ❤️"; 
-    // UPDATE: Menggunakan Link Google Sheets Baru
+    const APP_VERSION = "1.00"; 
     const CLOUD_URL = "https://script.google.com/macros/s/AKfycbytCO5WrWrBcsRWzvjQlBSdV2VoWSqhhhJR0EuPaUmHjGrfig-8VtCKv9ahzzkIXFI/exec";
 
     if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('./sw.js').catch(() => console.log("SW tidak ditemukan."));
+        navigator.serviceWorker.register('./sw.js').catch(() => console.error("SW tidak ditemukan."));
     }
 
     let AppState = {
         db: { income: [], expense: [], mutations: [], plots: [] },
         charts: { arusKas: null, portofolio: null },
         tempImport: [], tempImportPlots: [],
-        grafikSaatIni: { in: 0, out: 0, tunai: 0, bank: 0, ewal: 0, darurat1: 0, darurat2: 0, visibleExpenses: [] }
+        grafikSaatIni: { in: 0, out: 0, tunai: 0, bank: 0, ewal: 0, darurat1: 0, darurat2: 0, visibleExpenses: [] },
+        prevBalances: { total: 0, in: 0, out: 0, tunai: 0, bank: 0, ewal: 0, darurat1: 0, darurat2: 0 }
     };
 
     let saldoCache = { valid: false, data: {} };
@@ -693,12 +634,11 @@
     let globalIdCounter = 0;
 
     // =========================================================
-    // 2. SISTEM DATABASE & CACHE SALDO (TETAP SESUAI ASLI)
+    // 2. SISTEM DATABASE & CACHE SALDO
     // =========================================================
     function muatDatabase() {
         try {
-            // UPDATE: Menggunakan ID storage yang unik untuk keuanganNILA
-            let dataTersimpan = localStorage.getItem('keuanganNILA_DB'); 
+            let dataTersimpan = localStorage.getItem('famBARLA_DB');
             if (dataTersimpan) {
                 const parsed = JSON.parse(dataTersimpan);
                 AppState.db.income = parsed.income || [];
@@ -709,7 +649,7 @@
             saldoCache.valid = false;
         } catch (e) {
             console.error("Gagal memuat database:", e);
-            alert("Peringatan: Data di memori HP gagal dibaca.");
+            alert("Peringatan: Data di memori HP gagal dibaca (Korup). Segera lakukan Load dari Cloud atau Import Excel sebelum data tertimpa!");
         }
     }
 
@@ -717,8 +657,7 @@
         try {
             saldoCache.valid = false; 
             const dataString = JSON.stringify(AppState.db);
-            // UPDATE: Menggunakan ID storage yang unik untuk keuanganNILA
-            localStorage.setItem('keuanganNILA_DB', dataString);
+            localStorage.setItem('famBARLA_DB', dataString);
             
             const persenRaw = ((dataString.length * 2) / (5 * 1024 * 1024) * 100);
             const persen = Math.min(Math.max(persenRaw, 0), 100); 
@@ -736,6 +675,7 @@
                 }
             }
         } catch (e) {
+            console.error(e);
             showPopup('alert', "Memori HP penuh! Data gagal disimpan.", 'var(--danger)', () => location.reload());
         }
     }
@@ -767,7 +707,7 @@
     }
 
     // =========================================================
-    // 3. UTILITAS UMUM
+    // 3. UTILITAS UMUM & ANIMASI
     // =========================================================
     const Utils = {
         buatId: () => 'id_' + Date.now().toString(36) + '_' + Math.random().toString(36).substr(2, 9) + '_' + (++globalIdCounter),
@@ -807,6 +747,55 @@
         toTitleCase: (str) => { return str.replace(/\w\S*/g, txt => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase()); },
         amanCSV: (str) => { if (typeof str === 'string' && /^[=+\-@]/.test(str)) return "'" + str; return str; }
     };
+
+    function animateValue(obj, start, end, duration) {
+        if (!obj) return;
+        if (obj.animationId) cancelAnimationFrame(obj.animationId);
+        if (start === end) { obj.innerText = Utils.formatRp(end); return; }
+        
+        let startTimestamp = null;
+        const step = (timestamp) => {
+            if (!startTimestamp) startTimestamp = timestamp;
+            const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+            const easeProgress = progress * (2 - progress); 
+            const current = start + (end - start) * easeProgress;
+            
+            obj.innerText = Utils.formatRp(current);
+            
+            if (progress < 1) {
+                obj.animationId = window.requestAnimationFrame(step);
+            } else {
+                obj.innerText = Utils.formatRp(end);
+            }
+        };
+        obj.animationId = window.requestAnimationFrame(step);
+    }
+    
+    function triggerConfetti() {
+        const colors = ['#FF6B6B', '#4ECDC4', '#FFE66D', '#FFD166', '#9B5DE5', '#00F5D4', '#FF9A9E'];
+        for (let i = 0; i < 60; i++) {
+            const confetti = document.createElement('div');
+            confetti.style.position = 'fixed';
+            confetti.style.left = Math.random() * 100 + 'vw';
+            confetti.style.top = '-20px';
+            confetti.style.width = Math.random() * 8 + 5 + 'px';
+            confetti.style.height = Math.random() * 12 + 6 + 'px';
+            confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+            confetti.style.zIndex = '99999';
+            confetti.style.borderRadius = (Math.random() > 0.5 ? '50%' : '2px');
+            confetti.style.pointerEvents = 'none';
+            confetti.style.transform = `rotate(${Math.random() * 360}deg)`;
+            confetti.style.transition = `top ${Math.random() * 2 + 2}s cubic-bezier(0.25, 0.46, 0.45, 0.94), transform ${Math.random() * 2 + 2}s ease-in-out`;
+            document.body.appendChild(confetti);
+            
+            setTimeout(() => {
+                confetti.style.top = '120vh';
+                confetti.style.transform = `rotate(${Math.random() * 720}deg) translateX(${Math.random() * 200 - 100}px)`;
+            }, 50);
+            
+            setTimeout(() => confetti.remove(), 4000);
+        }
+    }
 
     function jalankanJam() {
         const waktu = new Date();
@@ -886,7 +875,6 @@
         
         input.value = ''; 
         input.oninput = null;
-
         btnOk.onclick = null;
         btnBatal.onclick = null;
 
@@ -936,7 +924,7 @@
     
     function closeAboutModal() { 
         document.getElementById('about-modal').classList.add('hidden'); 
-        document.body.classList.remove('modal-open');
+        if(document.querySelectorAll('.modal-overlay:not(.hidden)').length === 0) document.body.classList.remove('modal-open');
     }
 
     // =========================================================
@@ -947,6 +935,8 @@
         if (AppState.db.income.length === 0 && AppState.db.expense.length === 0 && AppState.db.mutations.length === 0 && AppState.db.plots.length === 0) {
             return showPopup('alert', "Data di HP kosong! Upload dibatalkan.", 'var(--danger)');
         }
+        if(!CLOUD_URL || CLOUD_URL.includes("ISI_DENGAN")) return showPopup('alert', "Penyimpanan Cloud belum disetel!", 'var(--danger)');
+        
         showPopup('loading', "Mengunggah data ke Cloud...\nMohon tunggu sebentar.", 'var(--cloud)');
         const payload = { activeMonth: "ALL", income: AppState.db.income, expense: AppState.db.expense, mutations: AppState.db.mutations, plots: AppState.db.plots };
         
@@ -961,6 +951,7 @@
 
     function loadFromCloud() {
         document.getElementById('dropdown-menu').classList.add('hidden');
+        if(!CLOUD_URL || CLOUD_URL.includes("ISI_DENGAN")) return showPopup('alert', "Penyimpanan Cloud belum disetel!", 'var(--danger)');
         showPopup('loading', "Mencari daftar bulan di Cloud...\nMohon tunggu.", 'var(--cloud)');
 
         const noCacheUrl = CLOUD_URL + "?action=listMonths&t=" + new Date().getTime();
@@ -972,7 +963,7 @@
         .then(months => {
             document.getElementById('custom-modal').classList.add('hidden');
             if(!months || months.length === 0) {
-                document.body.classList.remove('modal-open');
+                if(document.querySelectorAll('.modal-overlay:not(.hidden)').length === 0) document.body.classList.remove('modal-open');
                 return showPopup('alert', "Belum ada data apa pun di Cloud.", 'var(--danger)');
             }
 
@@ -997,7 +988,7 @@
 
     function closeCloudLoadModal() { 
         document.getElementById('cloud-load-modal').classList.add('hidden'); 
-        document.body.classList.remove('modal-open');
+        if(document.querySelectorAll('.modal-overlay:not(.hidden)').length === 0) document.body.classList.remove('modal-open');
     }
 
     function promptExecuteLoadCloud() {
@@ -1056,7 +1047,7 @@
     }
 
     // =========================================================
-    // 7. UPDATE UI & NAVIGASI (TETAP SESUAI ASLI)
+    // 7. UPDATE UI & NAVIGASI
     // =========================================================
     function promptResetFormulir() {
         showPopup('confirm', 'Bersihkan formulir saat ini?', 'var(--danger)', resetFormulirUtama);
@@ -1073,13 +1064,18 @@
             if (outDate) { outDate.dataset.rawDate = hrIni; outDate.value = formatHrIni; }
             
             const mutDateEl = document.getElementById('mut-date');
-            if (mutDateEl) { mutDateEl.dataset.rawDate = hrIni; mutDateEl.value = Utils.formatTglTampil(hrIni); }
+            if (mutDateEl) { mutDateEl.dataset.rawDate = hrIni; mutDateEl.value = formatHrIni; }
 
             const blnIni = hrIni.substring(0, 7); 
-            ['plot-month-filter', 'rekap-date-picker'].forEach(id => {
-                const el = document.getElementById(id); 
-                if (el) { el.dataset.rawDate = blnIni; el.value = `${BlnPdk[parseInt(blnIni.split('-')[1], 10)-1]} ${blnIni.split('-')[0]}`; }
-            });
+            const filterEl = document.getElementById('plot-month-filter');
+            if (filterEl) { filterEl.dataset.rawDate = blnIni; filterEl.value = `${BlnPdk[parseInt(blnIni.split('-')[1], 10)-1]} ${blnIni.split('-')[0]}`; }
+
+            const d = new Date();
+            const startStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-01`;
+            const elStart = document.getElementById('rekap-start-date');
+            const elEnd = document.getElementById('rekap-end-date');
+            if(elStart) { elStart.dataset.rawDate = startStr; elStart.value = Utils.formatTglTampil(startStr); }
+            if(elEnd) { elEnd.dataset.rawDate = hrIni; elEnd.value = Utils.formatTglTampil(hrIni); }
 
             if(document.getElementById('in-desc')) document.getElementById('in-desc').value = '';
             if(document.getElementById('in-amount')) document.getElementById('in-amount').value = '';
@@ -1294,6 +1290,18 @@
             const warnaTema = tipe === 'income' ? 'var(--wa-green)' : 'var(--danger)';
             const descTitleCase = Utils.toTitleCase(ket);
             
+            let isPlotLunasBarusan = false;
+            if (tipe === 'expense' && plt) {
+                const plotObj = AppState.db.plots.find(p => p.id === plt);
+                if (plotObj) {
+                    const expenseValid = AppState.db.expense.filter(e => e.date.startsWith(tgl.substring(0, 7)));
+                    const terpakaiLama = expenseValid.reduce((sum, e) => e.plotId === plt ? sum + e.amount : sum, 0);
+                    if (terpakaiLama < plotObj.target && (terpakaiLama + nom) >= plotObj.target) {
+                        isPlotLunasBarusan = true;
+                    }
+                }
+            }
+            
             AppState.db[tipe].push({ id: Utils.buatId(), date: tgl, desc: descTitleCase, amount: nom, wallet: dmp, plotId: plt });
             simpanDatabase();
             
@@ -1312,6 +1320,8 @@
             updateRekap();
             updateWalletDropdownBalances();
             showPopup('alert', "Catatan berhasil disimpan!", warnaTema);
+            
+            if (isPlotLunasBarusan) setTimeout(triggerConfetti, 300);
         } catch(e) {
             console.error(e);
             showPopup('alert', "Terjadi kesalahan sistem saat menyimpan.", '#ffffff');
@@ -1408,7 +1418,7 @@
             
             if (!descBaru) return showPopup('alert', "Keterangan tidak boleh kosong!", titleColor);
 
-            const nominalLama = data.amount, dompetLama = data.wallet;
+            const nominalLama = data.amount, dompetLama = data.wallet, plotLama = data.plotId;
             let saldoAman = true;
             let pesanError = "Saldo akan minus!";
             
@@ -1427,11 +1437,32 @@
 
             if (!saldoAman) return showPopup('alert', pesanError, titleColor);
             
+            let isPlotLunasBarusan = false;
+            if (tipe === 'expense' && plotBaru) {
+                const plotObj = AppState.db.plots.find(p => p.id === plotBaru);
+                if (plotObj) {
+                    const expenseValid = AppState.db.expense.filter(e => e.date.startsWith(tglBaru.substring(0, 7)) && e.id !== idItem);
+                    const terpakaiLainnya = expenseValid.reduce((sum, e) => e.plotId === plotBaru ? sum + e.amount : sum, 0);
+                    
+                    let terpakaiLamaTotal = terpakaiLainnya;
+                    if (plotLama === plotBaru && data.date.substring(0,7) === tglBaru.substring(0,7)) {
+                        terpakaiLamaTotal += nominalLama;
+                    }
+                    
+                    const terpakaiBaruTotal = terpakaiLainnya + nomBaru;
+                    if (terpakaiLamaTotal < plotObj.target && terpakaiBaruTotal >= plotObj.target) {
+                        isPlotLunasBarusan = true;
+                    }
+                }
+            }
+
             data.amount = nomBaru; data.wallet = dompetBaru; data.date = tglBaru; data.desc = descBaru; data.plotId = plotBaru; 
             simpanDatabase(); 
             document.getElementById('edit-modal').classList.add('hidden');
-            document.body.classList.remove('modal-open');
+            if(document.querySelectorAll('.modal-overlay:not(.hidden)').length === 0) document.body.classList.remove('modal-open');
             updateRekap(); updatePlotList(); updateWalletDropdownBalances();
+            
+            if (isPlotLunasBarusan) setTimeout(triggerConfetti, 300);
         };
     }
 
@@ -1476,7 +1507,7 @@
     function closeMutationModal() { 
         document.getElementById('mutation-modal').classList.add('hidden'); 
         document.getElementById('mut-amount').value = ''; 
-        document.body.classList.remove('modal-open');
+        if(document.querySelectorAll('.modal-overlay:not(.hidden)').length === 0) document.body.classList.remove('modal-open');
     }
 
     function processMutation(event) {
@@ -1557,6 +1588,10 @@
         showPopup('delete', "Hapus plot ini?\nRiwayat lama akan menjadi 'Tanpa Plot'.", '#ffffff', () => {
             AppState.db.plots = AppState.db.plots.filter(p => p.id !== idPlot);
             
+            AppState.db.expense.forEach(e => {
+                if (e.plotId === idPlot) e.plotId = '';
+            });
+            
             if (document.getElementById('out-plot') && document.getElementById('out-plot').value === idPlot) {
                 setCustomVal('out-plot', 'out-plot-trigger', 'out-plot-opts', '');
             }
@@ -1572,7 +1607,7 @@
     }
 
     // =========================================================
-    // 9. RENDER ENGINE & GRAFIK (TETAP SESUAI ASLI)
+    // 9. RENDER ENGINE & GRAFIK 
     // =========================================================
     function updatePlotList() {
         const filterEl = document.getElementById('plot-month-filter');
@@ -1593,7 +1628,26 @@
 
         sortedPlots.forEach(p => {
             const terpakai = expenseValid.reduce((sum, e) => e.plotId === p.id ? sum + e.amount : sum, 0);
-            const sisa = p.target - terpakai;
+            
+            let selisih = p.target - terpakai;
+            let tSelisih, nSelisih, cSelisih;
+            
+            if (selisih > 0) {
+                tSelisih = "Kurang";
+                nSelisih = `(-${Utils.formatRp(selisih)})`;
+                cSelisih = "var(--wa-green)"; 
+            } else if (selisih < 0) {
+                tSelisih = "Lebih";
+                nSelisih = `(+${Utils.formatRp(Math.abs(selisih))})`;
+                cSelisih = "var(--danger)"; 
+            } else {
+                tSelisih = "Kurang";
+                nSelisih = "(Rp 0)";
+                cSelisih = "var(--danger)"; 
+            }
+            
+            const cBayar = (terpakai >= p.target && p.target > 0) ? 'var(--danger)' : 'var(--wa-green)';
+            
             let persen = 0;
             if (p.target > 0) { persen = Math.min((terpakai / p.target) * 100, 100); }
             else if (terpakai > 0) { persen = 100; }
@@ -1605,12 +1659,12 @@
                 </div>
                 <div style="display:flex; justify-content:space-between; font-size:11px; color:var(--text-light); font-weight:500;">
                     <span class="editable" onclick="editPlot('${p.id}','target')" style="color: var(--text-muted);">Total: ${Utils.formatRp(p.target)}</span>
-                    <span>Kekurangan: <strong style="color:${sisa < 0 ? 'var(--danger)' : 'var(--wa-green)'}">${Utils.formatRp(sisa)}</strong></span>
+                    <span class="editable" onclick="editPlot('${p.id}','target')">${tSelisih}: <strong style="color:${cSelisih}">${nSelisih}</strong></span>
                 </div>
                 <div style="display:flex; justify-content:space-between; font-size:10px; color:var(--text-muted); margin-top:-4px;">
-                    <span>Sudah Dibayar: <span style="color:${terpakai > p.target ? 'var(--danger)' : 'var(--wa-green)'}">${Utils.formatRp(terpakai)}</span></span>
+                    <span>Bayar: <span style="color:${cBayar}; font-weight:bold;">${Utils.formatRp(terpakai)}</span></span>
                 </div>
-                <div class="progress-container" style="height: 6px; background: #000; border-radius: 3px; overflow: hidden;"><div class="progress-bar" style="height: 100%; width:${Math.min(persen, 100)}%; background: ${sisa < 0 ? 'var(--danger)' : 'var(--wa-green)'};"></div></div>
+                <div class="progress-container" style="height: 6px; background: #000; border-radius: 3px; overflow: hidden;"><div class="progress-bar" style="height: 100%; width:${Math.min(persen, 100)}%; background: ${cBayar};"></div></div>
             </div>`;
         });
         wadah.innerHTML = htmlList;
@@ -1631,15 +1685,19 @@
     }
 
     function updateRekap() {
-        const pickerEl = document.getElementById('rekap-date-picker');
-        if(!pickerEl) return;
+        const startEl = document.getElementById('rekap-start-date');
+        const endEl = document.getElementById('rekap-end-date');
+        
+        if(!startEl || !endEl) return;
 
-        const tglSortir = pickerEl.dataset.rawDate, 
-              kunciRaw = document.getElementById('rekap-search').value.trim(), 
-              kunciBersih = kunciRaw.replace(/[^\d]/g, '');
+        const tglStart = startEl.dataset.rawDate || '2000-01-01';
+        const tglEnd = endEl.dataset.rawDate || '2100-01-01';
+        
+        const kunciRaw = document.getElementById('rekap-search').value.trim();
+        const kunciBersih = kunciRaw.replace(/[^\d]/g, '');
               
-        const elMasuk = document.getElementById('list-income'), 
-              elKeluar = document.getElementById('list-expense');
+        const elMasuk = document.getElementById('list-income');
+        const elKeluar = document.getElementById('list-expense');
               
         const scrollIn = elMasuk.scrollTop;
         const scrollOut = elKeluar.scrollTop;
@@ -1651,7 +1709,7 @@
         } else { 
             document.getElementById('rekap-focus-hide').classList.remove('hidden'); 
             document.getElementById('clear-search-btn').classList.add('hidden');
-            document.getElementById('label-bulan-pencarian').innerText = "PILIH BULAN RIWAYAT:";
+            document.getElementById('label-bulan-pencarian').innerText = "RENTANG WAKTU:";
         }
         
         const searchTerms = kunciRaw.toLowerCase().split(' ').filter(t => t.trim() !== '');
@@ -1668,22 +1726,30 @@
                 const combinedStr = `${item.desc} ${item.walletInfo} ${item.date} ${item.amount}`.toLowerCase();
                 return searchTerms.every(term => combinedStr.includes(term));
             }
-            return item.date.startsWith(tglSortir);
+            return item.date >= tglStart && item.date <= tglEnd;
         });
 
         gabungan.sort((a, b) => {
-            const [yA, mA, dA] = (a.date || '').split('-');
-            const [yB, mB, dB] = (b.date || '').split('-');
-            const dateA = new Date(parseInt(yA), parseInt(mA)-1, parseInt(dA)).getTime() || 0;
-            const dateB = new Date(parseInt(yB), parseInt(mB)-1, parseInt(dB)).getTime() || 0;
-            if (dateA < dateB) return -1;
-            if (dateA > dateB) return 1;
-            if (a.id < b.id) return -1;
-            if (a.id > b.id) return 1;
-            return 0;
+            const dateA = a.date || '2000-01-01';
+            const dateB = b.date || '2000-01-01';
+            
+            if (dateA > dateB) return -1;
+            if (dateA < dateB) return 1;
+            
+            const idA = String(a.id || '');
+            const idB = String(b.id || '');
+            
+            const timeA = parseInt(idA.split('_')[1] || '0', 36);
+            const timeB = parseInt(idB.split('_')[1] || '0', 36);
+            
+            if (timeA > timeB) return -1;
+            if (timeA < timeB) return 1;
+            
+            const countA = parseInt(idA.split('_')[3] || '0', 10);
+            const countB = parseInt(idB.split('_')[3] || '0', 10);
+            
+            return countB - countA;
         });
-
-        gabungan.reverse();
         
         let htmlMasuk = '', htmlKeluar = ''; 
         let visibleExp = [];
@@ -1694,7 +1760,7 @@
             const isIn = item.type === 'income', isMut = item.type === 'mutations';
             
             if (isIn) { hitungMasukBulanIni += item.amount; }
-            else if (item.type === 'expense') { hitungKeluarBulanIni += item.amount; }
+            else if (item.type === 'expense') { hitungKeluarBulanIni += item.amount; visibleExp.push(item); }
 
             const barisHTML = `<li><div class="editable" onclick="editData('${item.type}','${item.id}')"><div class="history-desc-text">
                 <small style="color:var(--text-muted)">${Utils.formatTglTampil(item.date)}</small><br>${Utils.amanHTML(item.desc)}</div>
@@ -1702,14 +1768,9 @@
                 ${isMut ? '⇄' : (isIn ? '+' : '-')} ${Utils.formatRp(item.amount)} <br><small style="color:var(--text-muted); font-weight:500; font-size: 9px;">(${item.walletInfo})</small></div></div>
                 <div class="delete-btn-wrapper" onclick="deleteItem(event, '${item.type}','${item.id}')"><svg class="svg-x" viewBox="0 0 24 24" fill="none"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></div></li>`;
             
-            if (isIn) { htmlMasuk += barisHTML; } else { htmlKeluar += barisHTML; if (item.type === 'expense') visibleExp.push(item); } 
+            if (isIn) { htmlMasuk += barisHTML; } else { htmlKeluar += barisHTML; } 
         });
         
-        const elTotalIn = document.getElementById('total-in');
-        const elTotalOut = document.getElementById('total-out');
-        if (elTotalIn) elTotalIn.innerText = Utils.formatRp(hitungMasukBulanIni);
-        if (elTotalOut) elTotalOut.innerText = Utils.formatRp(hitungKeluarBulanIni);
-
         const emptyState = '<li style="justify-content:center; color:var(--border-color); font-size:11px; border: none; padding-top: 30px;"><div style="text-align:center;"><svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" fill="none" style="margin-bottom:8px;"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg><br>- Kosong -</div></li>';
         
         elMasuk.innerHTML = htmlMasuk || emptyState;
@@ -1723,22 +1784,47 @@
         const sDarurat1 = getSaldoDompet('Dana Darurat');
         const sDarurat2 = getSaldoDompet('Dana Darurat 🔒');
         
-        let globalIn = 0, globalOut = 0;
+        const sTotal = sTunai + sBank + sEwal + sDarurat1 + sDarurat2;
+
+        const badgeEl = document.getElementById('health-badge');
+        if (badgeEl) {
+            if (hitungMasukBulanIni === 0 && hitungKeluarBulanIni === 0) {
+                badgeEl.innerText = "➖ Belum Ada Transaksi";
+                badgeEl.style.color = "#888888";
+                badgeEl.style.backgroundColor = "rgba(136,136,136,0.15)";
+            } else if (hitungKeluarBulanIni > hitungMasukBulanIni) {
+                badgeEl.innerText = "🔥 Darurat! Defisit Saldo";
+                badgeEl.style.color = "var(--danger)";
+                badgeEl.style.backgroundColor = "rgba(255,59,48,0.15)";
+            } else if (hitungKeluarBulanIni >= hitungMasukBulanIni * 0.8) {
+                badgeEl.innerText = "⚠️ Hati-hati, Pengeluaran Tinggi";
+                badgeEl.style.color = "#FFA500";
+                badgeEl.style.backgroundColor = "rgba(255,165,0,0.15)";
+            } else {
+                badgeEl.innerText = "🌟 Keuangan Aman";
+                badgeEl.style.color = "var(--wa-green)";
+                badgeEl.style.backgroundColor = "rgba(0,200,83,0.15)";
+            }
+        }
+
+        animateValue(document.getElementById('total-balance'), AppState.prevBalances.total || 0, sTotal, 600);
+        animateValue(document.getElementById('total-in'), AppState.prevBalances.in || 0, hitungMasukBulanIni, 600);
+        animateValue(document.getElementById('total-out'), AppState.prevBalances.out || 0, hitungKeluarBulanIni, 600);
         
+        animateValue(document.getElementById('bal-tunai'), AppState.prevBalances.tunai || 0, sTunai, 600);
+        animateValue(document.getElementById('bal-bank'), AppState.prevBalances.bank || 0, sBank, 600);
+        animateValue(document.getElementById('bal-ewallet'), AppState.prevBalances.ewal || 0, sEwal, 600);
+        animateValue(document.getElementById('bal-darurat1'), AppState.prevBalances.darurat1 || 0, sDarurat1, 600);
+        animateValue(document.getElementById('bal-darurat2'), AppState.prevBalances.darurat2 || 0, sDarurat2, 600);
+
+        AppState.prevBalances = { total: sTotal, in: hitungMasukBulanIni, out: hitungKeluarBulanIni, tunai: sTunai, bank: sBank, ewal: sEwal, darurat1: sDarurat1, darurat2: sDarurat2 };
+
+        let globalIn = 0, globalOut = 0;
         AppState.db.income.forEach(i => globalIn += i.amount); 
         AppState.db.expense.forEach(e => globalOut += e.amount);
-        
-        document.getElementById('total-balance').innerText = Utils.formatRp(sTunai + sBank + sEwal + sDarurat1 + sDarurat2); 
-        
-        document.getElementById('bal-tunai').innerText = Utils.formatRp(sTunai);
-        document.getElementById('bal-bank').innerText = Utils.formatRp(sBank);
-        document.getElementById('bal-ewallet').innerText = Utils.formatRp(sEwal);
-        document.getElementById('bal-darurat1').innerText = Utils.formatRp(sDarurat1);
-        document.getElementById('bal-darurat2').innerText = Utils.formatRp(sDarurat2);
-        
+
         AppState.grafikSaatIni = { 
             in: globalIn, out: globalOut, tunai: sTunai, bank: sBank, ewal: sEwal, darurat1: sDarurat1, darurat2: sDarurat2,
-            filterDate: kunciRaw ? null : tglSortir,
             visibleExpenses: visibleExp
         };
     }
@@ -1753,7 +1839,7 @@
     
     function closeChartModal() { 
         document.getElementById('chart-modal').classList.add('hidden'); 
-        document.body.classList.remove('modal-open');
+        if(document.querySelectorAll('.modal-overlay:not(.hidden)').length === 0) document.body.classList.remove('modal-open');
     }
 
     function getDynamicColor(index) {
@@ -1769,7 +1855,7 @@
         let pengeluaranMap = {}; 
         let totalKeluar = 0;
         
-        const expensesToChart = d.filterDate === null ? d.visibleExpenses : AppState.db.expense.filter(e => e.date.startsWith(d.filterDate));
+        const expensesToChart = d.visibleExpenses;
 
         expensesToChart.forEach(e => {
             let pName = e.desc; 
@@ -1846,7 +1932,7 @@
     }
 
     // =========================================================
-    // 10. EXCEL IMPORT / EXPORT (TETAP SESUAI ASLI)
+    // 10. EXCEL IMPORT / EXPORT 
     // =========================================================
     function exportToExcel() {
         document.getElementById('dropdown-menu').classList.add('hidden');
@@ -1868,8 +1954,13 @@
         if (!gabungan.length) return showPopup('alert', "Belum ada catatan!", '#ffffff');
         const wsTrans = XLSX.utils.json_to_sheet(gabungan), wb = XLSX.utils.book_new(); 
         XLSX.utils.book_append_sheet(wb, wsTrans, "RekapKeuangan");
-        if(AppState.db.plots.length > 0) { const plotData = AppState.db.plots.map(p => ({ID: p.id, Nama: Utils.amanCSV(p.name), Target: p.target})); const wsPlot = XLSX.utils.json_to_sheet(plotData); XLSX.utils.book_append_sheet(wb, wsPlot, "Daftar_Plot"); }
-        XLSX.writeFile(wb, `keuanganNILA_Backup_${Utils.tglHariIni()}.xlsx`);
+        
+        if(AppState.db.plots.length > 0) { 
+            const plotData = AppState.db.plots.map(p => ({ID: p.id, Nama: Utils.amanCSV(p.name), Target: p.target})); 
+            const wsPlot = XLSX.utils.json_to_sheet(plotData); 
+            XLSX.utils.book_append_sheet(wb, wsPlot, "Daftar_Plot"); 
+        }
+        XLSX.writeFile(wb, `uang_famBARLA_Backup_${Utils.tglHariIni()}.xlsx`);
     }
 
     function parseExcelDate(val) {
@@ -1899,7 +1990,7 @@
 
     function promptImportRingkas() {
         document.getElementById('import-modal').classList.add('hidden');
-        document.body.classList.remove('modal-open');
+        if(document.querySelectorAll('.modal-overlay:not(.hidden)').length === 0) document.body.classList.remove('modal-open');
         showPopup('confirm', 'YAKIN IMPORT RINGKAS?\n\nSeluruh riwayat akan dihapus dan dijadikan Saldo Awal saja!', 'var(--danger)', () => executeImport('ringkas'));
     }
 
@@ -1919,9 +2010,15 @@
 
     function executeImport(mode) {
         document.getElementById('import-modal').classList.add('hidden'); 
-        document.body.classList.remove('modal-open');
+        if(document.querySelectorAll('.modal-overlay:not(.hidden)').length === 0) document.body.classList.remove('modal-open');
         
-        if(AppState.tempImportPlots.length > 0) { AppState.tempImportPlots.forEach(p => { if(!AppState.db.plots.some(x => x.id === p.ID)) AppState.db.plots.push({ id: p.ID, name: Utils.toTitleCase(p.Nama), target: Math.abs(Number(p.Target)) }); }); }
+        if(AppState.tempImportPlots.length > 0) { 
+            AppState.tempImportPlots.forEach(p => { 
+                if(!AppState.db.plots.some(x => x.id === p.ID)) {
+                    AppState.db.plots.push({ id: p.ID, name: Utils.toTitleCase(p.Nama), target: Math.abs(Number(p.Target)) }); 
+                }
+            }); 
+        }
         
         if (mode === 'semua') {
             AppState.tempImport.forEach(r => {
@@ -1988,7 +2085,7 @@
         simpanDatabase(); updateRekap(); updatePlotList(); updateWalletDropdownBalances();
         
         setTimeout(() => {
-            alert("Import Selesai!");
+            alert("Import Selesai!\n\nSilakan cek tab Rekap. Jika ada dompet Anda yang tiba-tiba bersaldo negatif (minus), itu artinya riwayat pengeluaran di Excel Anda lebih besar dari uang masuknya.");
         }, 500);
     }
 
@@ -1998,7 +2095,7 @@
             if (AppState.charts.arusKas) AppState.charts.arusKas.destroy();
             if (AppState.charts.portofolio) AppState.charts.portofolio.destroy();
             
-            localStorage.removeItem('keuanganNILA_DB'); 
+            localStorage.removeItem('famBARLA_DB'); 
             AppState.db = { income: [], expense: [], mutations: [], plots: [] }; 
             simpanDatabase(); 
             updateRekap(); 
@@ -2014,7 +2111,7 @@
     }
 
     // =========================================================
-    // 11. DATE PICKER KALENDER (TETAP SESUAI ASLI)
+    // 11. DATE PICKER KALENDER 
     // =========================================================
     const Picker = { mode: 'date', curr: new Date(), sel: new Date(), targetId: '', theme: '' };
     const NamaBln = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'], BlnPdk = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Ags', 'Sep', 'Okt', 'Nov', 'Des'];
@@ -2067,10 +2164,15 @@
         if (mutDateEl) { mutDateEl.dataset.rawDate = hrIni; mutDateEl.value = Utils.formatTglTampil(hrIni); }
 
         const blnIni = hrIni.substring(0, 7); 
-        ['plot-month-filter', 'rekap-date-picker'].forEach(id => {
-            const el = document.getElementById(id); 
-            if (el) { el.dataset.rawDate = blnIni; el.value = `${BlnPdk[parseInt(blnIni.split('-')[1], 10)-1]} ${blnIni.split('-')[0]}`; }
-        });
+        const filterEl = document.getElementById('plot-month-filter');
+        if (filterEl) { filterEl.dataset.rawDate = blnIni; filterEl.value = `${BlnPdk[parseInt(blnIni.split('-')[1], 10)-1]} ${blnIni.split('-')[0]}`; }
+
+        const d = new Date();
+        const startStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-01`;
+        const elStart = document.getElementById('rekap-start-date');
+        const elEnd = document.getElementById('rekap-end-date');
+        if(elStart) { elStart.dataset.rawDate = startStr; elStart.value = Utils.formatTglTampil(startStr); }
+        if(elEnd) { elEnd.dataset.rawDate = hrIni; elEnd.value = Utils.formatTglTampil(hrIni); }
     }
     
     function openPicker(id, m, w) { 
@@ -2131,7 +2233,7 @@
     
     function closePicker() { 
         document.getElementById('custom-picker').classList.add('hidden'); 
-        document.body.classList.remove('modal-open');
+        if(document.querySelectorAll('.modal-overlay:not(.hidden)').length === 0) document.body.classList.remove('modal-open');
     }
     
     function cpChange(arah) { 
@@ -2144,6 +2246,10 @@
         } else { 
             Picker.curr.setFullYear(Picker.curr.getFullYear() + arah); 
         }
+        
+        if (Picker.curr.getFullYear() > 2050) Picker.curr.setFullYear(2000);
+        if (Picker.curr.getFullYear() < 2000) Picker.curr.setFullYear(2050);
+        
         renderKalender(); 
     }
     function cpSelectDay(t) { Picker.sel = new Date(Picker.curr.getFullYear(), Picker.curr.getMonth(), t); renderKalender(); }
@@ -2157,12 +2263,15 @@
     }
     
     function setPickerDate() { 
+        const el = document.getElementById(Picker.targetId); 
+        if(!el) {
+            closePicker();
+            return;
+        }
+
         const y = Picker.sel.getFullYear();
         const m = String(Picker.sel.getMonth() + 1).padStart(2, '0');
         const d = String(Picker.sel.getDate()).padStart(2, '0');
-        const el = document.getElementById(Picker.targetId); 
-        
-        if(!el) return;
 
         if (Picker.mode === 'date') { 
             const ymd = `${y}-${m}-${d}`; 
@@ -2175,10 +2284,15 @@
         } 
         
         closePicker(); 
-        if (Picker.targetId === 'rekap-date-picker') updateRekap(); 
+        if (Picker.targetId === 'rekap-start-date' || Picker.targetId === 'rekap-end-date') updateRekap(); 
         if (Picker.targetId === 'plot-month-filter') updatePlotList(); 
     }
     
+    function terapkanVersi() {
+        const elVersi = document.getElementById('app-version-display');
+        if (elVersi) elVersi.innerText = `VERSI 1.00 ❤️`;
+    }
+
     window.addEventListener('DOMContentLoaded', () => { 
         muatDatabase(); 
         inisiasiKalenderAwal(); 
@@ -2186,6 +2300,7 @@
         updateRekap(); 
         updateWalletDropdownBalances(); 
         jalankanJam(); 
+        terapkanVersi(); 
     });
 </script>
 </body>
