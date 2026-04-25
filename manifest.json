@@ -1,6 +1,6 @@
 {
   "name": "uanga famBARLA",
-  "short_name": "uanga",
+  "short_name": "My Money",
   "description": "Aplikasi Manajemen Keuangan Pribadi famBARLA",
   "start_url": "./index.html",
   "display": "standalone",
