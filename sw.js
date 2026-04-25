@@ -1,9 +1,9 @@
 /**
  * SERVICE WORKER uang famBARLA (ENTERPRISE SECURITY & CACHE LIMIT)
- * Versi 1.01 (PRO)
+ * Versi 1.1 (PRO)
  */
 
-const APP_VERSION = '1.01'; 
+const APP_VERSION = '1.1'; 
 const CACHE_PREFIX = 'uang-fambarla-';
 const CACHE_STATIC = CACHE_PREFIX + 'static-v' + APP_VERSION;
 const CACHE_DYNAMIC = CACHE_PREFIX + 'dynamic-v' + APP_VERSION;
@@ -18,11 +18,13 @@ const staticAssets = [
   'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js'
 ];
 
+// FIX BUG: Batch Delete agar tidak looping berlebihan (Ramah Baterai & CPU)
 const limitCacheSize = (name, size) => {
   caches.open(name).then(cache => {
     cache.keys().then(keys => {
       if (keys.length > size) {
-        cache.delete(keys[0]).then(() => limitCacheSize(name, size));
+        const keysToDelete = keys.slice(0, keys.length - size);
+        Promise.all(keysToDelete.map(key => cache.delete(key)));
       }
     });
   });
@@ -30,8 +32,23 @@ const limitCacheSize = (name, size) => {
 
 self.addEventListener('install', event => {
   self.skipWaiting(); 
+  // FIX BUG: Ubah All-or-Nothing menjadi Individual Caching agar PWA kebal jika CDN down
   event.waitUntil(
-    caches.open(CACHE_STATIC).then(cache => cache.addAll(staticAssets))
+    caches.open(CACHE_STATIC).then(cache => {
+      return Promise.all(
+        staticAssets.map(asset => {
+          return fetch(asset)
+            .then(response => {
+              if (response.ok) {
+                return cache.put(asset, response);
+              }
+            })
+            .catch(error => {
+              console.warn('Lewati cache sementara (offline/CDN down):', asset);
+            });
+        })
+      );
+    })
   );
 });
 
@@ -71,36 +88,48 @@ self.addEventListener('fetch', event => {
   if (!reqUrl.protocol.startsWith('http')) return;
   if (reqUrl.pathname.endsWith('sw.js')) return;
 
-  // Bypass Google Sheets (Harus selalu langsung ke internet)
-  if (reqUrl.hostname === 'script.google.com') {
+  // FIX BUG: Bypass Google Sheets mencakup script.googleusercontent.com
+  if (reqUrl.hostname.includes('script.google')) {
     event.respondWith(fetch(req));
     return;
   }
 
-  // Normalisasi request ke root / menjadi index.html
-  const isIndex = reqUrl.pathname === '/' || reqUrl.pathname === '/index.html';
-  const cacheKey = isIndex ? './index.html' : req;
+  // FIX BUG: Normalisasi request ke root / menjadi index.html (Aman untuk GitHub Pages)
+  const isIndex = reqUrl.pathname.endsWith('/') || reqUrl.pathname.endsWith('/index.html');
+  const cacheKey = isIndex ? new Request('./index.html') : req;
 
   event.respondWith(
     caches.match(cacheKey, { ignoreSearch: true }).then(cachedResponse => {
-      // Cek apakah file ini termasuk file statis bawaan aplikasi
-      const isStatic = isIndex || staticAssets.some(asset => reqUrl.href.includes(asset.replace('./', '')));
+      
+      // FIX BUG: Pencocokan string presisi (menggunakan pathname utuh) untuk file statis
+      const isLocalStatic = staticAssets.some(asset => {
+        if (asset.startsWith('http')) return false;
+        const assetUrl = new URL(asset, self.location.origin);
+        return reqUrl.pathname === assetUrl.pathname;
+      });
+      const isCDNStatic = staticAssets.some(asset => asset.startsWith('http') && reqUrl.href === asset);
+      
+      // FIX BUG: Masukkan font .woff2 dari gstatic ke dalam cache statis
+      const isGstaticFont = reqUrl.hostname === 'fonts.gstatic.com';
+      
+      const isStatic = isIndex || isLocalStatic || isCDNStatic || isGstaticFont;
 
       if (isStatic) {
-        // STRATEGI CACHE-FIRST: Hemat kuota, ambil dari cache dulu. Fetch hanya jika gagal.
+        // STRATEGI CACHE-FIRST
         return cachedResponse || fetch(req).then(networkResponse => {
           if (networkResponse && networkResponse.ok) {
             caches.open(CACHE_STATIC).then(cache => cache.put(cacheKey, networkResponse.clone()));
           }
           return networkResponse;
         }).catch(() => {
-          // Fallback offline untuk file statis untuk mencegah error layar putih
           if (req.headers.get('accept') && req.headers.get('accept').includes('text/html')) {
             return caches.match('./index.html');
           }
+          // FIX BUG: Mengembalikan error resmi agar SW tidak crash saat offline merequest gambar/api
+          return Response.error();
         });
       } else {
-        // STRATEGI STALE-WHILE-REVALIDATE: Untuk file dinamis di luar bawaan aplikasi
+        // STRATEGI STALE-WHILE-REVALIDATE
         const fetchPromise = fetch(req).then(networkResponse => {
           if (networkResponse && networkResponse.ok && !networkResponse.redirected && networkResponse.type !== 'opaque') {
             caches.open(CACHE_DYNAMIC).then(cache => {
@@ -110,13 +139,20 @@ self.addEventListener('fetch', event => {
           }
           return networkResponse;
         }).catch(() => {
-          // Fallback offline untuk file dinamis
           if (req.headers.get('accept') && req.headers.get('accept').includes('text/html')) {
             return caches.match('./index.html');
           }
+          // FIX BUG: Mengembalikan error resmi agar SW tidak crash
+          return Response.error(); 
         });
 
-        return cachedResponse || fetchPromise;
+        // FIX BUG: Tampilkan cache jika ada, JALANKAN update di latar belakang TANPA dibunuh browser
+        if (cachedResponse) {
+          event.waitUntil(fetchPromise);
+          return cachedResponse;
+        }
+        
+        return fetchPromise;
       }
     })
   );
