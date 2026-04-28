@@ -267,7 +267,7 @@
         .progress-bar { transition: width 0.5s ease-in-out, background-color 0.3s; }
 
         /* =========================================================
-           9. MODAL & POPUP (Update: Chart Legend Kustom)
+           9. MODAL & POPUP
         ========================================================= */
         @keyframes popInBouncy { 0% { transform: scale(0.85); opacity: 0; } 60% { transform: scale(1.03); opacity: 1; } 100% { transform: scale(1); opacity: 1; } }
         
@@ -309,12 +309,11 @@
         .legend-label-container { flex: 1; overflow: hidden; white-space: nowrap; margin-right: 8px; position: relative; text-align: left; }
         .legend-label-text { display: inline-block; font-weight: 600; }
         
-        /* FIX BUG 8: Penyesuaian Marquee Legend agar tidak goyang/mundur */
         @keyframes scrollLegend { 0%, 15% { transform: translateX(0); } 85%, 100% { transform: translateX(calc(-100% + 100px)); } }
         .running-text { 
             display: inline-block; 
             white-space: nowrap; 
-            min-width: 110px; /* Menjamin lebar elemen cukup agar kalkulasi tidak bernilai positif */
+            min-width: 110px;
             animation: scrollLegend 5s linear infinite alternate; 
             padding-right: 20px; 
         }
@@ -488,7 +487,7 @@
             <h3 class="audiowide-regular" style="margin:0 0 15px 0; color:var(--wa-blue); font-size:16px;">Alokasi Anggaran</h3>
             <div class="form-group"><label for="plot-name">Nama Anggaran</label><input type="text" id="plot-name" class="auto-cap" placeholder="Uang Makan, Uang Bensin, dll" autocomplete="off" maxlength="50"></div>
             <div class="form-group"><label for="plot-amount">Total / Target (Rp)</label><input type="text" inputmode="numeric" id="plot-amount" placeholder="0"></div>
-            <button class="btn-main btn-blue audiowide-regular" onclick="savePlot()">Tambah Plot</button>
+            <button class="btn-main btn-blue audiowide-regular" onclick="savePlot(event)">Tambah Plot</button>
         </div>
         <div class="card card-flex">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-shrink:0;">
@@ -649,7 +648,7 @@
     </div>
 </div>
 
-<div id="mutation-modal" class="modal-overlay hidden">
+<div id="mutation-modal" class="modal-overlay hidden" onclick="if(event.target===this) closeMutationModal()">
     <div class="modal-box" style="padding: 20px;">
         <h3 class="audiowide-regular" style="margin-top:0; margin-bottom: 15px; color:#ffffff; font-size:16px;">⇄ Mutasi Saldo</h3>
         <div class="form-group" style="text-align:left;"><label for="mut-date">Tanggal</label><input type="text" id="mut-date" readonly onclick="openPicker('mut-date', 'date', '#ffffff'); event.stopPropagation();"></div>
@@ -677,7 +676,7 @@
     </div>
 </div>
 
-<div id="cloud-load-modal" class="modal-overlay hidden">
+<div id="cloud-load-modal" class="modal-overlay hidden" onclick="if(event.target===this) closeCloudLoadModal()">
     <div class="modal-box" style="border-color: var(--cloud);">
         <h3 class="audiowide-regular" style="margin-top:0; margin-bottom: 15px; color:var(--cloud); font-size:16px;">☁️ Load Data Cloud</h3>
         <p style="font-size:12px; color:var(--text-muted); margin-bottom: 15px; line-height: 1.5;">Pilih bulan yang ingin ditarik ke HP.</p>
@@ -757,7 +756,7 @@
     </div>
 </div>
 
-<div id="import-modal" class="modal-overlay hidden">
+<div id="import-modal" class="modal-overlay hidden" onclick="if(event.target===this) { this.classList.add('hidden'); document.getElementById('file-import').value = ''; if(document.querySelectorAll('.modal-overlay:not(.hidden)').length === 0) document.body.classList.remove('modal-open'); }">
     <div class="modal-box">
         <h3 class="audiowide-regular" style="margin-top:0; color:#fff;">Metode Impor</h3>
         <p style="font-size:12px; color:var(--text-muted); margin-bottom: 15px; line-height: 1.5;">Pilih cara memproses data Excel lama.</p>
@@ -769,7 +768,7 @@
     </div>
 </div>
 
-<div id="edit-modal" class="modal-overlay hidden">
+<div id="edit-modal" class="modal-overlay hidden" onclick="if(event.target===this) document.getElementById('edit-btn-cancel').click();">
     <div class="modal-box">
         <h3 id="edit-modal-title" class="audiowide-regular" style="margin-top:0; margin-bottom: 15px;">Edit Data</h3>
         <div class="form-group" style="text-align:left;"><label for="edit-date">Tanggal</label><input type="text" id="edit-date" readonly onclick="openPicker('edit-date','date','#ffffff'); event.stopPropagation();"></div>
@@ -784,7 +783,7 @@
     </div>
 </div>
 
-<div id="custom-modal" class="modal-overlay hidden" style="z-index: 25000 !important;">
+<div id="custom-modal" class="modal-overlay hidden" style="z-index: 25000 !important;" onclick="if(event.target===this) { const inp = document.getElementById('modal-input'); if(inp && inp.type==='password') return; const btnC = document.getElementById('modal-btn-cancel'); const btnO = document.getElementById('modal-btn-ok'); if(btnC && !btnC.classList.contains('hidden')) btnC.click(); else if(btnO && !btnO.classList.contains('hidden')) btnO.click(); }">
     <div class="modal-box">
         <h3 id="modal-title" class="audiowide-regular" style="margin-top:0; margin-bottom: 15px; font-size: 16px;">Informasi</h3>
         <div id="modal-loader" class="loader hidden"></div>
@@ -797,7 +796,7 @@
     </div>
 </div>
 
-<div id="custom-picker" class="modal-overlay hidden" style="z-index: 30000;">
+<div id="custom-picker" class="modal-overlay hidden" style="z-index: 30000;" onclick="if(event.target===this) closePicker()">
     <div class="picker-box">
         <div class="picker-header"><button class="picker-nav" onclick="cpChange(-1)">&#10094;</button><div id="cp-title" class="picker-title">2026</div><button class="picker-nav" onclick="cpChange(1)">&#10095;</button></div>
         <div id="cp-day-view"><div class="picker-days-header"><span>Min</span><span>Sen</span><span>Sel</span><span>Rab</span><span>Kam</span><span>Jum</span><span>Sab</span></div><div id="cp-grid-days" class="picker-grid"></div></div>
@@ -810,7 +809,7 @@
     </div>
 </div>
 
-<div id="extra-modal" class="modal-overlay hidden" style="z-index: 20000;">
+<div id="extra-modal" class="modal-overlay hidden" style="z-index: 20000;" onclick="if(event.target===this) tutupModalExtra()">
     <div class="modal-box" id="extra-modal-box" style="padding: 20px; width: 90%; max-width: 350px;">
         <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 12px; margin-bottom: 10px;">
             <h3 id="extra-modal-title" class="audiowide-regular" style="margin:0; font-size:15px;">Daftar Ekstra</h3>
@@ -826,7 +825,7 @@
     </div>
 </div>
 
-<div id="extra-form-modal" class="modal-overlay hidden" style="z-index: 20001;">
+<div id="extra-form-modal" class="modal-overlay hidden" style="z-index: 20001;" onclick="if(event.target===this) this.querySelector('.modal-btn.cancel').click();">
     <div class="modal-box" id="extra-form-box" style="padding: 20px;">
         <h3 id="extra-form-title" class="audiowide-regular" style="margin-top:0; margin-bottom: 15px; font-size:15px;">Catat</h3>
         
@@ -859,13 +858,13 @@
         </div>
         <input type="hidden" id="extra-id-edit" value="">
         <div class="modal-actions">
-            <button class="modal-btn cancel" onclick="document.getElementById('extra-form-modal').classList.add('hidden');">BATAL</button>
-            <button id="btn-simpan-extra" class="modal-btn ok" onclick="simpanExtra()">SIMPAN</button>
+            <button class="modal-btn cancel" onclick="document.getElementById('extra-form-modal').classList.add('hidden'); if(document.querySelectorAll('.modal-overlay:not(.hidden)').length === 0) document.body.classList.remove('modal-open');">BATAL</button>
+            <button id="btn-simpan-extra" class="modal-btn ok" onclick="simpanExtra(event)">SIMPAN</button>
         </div>
     </div>
 </div>
 
-<div id="extra-cicil-modal" class="modal-overlay hidden" style="z-index: 20001;">
+<div id="extra-cicil-modal" class="modal-overlay hidden" style="z-index: 20001;" onclick="if(event.target===this) document.getElementById('btn-batal-cicil-extra').click();">
     <div class="modal-box" id="extra-cicil-box" style="padding: 20px;">
         <h3 id="extra-cicil-title" class="audiowide-regular" style="margin-top:0; margin-bottom: 10px; font-size:15px;">Cicilan</h3>
         <p style="font-size: 11px; color: var(--text-muted); margin-bottom: 15px;"><span id="extra-cicil-desc"></span> <strong id="extra-cicil-nama" style="color:#fff;"></strong></p>
@@ -884,17 +883,17 @@
         </div>
         <input type="hidden" id="cicil-id-item" value="">
         <div class="modal-actions">
-            <button id="btn-batal-cicil-extra" class="modal-btn cancel" onclick="document.getElementById('extra-cicil-modal').classList.add('hidden');">BATAL</button>
+            <button id="btn-batal-cicil-extra" class="modal-btn cancel" onclick="document.getElementById('extra-cicil-modal').classList.add('hidden'); if(document.querySelectorAll('.modal-overlay:not(.hidden)').length === 0) document.body.classList.remove('modal-open');">BATAL</button>
             <button id="btn-proses-cicil-extra" class="modal-btn ok" onclick="prosesCicilExtra(event)">PROSES</button>
         </div>
     </div>
 </div>
 
-<div id="riwayat-cicilan-modal" class="modal-overlay hidden" style="z-index: 20002;">
+<div id="riwayat-cicilan-modal" class="modal-overlay hidden" style="z-index: 20002;" onclick="if(event.target===this) { this.classList.add('hidden'); if(document.querySelectorAll('.modal-overlay:not(.hidden)').length === 0) document.body.classList.remove('modal-open'); }">
     <div class="modal-box" id="riwayat-cicilan-box" style="padding: 20px; width: 90%; max-width: 350px;">
         <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 12px; margin-bottom: 10px;">
             <h3 id="riwayat-cicilan-title" class="audiowide-regular" style="margin:0; font-size:15px;">Riwayat Cicilan</h3>
-            <button class="icon-btn" onclick="document.getElementById('riwayat-cicilan-modal').classList.add('hidden');" style="padding:4px;">
+            <button class="icon-btn" onclick="document.getElementById('riwayat-cicilan-modal').classList.add('hidden'); if(document.querySelectorAll('.modal-overlay:not(.hidden)').length === 0) document.body.classList.remove('modal-open');" style="padding:4px;">
                 <svg class="svg-x" viewBox="0 0 24 24" fill="none" stroke="var(--danger)" stroke-linecap="round" stroke-linejoin="round">
                     <circle cx="12" cy="12" r="10" stroke-width="1.5"></circle>
                     <path d="m15 9-6 6M9 9l6 6" stroke-width="2"></path>
@@ -910,7 +909,7 @@
 </div>
 
 <input type="file" id="file-import" accept=".xlsx, .xls" class="hidden" onchange="importFromExcel(event)">
-<script>
+ <script>
     // =========================================================
     // 1. PENGATURAN AWAL & VARIABEL GLOBAL
     // =========================================================
@@ -924,6 +923,7 @@
     } catch (e) {
         console.warn("SW ditolak oleh sistem/wrapper:", e);
     }
+    
     let AppState = {
         db: { income: [], expense: [], mutations: [], plots: [], titipan: [], hutang: [], piutang: [], spaylater: [], spinjam: [] },
         charts: { arusKas: null, portofolio: null },
@@ -936,12 +936,10 @@
     let jamTerakhir = "";
     let globalIdCounter = 0;
     
-    // Variabel Limit Pagination untuk Anti-Lag
     let limitLunasEkstra = 5; 
     let limitRekapIn = 15;
     let limitRekapOut = 15;
 
-    // FIX BUG 9: Variabel penampung timer Notifikasi (Toast) agar tidak bentrok
     let toastTimeoutHide = null;
     let toastTimeoutRemove = null;
 
@@ -1048,8 +1046,6 @@
             if (!teks) return "";
             return teks.replace(/"/g, '""');
         },
-        
-        // Perbaikan Kursor Lompat agar lebih natural & stabil
         formatRibuanInput: (e) => {
             const input = e.target;
             const originalLength = input.value.length;
@@ -1115,7 +1111,6 @@
     }
     setInterval(jalankanJam, 1000);
 
-    // FIX BUG 9: Notifikasi Toast disempurnakan dengan ClearTimeout
     function showToast(pesan, warna) {
         const toast = document.getElementById('toast-notification');
         const toastMsg = document.getElementById('toast-message');
@@ -1124,7 +1119,7 @@
         clearTimeout(toastTimeoutRemove);
         
         toast.classList.remove('hidden', 'show');
-        void toast.offsetWidth; // Memicu reflow browser agar animasi terset ulang
+        void toast.offsetWidth; 
 
         toastMsg.innerText = pesan;
         toast.style.borderTopColor = warna;
@@ -1140,7 +1135,7 @@
     }
 
     // =========================================================
-    // 4. EVENT LISTENERS GLOBAL 
+    // 4. EVENT LISTENERS GLOBAL (Perbaikan Enter Buta / Bug 2)
     // =========================================================
     document.addEventListener('focus', function(e) {
         if (e.target.tagName === 'INPUT' && !e.target.readOnly && e.target.type !== 'hidden' && e.target.type !== 'file') {
@@ -1148,12 +1143,16 @@
         }
     }, true);
 
-    ['in-amount', 'out-amount', 'plot-amount', 'mut-amount', 'edit-amount', 'extra-nominal', 'extra-principal', 'cicil-nominal'].forEach(id => {
+    ['in-amount', 'out-amount', 'plot-amount', 'mut-amount', 'edit-amount', 'extra-nominal', 'extra-principal', 'cicil-nominal', 'modal-input'].forEach(id => {
         const el = document.getElementById(id);
-        if (el) el.addEventListener('input', Utils.formatRibuanInput);
+        if (el) el.addEventListener('input', function(e) {
+            if(id !== 'modal-input' || e.target.type !== 'password') {
+                Utils.formatRibuanInput(e);
+            }
+        });
     });
 
-    ['in-amount', 'out-amount', 'plot-amount', 'mut-amount'].forEach(id => {
+    ['in-amount', 'out-amount', 'plot-amount', 'mut-amount', 'edit-amount', 'extra-nominal', 'extra-principal', 'cicil-nominal', 'modal-input'].forEach(id => {
         const el = document.getElementById(id);
         if (el) {
             el.addEventListener('keypress', function (e) {
@@ -1161,8 +1160,15 @@
                     e.preventDefault();
                     if (id === 'in-amount') document.getElementById('btn-save-in').click();
                     if (id === 'out-amount') document.getElementById('btn-save-out').click();
-                    if (id === 'plot-amount') savePlot();
+                    if (id === 'plot-amount') document.querySelector('#plot .btn-blue').click();
                     if (id === 'mut-amount') document.querySelector('#mutation-modal .modal-btn.ok').click();
+                    if (id === 'edit-amount') document.getElementById('edit-btn-save').click();
+                    if (id === 'extra-nominal' || id === 'extra-principal') document.getElementById('btn-simpan-extra').click();
+                    if (id === 'cicil-nominal') document.getElementById('btn-proses-cicil-extra').click();
+                    // Pencegahan Enter Buta (Bug 2):
+                    if (id === 'modal-input' && !el.classList.contains('hidden')) {
+                        document.getElementById('modal-btn-ok').click();
+                    }
                 }
             });
         }
@@ -1224,6 +1230,8 @@
         btnOk.className = "modal-btn ok";
         btnBatal.className = "modal-btn cancel";
         
+        btnOk.disabled = false;
+        
         btnOk.style.cssText = `background-color: #222222 !important; color: ${warnaTema} !important; border: 1px solid ${warnaTema} !important; opacity: 0.4;`;
         btnBatal.style.cssText = `background-color: #222222 !important; color: ${warnaTema} !important; border: 1px solid ${warnaTema} !important;`;
         
@@ -1250,6 +1258,13 @@
             }
         };
 
+        const wrapCallback = (val) => {
+            btnOk.disabled = true;
+            setTimeout(() => { if (btnOk) btnOk.disabled = false; }, 1500);
+            closeFunc();
+            if(callback) callback(val);
+        };
+
         if (mode === 'loading') {
             if(loader) loader.classList.remove('hidden');
         } else if (mode === 'pin') {
@@ -1259,13 +1274,14 @@
             input.type = 'password';
             input.inputMode = 'numeric';
             btnOk.innerText = "VERIFIKASI";
-            btnOk.onclick = () => { closeFunc(); if(callback) callback(input.value); };
+            btnOk.onclick = () => wrapCallback(input.value);
             btnBatal.onclick = () => closeFunc();
+            setTimeout(() => input.focus(), 300);
         } else if (mode === 'delete' || mode === 'reverse') {
             btnBatal.classList.remove('hidden'); 
             btnOk.classList.remove('hidden');
             btnOk.innerText = "HAPUS";
-            btnOk.onclick = () => { closeFunc(); if(callback) callback(); };
+            btnOk.onclick = () => wrapCallback();
             btnBatal.onclick = () => closeFunc();
         } else {
             btnOk.classList.remove('hidden');
@@ -1276,15 +1292,16 @@
                 btnOk.innerText = "SIMPAN";
                 if (isAngka) { input.inputMode = "numeric"; input.value = parseInt(nilaiAwal, 10).toLocaleString('id-ID'); input.oninput = Utils.formatRibuanInput; } 
                 else { input.inputMode = "text"; input.value = nilaiAwal; }
-                btnOk.onclick = () => { closeFunc(); if(callback) callback(input.value); };
+                btnOk.onclick = () => wrapCallback(input.value);
                 btnBatal.onclick = () => closeFunc();
+                setTimeout(() => input.focus(), 300);
             } else if (mode === 'confirm') {
                 btnBatal.classList.remove('hidden'); 
                 btnOk.innerText = "LANJUTKAN";
-                btnOk.onclick = () => { closeFunc(); if(callback) callback(); };
+                btnOk.onclick = () => wrapCallback();
                 btnBatal.onclick = () => closeFunc();
             } else {
-                btnOk.onclick = () => { closeFunc(); if(callback) callback(); };
+                btnOk.onclick = () => wrapCallback();
             }
         }
     }
@@ -1401,7 +1418,6 @@
         });
     }
 
-    // FIX BUG 3: Sinkronisasi Ekstra pada Cloud Load (Mencegah Data Hantu)
     function executeLoadCloud(selectedMonth) {
         showPopup('loading', "Mengunduh data bulan " + selectedMonth + "...\nMohon tunggu.", 'var(--cloud)');
         const noCacheUrl = CLOUD_URL + "?action=loadMonth&month=" + selectedMonth + "&t=" + new Date().getTime();
@@ -1433,8 +1449,6 @@
                     });
                 }
 
-                // FIX: Gunakan Overwrite untuk Data Ekstra, karena Cloud adalah sumber utama (Absolute Truth)
-                // Ini menghilangkan celah "Data Hantu" jika data dihapus di HP lain.
                 if (data.titipan) AppState.db.titipan = data.titipan;
                 if (data.hutang) AppState.db.hutang = data.hutang;
                 if (data.piutang) AppState.db.piutang = data.piutang;
@@ -1458,7 +1472,7 @@
         })
         .catch(err => { clearTimeout(timeoutId); showPopup('alert', "Gagal mengunduh! Pastikan koneksi internet aktif.", 'var(--danger)'); });
     }
-    // =========================================================
+       // =========================================================
     // 7. UPDATE UI & NAVIGASI
     // =========================================================
     function promptResetFormulir() {
@@ -1866,6 +1880,10 @@
         document.body.classList.add('modal-open');
         
         btnSave.onclick = () => {
+            // Anti-Spam
+            btnSave.disabled = true;
+            setTimeout(() => { if (btnSave) btnSave.disabled = false; }, 1500);
+
             const plotBaru = document.getElementById('edit-plot-val').value || "";
 
             if (isEditSebagian) {
@@ -1926,6 +1944,7 @@
             }
         };
     }
+
     function deleteItem(event, tipe, idItem) {
         event.stopPropagation();
         
@@ -2024,7 +2043,13 @@
         }
     }
     
-    function savePlot() {
+    function savePlot(event) {
+        // Anti-Spam
+        if (event && event.target) {
+            event.target.disabled = true;
+            setTimeout(() => event.target.disabled = false, 1500);
+        }
+
         const nama = Utils.toTitleCase(document.getElementById('plot-name').value.trim());
         const rawAmount = document.getElementById('plot-amount').value.trim();
         const target = Math.abs(Number(rawAmount.replace(/[^\d]/g, '')));
@@ -2392,7 +2417,6 @@
         return brightColors[index % brightColors.length];
     }
 
-    // FIX BUG 5: Matikan Tooltip Grafik agar tidak muncul pesan "Rp 1" saat Kosong
     function renderGrafik() {
         const d = AppState.grafikSaatIni;
         
@@ -2510,7 +2534,6 @@
     // =========================================================
     // 10. EXCEL IMPORT / EXPORT 
     // =========================================================
-    
     const prepExtraForExcel = (dataArray) => {
         if(!dataArray) return [];
         return dataArray.map(item => {
@@ -2603,7 +2626,7 @@
     function promptImportRingkas() {
         document.getElementById('import-modal').classList.add('hidden');
         if(document.querySelectorAll('.modal-overlay:not(.hidden)').length === 0) document.body.classList.remove('modal-open');
-        showPopup('confirm', 'YAKIN IMPORT RINGKAS?\n\nSeluruh riwayat akan dihapus dan dijadikan Saldo Awal saja!', 'var(--danger)', () => executeImport('ringkas'));
+        showPopup('confirm', 'YAKIN IMPORT RINGKAS?\n\nSeluruh riwayat pendapatan & pengeluaran akan diringkas menjadi Saldo Awal saja (Catatan tagihan & hutang yang berjalan tidak akan dihapus).', 'var(--danger)', () => executeImport('ringkas'));
     }
 
     function importFromExcel(e) {
@@ -2651,7 +2674,6 @@
         });
     };
 
-    // FIX BUG 2: Gunakan Logika Merge/Upsert untuk data Ekstra pada Import Excel Semua
     function executeImport(mode) {
         document.getElementById('import-modal').classList.add('hidden'); 
         if(document.querySelectorAll('.modal-overlay:not(.hidden)').length === 0) document.body.classList.remove('modal-open');
@@ -2712,12 +2734,6 @@
                 }
             });
         } else {
-            AppState.db.titipan = [];
-            AppState.db.hutang = [];
-            AppState.db.piutang = [];
-            AppState.db.spaylater = [];
-            AppState.db.spinjam = [];
-
             let kalk = { 'Tunai': 0, 'Bank': 0, 'e-Wallet': 0, 'Dana Darurat': 0 };
             AppState.tempImport.forEach(r => { 
                 let rawNom = String(r.Jumlah).replace(/\./g, '').replace(/,/g, '.');
@@ -2974,8 +2990,7 @@
         if (Picker.targetId === 'rekap-start-date' || Picker.targetId === 'rekap-end-date') updateRekap(); 
         if (Picker.targetId === 'plot-month-filter') updatePlotList(); 
     }
-    
-    // FIX BUG 4: Gunakan Variabel Dinamis agar lebih standar
+
     function terapkanVersi() {
         const elVersi = document.getElementById('app-version-display');
         if (elVersi) elVersi.innerText = `VERSI ${APP_VERSION} (PRO)`;
@@ -3100,7 +3115,6 @@
             
             lunasDitampilkan.forEach(t => {
                 const isTitipan = ModeEkstraAktif === 'titipan';
-                // FIX BUG 8: Munculkan Tombol Riwayat agar user bisa melihat / menghapus pembayaran terakhir jika ada salah ketik
                 const showRiwayatBtnLunas = (!isTitipan && t.paymentIds && t.paymentIds.length > 0) ? `<button class="extra-btn" style="color:var(--text-muted); border:1px solid var(--border-color); display:flex; align-items:center; padding:6px; background: transparent; margin-right: 6px;" onclick="bukaRiwayatCicilan('${t.id}')" title="Riwayat Cicilan Terakhir">${svgHistory}</button>` : '';
 
                 html += `
@@ -3154,7 +3168,6 @@
         if(document.querySelectorAll('.modal-overlay:not(.hidden)').length === 0) document.body.classList.remove('modal-open');
     }
 
-    // FIX BUG 10: Tampilkan opsi Jatuh Tempo untuk SPayLater
     function bukaFormExtra(mode, id = null) {
         const cfg = DB_EKSTRA[ModeEkstraAktif];
         const tglHariIni = Utils.tglHariIni();
@@ -3254,7 +3267,13 @@
         document.getElementById('extra-form-modal').classList.remove('hidden');
     }
 
-    function simpanExtra() {
+    function simpanExtra(event) {
+        // Anti-Spam
+        if (event && event.target) {
+            event.target.disabled = true;
+            setTimeout(() => event.target.disabled = false, 1500);
+        }
+
         const cfg = DB_EKSTRA[ModeEkstraAktif];
         const idEdit = document.getElementById('extra-id-edit').value;
         const nama = Utils.toTitleCase(document.getElementById('extra-nama').value.trim());
@@ -3300,7 +3319,6 @@
                         }
                         dataExt.nama = nama; dataExt.catatan = catatan; dataExt.amount = amount; dataExt.dateIn = dateIn; if(dueDate !== undefined) dataExt.dueDate = dueDate; 
                         
-                        // FIX BUG 9: Perbaiki status nyangkut "Rp 0"
                         if (dataExt.paidAmount >= amount) {
                             dataExt.status = 'selesai';
                             if(!dataExt.dateOut) { const w = new Date(); dataExt.dateOut = `Lunas pada: ${w.getDate()}/${w.getMonth()+1}/${w.getFullYear()}`; }
@@ -3334,7 +3352,6 @@
 
                              dataExt.nama = nama; dataExt.catatan = catatan; dataExt.amount = amount; dataExt.dateIn = dateIn; if(dueDate !== undefined) dataExt.dueDate = dueDate;
                              
-                             // FIX BUG 9: Perbaiki status nyangkut "Rp 0"
                              if (dataExt.paidAmount >= amount) {
                                  dataExt.status = 'selesai';
                                  if(!dataExt.dateOut) { const w = new Date(); dataExt.dateOut = `Lunas pada: ${w.getDate()}/${w.getMonth()+1}/${w.getFullYear()}`; }
@@ -3353,7 +3370,6 @@
                              }
                              dataExt.nama = nama; dataExt.catatan = catatan; dataExt.amount = amount; dataExt.principal = principal; dataExt.dateIn = dateIn; if(dueDate !== undefined) dataExt.dueDate = dueDate;
                              
-                             // FIX BUG 9: Perbaiki status nyangkut "Rp 0" untuk SPinjam
                              if (dataExt.paidAmount >= amount) {
                                  dataExt.status = 'selesai';
                                  if(!dataExt.dateOut) { const w = new Date(); dataExt.dateOut = `Lunas pada: ${w.getDate()}/${w.getMonth()+1}/${w.getFullYear()}`; }
@@ -3430,8 +3446,9 @@
     }
 
     function prosesCicilExtra(event) {
+        // Anti-Spam
         const btn = event.target;
-        btn.disabled = true; setTimeout(() => btn.disabled = false, 1500);
+        if(btn) { btn.disabled = true; setTimeout(() => btn.disabled = false, 1500); }
 
         const cfg = DB_EKSTRA[ModeEkstraAktif];
         const id = document.getElementById('cicil-id-item').value;
@@ -3521,7 +3538,6 @@
         document.getElementById('riwayat-cicilan-modal').classList.remove('hidden');
     }
 
-    // FIX BUG 1: Validasi Keamanan PIN saat membatalkan Cicilan
     function hapusCicilan(idEkstra, idPayment) {
         const cfg = DB_EKSTRA[ModeEkstraAktif];
         const dataExt = AppState.db[ModeEkstraAktif].find(x => x.id === idEkstra);
@@ -3562,7 +3578,6 @@
         });
     }
 
-    // FIX BUG 1: Validasi Keamanan PIN saat membatalkan Permanen Riwayat Ekstra
     function hapusExtra(id) {
         const cfg = DB_EKSTRA[ModeEkstraAktif];
         const dataExt = AppState.db[ModeEkstraAktif].find(x => x.id === id);
@@ -3636,7 +3651,6 @@
         hariIni.setHours(0, 0, 0, 0); 
         let pesanPeringatan = "";
         
-        // SPayLater kini juga diawasi dengan ketat
         const tagihanAktif = [...(AppState.db.spaylater || []), ...(AppState.db.spinjam || []), ...(AppState.db.hutang || [])];
         
         tagihanAktif.forEach(item => {
