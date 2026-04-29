@@ -1,9 +1,9 @@
 /**
  * SERVICE WORKER uang famBARLA (ENTERPRISE SECURITY & SMART CACHE)
- * Versi 2.6 (PRO)
+ * Versi 2.7 (PRO)
  */
 
-const APP_VERSION = '2.6'; 
+const APP_VERSION = '2.7'; 
 const CACHE_PREFIX = 'uang-fambarla-';
 const CACHE_STATIC = CACHE_PREFIX + 'static-v' + APP_VERSION;
 const CACHE_DYNAMIC = CACHE_PREFIX + 'dynamic-v' + APP_VERSION;
