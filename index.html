@@ -1164,7 +1164,12 @@
     ['in-amount', 'out-amount', 'plot-amount', 'mut-amount', 'edit-amount', 'extra-nominal', 'extra-principal', 'cicil-nominal', 'modal-input'].forEach(id => {
         const el = document.getElementById(id);
         if (el) el.addEventListener('input', function(e) {
-            if(id !== 'modal-input' || e.target.type !== 'password') {
+            if (id === 'modal-input') {
+                // FIX: Hanya format ke ribuan jika sedang mode input angka (numeric)
+                if (e.target.inputMode === 'numeric' && e.target.type !== 'password') {
+                    Utils.formatRibuanInput(e);
+                }
+            } else {
                 Utils.formatRibuanInput(e);
             }
         });
