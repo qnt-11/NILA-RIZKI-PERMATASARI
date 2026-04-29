@@ -572,7 +572,7 @@
                 </div>
 
                 <div class="dropdown-wrapper" style="position: absolute; top: 8px; right: 8px;">
-                    <button class="icon-btn" onclick="toggleBalanceMenu(event)" style="padding: 4px;">
+                    <button class="icon-btn" onclick="openChartModal()" style="padding: 4px;" title="Tampilkan Grafik">
                         <svg viewBox="0 0 42 42" width="20" height="20" style="transform: rotate(-90deg);">
                             <circle cx="21" cy="21" r="15.915" fill="transparent" stroke="#2ecc71" stroke-width="8" stroke-dasharray="20 80" stroke-dashoffset="0"></circle>
                             <circle cx="21" cy="21" r="15.915" fill="transparent" stroke="#3A86FF" stroke-width="8" stroke-dasharray="20 80" stroke-dashoffset="-20"></circle>
@@ -589,9 +589,7 @@
                             <circle cx="21" cy="21" r="11.915" fill="#111"></circle>
                         </svg>
                     </button>
-                    <div id="balance-dropdown" class="dropdown-content hidden" style="top: 35px; right: 0; min-width: 140px;">
-                        <div class="dropdown-item" onclick="openChartModal()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M18 9l-5 5-4-4-4 4"/></svg> Tampilkan Grafik</div>
-                    </div>
+                    <div id="balance-dropdown" class="hidden"></div>
                 </div>
             </div>
             
@@ -630,6 +628,7 @@
         </div>
     </div>
 </div>
+
 <div id="chart-modal" class="modal-overlay hidden" onclick="if(event.target===this) closeChartModal()">
     <div class="modal-box" style="width: 90%; max-width: 360px; padding: 25px 20px;">
         <h3 class="audiowide-regular" style="margin-top:0; margin-bottom: 20px; color:var(--text-light); font-size:16px;">Status Keuangan Saat Ini</h3>
@@ -756,12 +755,12 @@
     </div>
 </div>
 
-<div id="import-modal" class="modal-overlay hidden" onclick="if(event.target===this) { this.classList.add('hidden'); document.getElementById('file-import').value = ''; if(document.querySelectorAll('.modal-overlay:not(.hidden)').length === 0) document.body.classList.remove('modal-open'); }">
+<div id="import-modal" class="modal-overlay hidden" onclick="if(event.target===this) { document.getElementById('file-import').value = ''; tutupModalAman('import-modal'); }">
     <div class="modal-box">
         <h3 class="audiowide-regular" style="margin-top:0; color:#fff;">Metode Impor</h3>
         <p style="font-size:12px; color:var(--text-muted); margin-bottom: 15px; line-height: 1.5;">Pilih cara memproses data Excel lama.</p>
         <div style="display:flex; flex-direction:column; gap:8px;">
-            <button class="modal-btn btn-white cancel" onclick="document.getElementById('import-modal').classList.add('hidden'); document.getElementById('file-import').value = ''; if(document.querySelectorAll('.modal-overlay:not(.hidden)').length === 0) document.body.classList.remove('modal-open');">BATAL</button>
+            <button class="modal-btn btn-white cancel" onclick="document.getElementById('file-import').value = ''; tutupModalAman('import-modal');">BATAL</button>
             <button class="modal-btn btn-white" onclick="promptImportRingkas()" style="opacity: 0.4;">Import Ringkas</button>
             <button class="modal-btn btn-white" onclick="executeImport('semua')" style="opacity: 0.4;">Import Semua</button>
         </div>
@@ -777,7 +776,7 @@
         <div class="form-group" style="text-align:left;" id="edit-wallet-container"><label>Sumber Dana</label><div class="custom-select-container"><div class="custom-select-trigger text-ellipsis" id="edit-wallet-trigger" onclick="toggleCustomSelect('edit-wallet-opts', event)">Tunai</div><div class="custom-select-options hidden" id="edit-wallet-opts"></div></div><input type="hidden" id="edit-wallet" value="Tunai"></div>
         <div class="form-group" style="text-align:left;"><label for="edit-amount">Jumlah (Rp)</label><input type="text" inputmode="numeric" id="edit-amount"></div>
         <div class="modal-actions">
-            <button class="modal-btn cancel" id="edit-btn-cancel" onclick="document.getElementById('edit-modal').classList.add('hidden'); if(document.querySelectorAll('.modal-overlay:not(.hidden)').length === 0) document.body.classList.remove('modal-open');">BATAL</button>
+            <button class="modal-btn cancel" id="edit-btn-cancel" onclick="tutupModalAman('edit-modal')">BATAL</button>
             <button class="modal-btn ok" id="edit-btn-save" style="opacity: 0.4;">SIMPAN</button>
         </div>
     </div>
@@ -825,7 +824,7 @@
     </div>
 </div>
 
-<div id="extra-form-modal" class="modal-overlay hidden" style="z-index: 20001;" onclick="if(event.target===this) this.querySelector('.modal-btn.cancel').click();">
+<div id="extra-form-modal" class="modal-overlay hidden" style="z-index: 20001;" onclick="if(event.target===this) tutupModalAman('extra-form-modal')">
     <div class="modal-box" id="extra-form-box" style="padding: 20px;">
         <h3 id="extra-form-title" class="audiowide-regular" style="margin-top:0; margin-bottom: 15px; font-size:15px;">Catat</h3>
         
@@ -858,13 +857,13 @@
         </div>
         <input type="hidden" id="extra-id-edit" value="">
         <div class="modal-actions">
-            <button class="modal-btn cancel" onclick="document.getElementById('extra-form-modal').classList.add('hidden'); if(document.querySelectorAll('.modal-overlay:not(.hidden)').length === 0) document.body.classList.remove('modal-open');">BATAL</button>
+            <button class="modal-btn cancel" onclick="tutupModalAman('extra-form-modal')">BATAL</button>
             <button id="btn-simpan-extra" class="modal-btn ok" onclick="simpanExtra(event)">SIMPAN</button>
         </div>
     </div>
 </div>
 
-<div id="extra-cicil-modal" class="modal-overlay hidden" style="z-index: 20001;" onclick="if(event.target===this) document.getElementById('btn-batal-cicil-extra').click();">
+<div id="extra-cicil-modal" class="modal-overlay hidden" style="z-index: 20001;" onclick="if(event.target===this) tutupModalAman('extra-cicil-modal')">
     <div class="modal-box" id="extra-cicil-box" style="padding: 20px;">
         <h3 id="extra-cicil-title" class="audiowide-regular" style="margin-top:0; margin-bottom: 10px; font-size:15px;">Cicilan</h3>
         <p style="font-size: 11px; color: var(--text-muted); margin-bottom: 15px;"><span id="extra-cicil-desc"></span> <strong id="extra-cicil-nama" style="color:#fff;"></strong></p>
@@ -883,17 +882,17 @@
         </div>
         <input type="hidden" id="cicil-id-item" value="">
         <div class="modal-actions">
-            <button id="btn-batal-cicil-extra" class="modal-btn cancel" onclick="document.getElementById('extra-cicil-modal').classList.add('hidden'); if(document.querySelectorAll('.modal-overlay:not(.hidden)').length === 0) document.body.classList.remove('modal-open');">BATAL</button>
+            <button id="btn-batal-cicil-extra" class="modal-btn cancel" onclick="tutupModalAman('extra-cicil-modal')">BATAL</button>
             <button id="btn-proses-cicil-extra" class="modal-btn ok" onclick="prosesCicilExtra(event)">PROSES</button>
         </div>
     </div>
 </div>
 
-<div id="riwayat-cicilan-modal" class="modal-overlay hidden" style="z-index: 20002;" onclick="if(event.target===this) { this.classList.add('hidden'); if(document.querySelectorAll('.modal-overlay:not(.hidden)').length === 0) document.body.classList.remove('modal-open'); }">
+<div id="riwayat-cicilan-modal" class="modal-overlay hidden" style="z-index: 20002;" onclick="if(event.target===this) tutupModalAman('riwayat-cicilan-modal')">
     <div class="modal-box" id="riwayat-cicilan-box" style="padding: 20px; width: 90%; max-width: 350px;">
         <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 12px; margin-bottom: 10px;">
             <h3 id="riwayat-cicilan-title" class="audiowide-regular" style="margin:0; font-size:15px;">Riwayat Cicilan</h3>
-            <button class="icon-btn" onclick="document.getElementById('riwayat-cicilan-modal').classList.add('hidden'); if(document.querySelectorAll('.modal-overlay:not(.hidden)').length === 0) document.body.classList.remove('modal-open');" style="padding:4px;">
+            <button class="icon-btn" onclick="tutupModalAman('riwayat-cicilan-modal')" style="padding:4px;">
                 <svg class="svg-x" viewBox="0 0 24 24" fill="none" stroke="var(--danger)" stroke-linecap="round" stroke-linejoin="round">
                     <circle cx="12" cy="12" r="10" stroke-width="1.5"></circle>
                     <path d="m15 9-6 6M9 9l6 6" stroke-width="2"></path>
@@ -909,7 +908,7 @@
 </div>
 
 <input type="file" id="file-import" accept=".xlsx, .xls" class="hidden" onchange="importFromExcel(event)">
- <script>
+<script>
     // =========================================================
     // 1. PENGATURAN AWAL & VARIABEL GLOBAL
     // =========================================================
@@ -944,7 +943,28 @@
     let toastTimeoutRemove = null;
 
     // =========================================================
-    // 2. SISTEM DATABASE & CACHE SALDO
+    // 2. FUNGSI PEMBERSIH "SKRIP TAMBALAN" (CENTRALIZED LOGIC)
+    // =========================================================
+    function tutupSemuaMenuDrop() {
+        document.getElementById('dropdown-menu').classList.add('hidden');
+        document.getElementById('balance-dropdown').classList.add('hidden');
+        document.getElementById('extra-dropdown').classList.add('hidden');
+        document.querySelectorAll('.custom-select-options').forEach(el => el.classList.add('hidden'));
+        
+        const kebabSvg = document.querySelector('#kebab-btn svg');
+        if(kebabSvg) kebabSvg.style.transform = 'rotate(0deg)'; 
+    }
+
+    function tutupModalAman(modalId) {
+        const modal = document.getElementById(modalId);
+        if(modal) modal.classList.add('hidden');
+        if(document.querySelectorAll('.modal-overlay:not(.hidden)').length === 0) {
+            document.body.classList.remove('modal-open');
+        }
+    }
+
+    // =========================================================
+    // 3. SISTEM DATABASE & CACHE SALDO
     // =========================================================
     function muatDatabase() {
         try {
@@ -1022,7 +1042,7 @@
     }
     
     // =========================================================
-    // 3. UTILITAS UMUM & TOAST ANIMASI
+    // 4. UTILITAS UMUM & TOAST ANIMASI
     // =========================================================
     const Utils = {
         buatId: () => 'id_' + Date.now().toString(36) + '_' + Math.random().toString(36).substr(2, 9) + '_' + (++globalIdCounter),
@@ -1135,7 +1155,7 @@
     }
 
     // =========================================================
-    // 4. EVENT LISTENERS GLOBAL (Perbaikan Enter Buta / Bug 2)
+    // 5. EVENT LISTENERS GLOBAL 
     // =========================================================
     document.addEventListener('focus', function(e) {
         if (e.target.tagName === 'INPUT' && !e.target.readOnly && e.target.type !== 'hidden' && e.target.type !== 'file') {
@@ -1165,7 +1185,6 @@
                     if (id === 'edit-amount') document.getElementById('edit-btn-save').click();
                     if (id === 'extra-nominal' || id === 'extra-principal') document.getElementById('btn-simpan-extra').click();
                     if (id === 'cicil-nominal') document.getElementById('btn-proses-cicil-extra').click();
-                    // Pencegahan Enter Buta (Bug 2):
                     if (id === 'modal-input' && !el.classList.contains('hidden')) {
                         document.getElementById('modal-btn-ok').click();
                     }
@@ -1191,17 +1210,19 @@
         }
 
         const menu = document.getElementById('dropdown-menu');
-        const kebabSvg = document.querySelector('#kebab-btn svg');
         if (menu && !menu.classList.contains('hidden') && !e.target.closest('#kebab-btn')) {
-            menu.classList.add('hidden');
-            if(kebabSvg) kebabSvg.style.transform = 'rotate(0deg)'; 
+            tutupSemuaMenuDrop();
         }
         
         const balMenu = document.getElementById('balance-dropdown');
-        if (balMenu && !balMenu.classList.contains('hidden') && !e.target.closest('.balance-box')) balMenu.classList.add('hidden');
+        if (balMenu && !balMenu.classList.contains('hidden') && !e.target.closest('.balance-box')) {
+            tutupSemuaMenuDrop();
+        }
         
         const extMenu = document.getElementById('extra-dropdown');
-        if (extMenu && !extMenu.classList.contains('hidden') && !e.target.closest('.extra-menu-wrapper')) extMenu.classList.add('hidden');
+        if (extMenu && !extMenu.classList.contains('hidden') && !e.target.closest('.extra-menu-wrapper')) {
+            tutupSemuaMenuDrop();
+        }
         
         document.querySelectorAll('.custom-select-options').forEach(el => {
             if (!el.classList.contains('hidden') && !e.target.closest('.custom-select-container')) el.classList.add('hidden');
@@ -1209,7 +1230,7 @@
     });
 
     // =========================================================
-    // 5. MANAJEMEN POPUP, MODAL & PIN
+    // 6. MANAJEMEN POPUP, MODAL & PIN
     // =========================================================
     function showPopup(mode, pesan, warnaTema = '#ffffff', callback = null, nilaiAwal = null, isAngka = false) {
         const overlay = document.getElementById('custom-modal'), 
@@ -1252,10 +1273,7 @@
 
         const closeFunc = () => { 
             input.type = 'text';
-            overlay.classList.add('hidden'); 
-            if(document.querySelectorAll('.modal-overlay:not(.hidden)').length === 0) {
-                document.body.classList.remove('modal-open'); 
-            }
+            tutupModalAman('custom-modal');
         };
 
         const wrapCallback = (val) => {
@@ -1317,27 +1335,20 @@
     }
 
     function openAboutModal() { 
-        document.getElementById('dropdown-menu').classList.add('hidden'); 
-        document.getElementById('balance-dropdown').classList.add('hidden'); 
-        document.getElementById('extra-dropdown').classList.add('hidden');
-        const kebabSvg = document.querySelector('#kebab-btn svg');
-        if(kebabSvg) kebabSvg.style.transform = 'rotate(0deg)'; 
+        tutupSemuaMenuDrop();
         document.getElementById('about-modal').classList.remove('hidden'); 
         document.body.classList.add('modal-open');
     }
     
     function closeAboutModal() { 
-        document.getElementById('about-modal').classList.add('hidden'); 
-        if(document.querySelectorAll('.modal-overlay:not(.hidden)').length === 0) document.body.classList.remove('modal-open');
+        tutupModalAman('about-modal');
     }
 
     // =========================================================
-    // 6. CLOUD BACKUP & LOAD 
+    // 7. CLOUD BACKUP & LOAD 
     // =========================================================
     function backupToCloud() {
-        document.getElementById('dropdown-menu').classList.add('hidden');
-        const kebabSvg = document.querySelector('#kebab-btn svg');
-        if(kebabSvg) kebabSvg.style.transform = 'rotate(0deg)'; 
+        tutupSemuaMenuDrop();
 
         if (AppState.db.income.length === 0 && AppState.db.expense.length === 0 && AppState.db.mutations.length === 0 && AppState.db.plots.length === 0 && AppState.db.titipan.length === 0 && AppState.db.hutang.length === 0 && AppState.db.piutang.length === 0 && AppState.db.spaylater.length === 0 && AppState.db.spinjam.length === 0) {
             return showPopup('alert', "Data di HP kosong! Upload dibatalkan.", 'var(--danger)');
@@ -1355,8 +1366,7 @@
                 fetch(CLOUD_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(payload), signal: controller.signal })
                 .then(res => { clearTimeout(timeoutId); if(!res.ok) throw new Error("Gagal"); return res.text(); })
                 .then(res => { 
-                    document.getElementById('custom-modal').classList.add('hidden');
-                    if(document.querySelectorAll('.modal-overlay:not(.hidden)').length === 0) document.body.classList.remove('modal-open');
+                    tutupModalAman('custom-modal');
                     showToast("Seluruh data berhasil di-Upload ke Cloud!", 'var(--cloud)'); 
                 })
                 .catch(err => { clearTimeout(timeoutId); showPopup('alert', "Gagal mengunggah! Pastikan koneksi internet aktif.", 'var(--danger)'); });
@@ -1365,9 +1375,7 @@
     }
 
     function loadFromCloud() {
-        document.getElementById('dropdown-menu').classList.add('hidden');
-        const kebabSvg = document.querySelector('#kebab-btn svg');
-        if(kebabSvg) kebabSvg.style.transform = 'rotate(0deg)'; 
+        tutupSemuaMenuDrop();
 
         if(!CLOUD_URL || CLOUD_URL.includes("ISI_DENGAN")) return showPopup('alert', "Penyimpanan Cloud belum disetel!", 'var(--danger)');
         showPopup('loading', "Mencari daftar bulan di Cloud...\nMohon tunggu.", 'var(--cloud)');
@@ -1379,9 +1387,8 @@
         fetch(noCacheUrl, { signal: controller.signal })
         .then(res => { clearTimeout(timeoutId); if(!res.ok) throw new Error("Gagal"); return res.json(); })
         .then(months => {
-            document.getElementById('custom-modal').classList.add('hidden');
+            tutupModalAman('custom-modal');
             if(!months || months.length === 0) {
-                if(document.querySelectorAll('.modal-overlay:not(.hidden)').length === 0) document.body.classList.remove('modal-open');
                 return showPopup('alert', "Belum ada data apa pun di Cloud.", 'var(--danger)');
             }
 
@@ -1405,8 +1412,7 @@
     }
 
     function closeCloudLoadModal() { 
-        document.getElementById('cloud-load-modal').classList.add('hidden'); 
-        if(document.querySelectorAll('.modal-overlay:not(.hidden)').length === 0) document.body.classList.remove('modal-open');
+        tutupModalAman('cloud-load-modal');
     }
 
     function promptExecuteLoadCloud() {
@@ -1461,8 +1467,7 @@
                     updateRekap(); 
                     updatePlotList(); 
                     updateWalletDropdownBalances();
-                    document.getElementById('custom-modal').classList.add('hidden');
-                    if(document.querySelectorAll('.modal-overlay:not(.hidden)').length === 0) document.body.classList.remove('modal-open');
+                    tutupModalAman('custom-modal');
                     showToast("Data bulan " + selectedMonth + " berhasil ditarik!", 'var(--cloud)');
                 } catch (e) {
                     AppState.db.income = backupIn; AppState.db.expense = backupEx; AppState.db.mutations = backupMu;
@@ -1472,8 +1477,9 @@
         })
         .catch(err => { clearTimeout(timeoutId); showPopup('alert', "Gagal mengunduh! Pastikan koneksi internet aktif.", 'var(--danger)'); });
     }
-       // =========================================================
-    // 7. UPDATE UI & NAVIGASI
+
+    // =========================================================
+    // 8. UPDATE UI & NAVIGASI
     // =========================================================
     function promptResetFormulir() {
         showPopup('confirm', 'Bersihkan formulir saat ini?', 'var(--danger)', resetFormulirUtama);
@@ -1642,11 +1648,7 @@
     }
 
     function showPage(event, idHalaman, index) {
-        document.getElementById('dropdown-menu').classList.add('hidden');
-        document.getElementById('balance-dropdown').classList.add('hidden');
-        document.getElementById('extra-dropdown').classList.add('hidden');
-        const kebabSvg = document.querySelector('#kebab-btn svg');
-        if(kebabSvg) kebabSvg.style.transform = 'rotate(0deg)'; 
+        tutupSemuaMenuDrop();
 
         const slider = document.getElementById('nav-slider');
         if (slider && index !== undefined) {
@@ -1694,49 +1696,35 @@
 
     function toggleCustomSelect(optId, e) {
         e.stopPropagation();
-        document.querySelectorAll('.custom-select-options').forEach(el => { if (el.id !== optId) el.classList.add('hidden'); });
-        document.getElementById('dropdown-menu').classList.add('hidden');
-        document.getElementById('balance-dropdown').classList.add('hidden');
-        document.getElementById('extra-dropdown').classList.add('hidden');
-        const kebabSvg = document.querySelector('#kebab-btn svg');
-        if(kebabSvg) kebabSvg.style.transform = 'rotate(0deg)';
-
         const optEl = document.getElementById(optId);
-        if(optEl) optEl.classList.toggle('hidden');
+        const wasHidden = optEl ? optEl.classList.contains('hidden') : true;
+        tutupSemuaMenuDrop();
+        if (wasHidden && optEl) optEl.classList.remove('hidden');
     }
 
     function toggleMenu(e) { 
         e.stopPropagation(); 
-        document.querySelectorAll('.custom-select-options').forEach(el => el.classList.add('hidden'));
-        document.getElementById('balance-dropdown').classList.add('hidden');
-        document.getElementById('extra-dropdown').classList.add('hidden');
-        
         const menu = document.getElementById('dropdown-menu');
-        menu.classList.toggle('hidden'); 
+        const wasHidden = menu ? menu.classList.contains('hidden') : true;
+        tutupSemuaMenuDrop();
         
-        const kebabSvg = document.querySelector('#kebab-btn svg');
-        if (kebabSvg) {
-            if (!menu.classList.contains('hidden')) {
-                kebabSvg.style.transform = 'rotate(90deg)';
-            } else {
-                kebabSvg.style.transform = 'rotate(0deg)';
-            }
+        if (wasHidden && menu) {
+            menu.classList.remove('hidden'); 
+            const kebabSvg = document.querySelector('#kebab-btn svg');
+            if (kebabSvg) kebabSvg.style.transform = 'rotate(90deg)';
         }
     }
     
     function toggleBalanceMenu(e) { 
         e.stopPropagation(); 
-        document.querySelectorAll('.custom-select-options').forEach(el => el.classList.add('hidden'));
-        document.getElementById('dropdown-menu').classList.add('hidden');
-        document.getElementById('extra-dropdown').classList.add('hidden');
-        const kebabSvg = document.querySelector('#kebab-btn svg');
-        if(kebabSvg) kebabSvg.style.transform = 'rotate(0deg)';
-
-        document.getElementById('balance-dropdown').classList.toggle('hidden'); 
+        const menu = document.getElementById('balance-dropdown');
+        const wasHidden = menu ? menu.classList.contains('hidden') : true;
+        tutupSemuaMenuDrop();
+        if (wasHidden && menu) menu.classList.remove('hidden'); 
     }
 
     // =========================================================
-    // 8. LOGIKA CRUD & PROTEKSI BUG
+    // 9. LOGIKA CRUD & PROTEKSI BUG
     // =========================================================
     function prosesSimpanAkhir(tipe, tgl, ket, nom, dmp, plt, pfx) {
         try {
@@ -1770,9 +1758,11 @@
     }
 
     function saveData(event, tipe) {
-        const btn = event.target;
-        btn.disabled = true; 
-        setTimeout(() => btn.disabled = false, 1500);
+        const btn = event.currentTarget || event.target;
+        if(btn && btn.tagName === 'BUTTON') {
+            btn.disabled = true; 
+            setTimeout(() => { if(btn) btn.disabled = false; }, 1500);
+        }
         
         const pfx = tipe === 'income' ? 'in' : 'out';
         
@@ -1889,8 +1879,7 @@
             if (isEditSebagian) {
                 data.plotId = plotBaru;
                 simpanDatabase(); 
-                document.getElementById('edit-modal').classList.add('hidden');
-                if(document.querySelectorAll('.modal-overlay:not(.hidden)').length === 0) document.body.classList.remove('modal-open');
+                tutupModalAman('edit-modal');
                 updateRekap(); updatePlotList();
                 return showToast("Plot cicilan berhasil diperbarui!", 'var(--wa-blue)');
             }
@@ -1930,14 +1919,13 @@
             const execEdit = () => {
                 data.amount = nomBaru; data.wallet = dompetBaru; data.date = tglBaru; data.desc = descBaru; data.plotId = plotBaru; 
                 simpanDatabase(); 
-                document.getElementById('edit-modal').classList.add('hidden');
-                if(document.querySelectorAll('.modal-overlay:not(.hidden)').length === 0) document.body.classList.remove('modal-open');
+                tutupModalAman('edit-modal');
                 updateRekap(); updatePlotList(); updateWalletDropdownBalances();
                 showToast("Data berhasil diedit!", titleColor);
             };
 
             if (butuhPin) {
-                document.getElementById('edit-modal').classList.add('hidden');
+                tutupModalAman('edit-modal');
                 verifyPin(execEdit);
             } else {
                 execEdit();
@@ -1985,11 +1973,7 @@
     }
 
     function openMutationModal() { 
-        document.getElementById('dropdown-menu').classList.add('hidden'); 
-        document.getElementById('balance-dropdown').classList.add('hidden'); 
-        document.getElementById('extra-dropdown').classList.add('hidden');
-        const kebabSvg = document.querySelector('#kebab-btn svg');
-        if(kebabSvg) kebabSvg.style.transform = 'rotate(0deg)';
+        tutupSemuaMenuDrop();
 
         document.getElementById('mutation-modal').classList.remove('hidden'); 
         document.body.classList.add('modal-open');
@@ -2007,9 +1991,8 @@
     }
     
     function closeMutationModal() { 
-        document.getElementById('mutation-modal').classList.add('hidden'); 
+        tutupModalAman('mutation-modal');
         document.getElementById('mut-amount').value = ''; 
-        if(document.querySelectorAll('.modal-overlay:not(.hidden)').length === 0) document.body.classList.remove('modal-open');
     }
 
     function processMutation(event) {
@@ -2045,10 +2028,8 @@
     
     function savePlot(event) {
         // Anti-Spam
-        if (event && event.target) {
-            event.target.disabled = true;
-            setTimeout(() => event.target.disabled = false, 1500);
-        }
+        const btn = document.querySelector('#plot .btn-blue');
+        if (btn) { btn.disabled = true; setTimeout(() => btn.disabled = false, 1500); }
 
         const nama = Utils.toTitleCase(document.getElementById('plot-name').value.trim());
         const rawAmount = document.getElementById('plot-amount').value.trim();
@@ -2120,7 +2101,7 @@
     }
 
     // =========================================================
-    // 9. RENDER ENGINE & GRAFIK
+    // 10. RENDER ENGINE & GRAFIK
     // =========================================================
     function updatePlotList() {
         const filterEl = document.getElementById('plot-month-filter');
@@ -2399,17 +2380,14 @@
     }
 
     function openChartModal() { 
-        document.getElementById('dropdown-menu').classList.add('hidden'); 
-        document.getElementById('balance-dropdown').classList.add('hidden'); 
-        document.getElementById('extra-dropdown').classList.add('hidden');
+        tutupSemuaMenuDrop();
         document.getElementById('chart-modal').classList.remove('hidden'); 
         document.body.classList.add('modal-open');
         requestAnimationFrame(() => renderGrafik()); 
     }
     
     function closeChartModal() { 
-        document.getElementById('chart-modal').classList.add('hidden'); 
-        if(document.querySelectorAll('.modal-overlay:not(.hidden)').length === 0) document.body.classList.remove('modal-open');
+        tutupModalAman('chart-modal');
     }
 
     function getDynamicColor(index) {
@@ -2532,7 +2510,7 @@
     }
 
     // =========================================================
-    // 10. EXCEL IMPORT / EXPORT 
+    // 11. EXCEL IMPORT / EXPORT (TERMASUK PROTEKSI BOM WAKTU)
     // =========================================================
     const prepExtraForExcel = (dataArray) => {
         if(!dataArray) return [];
@@ -2546,9 +2524,7 @@
     };
 
     function exportToExcel() {
-        document.getElementById('dropdown-menu').classList.add('hidden');
-        const kebabSvg = document.querySelector('#kebab-btn svg');
-        if(kebabSvg) kebabSvg.style.transform = 'rotate(0deg)';
+        tutupSemuaMenuDrop();
 
         const gabungan = [
             ...AppState.db.income.map(x => ({ID: x.id, Tanggal: x.date, Tipe: 'DEBIT', Dompet: x.wallet || 'Tunai', Keterangan: Utils.amanCSV(x.desc), Jumlah: x.amount, PlotID: x.plotId || ''})), 
@@ -2624,15 +2600,12 @@
     }
 
     function promptImportRingkas() {
-        document.getElementById('import-modal').classList.add('hidden');
-        if(document.querySelectorAll('.modal-overlay:not(.hidden)').length === 0) document.body.classList.remove('modal-open');
+        tutupModalAman('import-modal');
         showPopup('confirm', 'YAKIN IMPORT RINGKAS?\n\nSeluruh riwayat pendapatan & pengeluaran akan diringkas menjadi Saldo Awal saja (Catatan tagihan & hutang yang berjalan tidak akan dihapus).', 'var(--danger)', () => executeImport('ringkas'));
     }
 
     function importFromExcel(e) {
-        document.getElementById('dropdown-menu').classList.add('hidden');
-        const kebabSvg = document.querySelector('#kebab-btn svg');
-        if(kebabSvg) kebabSvg.style.transform = 'rotate(0deg)';
+        tutupSemuaMenuDrop();
 
         const file = e.target.files[0]; if (!file) return;
         const reader = new FileReader(); reader.onload = (ev) => {
@@ -2675,8 +2648,7 @@
     };
 
     function executeImport(mode) {
-        document.getElementById('import-modal').classList.add('hidden'); 
-        if(document.querySelectorAll('.modal-overlay:not(.hidden)').length === 0) document.body.classList.remove('modal-open');
+        tutupModalAman('import-modal');
         
         if(AppState.tempImportPlots.length > 0) { 
             AppState.tempImportPlots.forEach(p => { 
@@ -2734,8 +2706,21 @@
                 }
             });
         } else {
+            // FIX BOM WAKTU: Amankan data yang terikat dengan Menu Ekstra (Hutang, Cicilan, dll)
+            let linkedIds = new Set();
+            ['titipan', 'hutang', 'piutang', 'spaylater', 'spinjam'].forEach(table => {
+                AppState.db[table].forEach(item => {
+                    if (item.incomeId) linkedIds.add(item.incomeId);
+                    if (item.expenseId) linkedIds.add(item.expenseId);
+                    if (item.paymentIds) item.paymentIds.forEach(pid => linkedIds.add(pid));
+                });
+            });
+
             let kalk = { 'Tunai': 0, 'Bank': 0, 'e-Wallet': 0, 'Dana Darurat': 0 };
             AppState.tempImport.forEach(r => { 
+                const idStr = String(r.ID || '');
+                if (linkedIds.has(idStr)) return; // Jangan hitung ID Ekstra ke Saldo Ringkas
+
                 let rawNom = String(r.Jumlah).replace(/\./g, '').replace(/,/g, '.');
                 let numTest = Number(rawNom);
                 if (!isNaN(numTest)) { 
@@ -2749,12 +2734,13 @@
                 } 
             });
             
-            const oldRahasiaIn = AppState.db.income.filter(i => i.wallet === 'Dana Darurat 🔒');
-            const oldRahasiaOut = AppState.db.expense.filter(e => e.wallet === 'Dana Darurat 🔒');
+            // Simpan riwayat Dana Darurat dan semua riwayat yang terikat Menu Ekstra
+            const oldRahasiaIn = AppState.db.income.filter(i => i.wallet === 'Dana Darurat 🔒' || linkedIds.has(i.id));
+            const oldRahasiaOut = AppState.db.expense.filter(e => e.wallet === 'Dana Darurat 🔒' || linkedIds.has(e.id));
             
             AppState.db.income = oldRahasiaIn; 
             AppState.db.expense = oldRahasiaOut; 
-            AppState.db.mutations = [];
+            AppState.db.mutations = []; // Mutasi lama dikosongkan karena sudah tergabung di kalkulasi
 
             const validDateStr = (AppState.tempImport.length > 0 && parseExcelDate(AppState.tempImport[0].Tanggal)) || Utils.tglHariIni();
 
@@ -2771,9 +2757,7 @@
     }
 
     function promptClearData() {
-        document.getElementById('dropdown-menu').classList.add('hidden');
-        const kebabSvg = document.querySelector('#kebab-btn svg');
-        if(kebabSvg) kebabSvg.style.transform = 'rotate(0deg)';
+        tutupSemuaMenuDrop();
 
         showPopup('delete', "HAPUS SEMUA DATA?", 'var(--danger)', () => { 
             if (AppState.charts.arusKas) AppState.charts.arusKas.destroy();
@@ -2795,7 +2779,7 @@
     }
 
     // =========================================================
-    // 11. DATE PICKER KALENDER 
+    // 12. DATE PICKER KALENDER 
     // =========================================================
     const Picker = { mode: 'date', curr: new Date(), sel: new Date(), targetId: '', theme: '' };
     const NamaBln = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'], BlnPdk = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Ags', 'Sep', 'Okt', 'Nov', 'Des'];
@@ -2861,11 +2845,7 @@
     
     function openPicker(id, m, w) { 
         try {
-            document.getElementById('dropdown-menu').classList.add('hidden');
-            document.getElementById('balance-dropdown').classList.add('hidden');
-            document.getElementById('extra-dropdown').classList.add('hidden');
-            const kebabSvg = document.querySelector('#kebab-btn svg');
-            if(kebabSvg) kebabSvg.style.transform = 'rotate(0deg)';
+            tutupSemuaMenuDrop();
 
             Picker.targetId = id; Picker.mode = m; Picker.theme = w; 
             
@@ -2919,8 +2899,7 @@
     }
     
     function closePicker() { 
-        document.getElementById('custom-picker').classList.add('hidden'); 
-        if(document.querySelectorAll('.modal-overlay:not(.hidden)').length === 0) document.body.classList.remove('modal-open');
+        tutupModalAman('custom-picker');
     }
     
     function cpChange(arah) { 
@@ -2997,7 +2976,7 @@
     }
 
     // =========================================================
-    // 12. FITUR EKSTRA (GROUPING, CICILAN, & NOTIFIKASI)
+    // 13. FITUR EKSTRA (GROUPING, CICILAN, & NOTIFIKASI)
     // =========================================================
     const DB_EKSTRA = {
         titipan: { nama: 'Titipan', warna: 'var(--wa-blue)', msk: 'income', klr: 'expense', idTrx: 'incomeId', lblWallet: 'Masuk ke Dompet', teksSelesai: 'Uang dikembalikan kepada:', descMsk: 'Titipan dari ', descKlr: 'Kembalikan Titipan ', btn: 'KEMBALIKAN' },
@@ -3011,10 +2990,10 @@
 
     function toggleExtraMenu(e) {
         e.stopPropagation();
-        document.querySelectorAll('.custom-select-options').forEach(el => el.classList.add('hidden'));
-        document.getElementById('balance-dropdown').classList.add('hidden');
-        document.getElementById('dropdown-menu').classList.add('hidden');
-        document.getElementById('extra-dropdown').classList.toggle('hidden');
+        const extMenu = document.getElementById('extra-dropdown');
+        const wasHidden = extMenu ? extMenu.classList.contains('hidden') : true;
+        tutupSemuaMenuDrop();
+        if (wasHidden && extMenu) extMenu.classList.remove('hidden');
     }
 
     function renderDaftarExtra(tambahLimit = false) {
@@ -3149,7 +3128,7 @@
     function bukaModalExtra(tipe) {
         ModeEkstraAktif = tipe;
         const cfg = DB_EKSTRA[tipe];
-        document.getElementById('extra-dropdown').classList.add('hidden');
+        tutupSemuaMenuDrop();
         
         document.getElementById('extra-modal-title').style.color = cfg.warna;
         document.getElementById('extra-modal-box').style.borderTopColor = cfg.warna;
@@ -3164,8 +3143,7 @@
     }
 
     function tutupModalExtra() {
-        document.getElementById('extra-modal').classList.add('hidden');
-        if(document.querySelectorAll('.modal-overlay:not(.hidden)').length === 0) document.body.classList.remove('modal-open');
+        tutupModalAman('extra-modal');
     }
 
     function bukaFormExtra(mode, id = null) {
@@ -3269,10 +3247,8 @@
 
     function simpanExtra(event) {
         // Anti-Spam
-        if (event && event.target) {
-            event.target.disabled = true;
-            setTimeout(() => event.target.disabled = false, 1500);
-        }
+        const btn = document.getElementById('btn-simpan-extra');
+        if (btn) { btn.disabled = true; setTimeout(() => btn.disabled = false, 1500); }
 
         const cfg = DB_EKSTRA[ModeEkstraAktif];
         const idEdit = document.getElementById('extra-id-edit').value;
@@ -3395,12 +3371,12 @@
                 }
             }
             simpanDatabase(); updateRekap(true); updateWalletDropdownBalances();
-            document.getElementById('extra-form-modal').classList.add('hidden');
+            tutupModalAman('extra-form-modal');
             renderDaftarExtra();
             showToast("Catatan tersimpan!", cfg.warna);
         };
 
-        if (butuhPin) { document.getElementById('extra-form-modal').classList.add('hidden'); verifyPin(execSimpanExtra); } 
+        if (butuhPin) { tutupModalAman('extra-form-modal'); verifyPin(execSimpanExtra); } 
         else { execSimpanExtra(); }
     }
 
@@ -3447,7 +3423,7 @@
 
     function prosesCicilExtra(event) {
         // Anti-Spam
-        const btn = event.target;
+        const btn = document.getElementById('btn-proses-cicil-extra');
         if(btn) { btn.disabled = true; setTimeout(() => btn.disabled = false, 1500); }
 
         const cfg = DB_EKSTRA[ModeEkstraAktif];
@@ -3488,13 +3464,13 @@
             }
 
             simpanDatabase(); updateRekap(true); updateWalletDropdownBalances();
-            document.getElementById('extra-cicil-modal').classList.add('hidden');
+            tutupModalAman('extra-cicil-modal');
             renderDaftarExtra();
             showToast(`Cicilan ${Utils.formatRp(bayar)} Berhasil!`, cfg.warna);
         };
 
         if (cfg.klr === 'expense' && dompet === 'Dana Darurat 🔒') {
-            document.getElementById('extra-cicil-modal').classList.add('hidden');
+            tutupModalAman('extra-cicil-modal');
             verifyPin(execProsesCicil);
         } else {
             execProsesCicil();
@@ -3565,7 +3541,7 @@
                 }
 
                 simpanDatabase(); updateRekap(true); updateWalletDropdownBalances();
-                document.getElementById('riwayat-cicilan-modal').classList.add('hidden');
+                tutupModalAman('riwayat-cicilan-modal');
                 renderDaftarExtra();
                 showToast("Cicilan berhasil dibatalkan!", 'var(--danger)');
             };
