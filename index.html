@@ -628,7 +628,6 @@
         </div>
     </div>
 </div>
-
 <div id="chart-modal" class="modal-overlay hidden" onclick="if(event.target===this) closeChartModal()">
     <div class="modal-box" style="width: 90%; max-width: 360px; padding: 25px 20px;">
         <h3 class="audiowide-regular" style="margin-top:0; margin-bottom: 20px; color:var(--text-light); font-size:16px;">Status Keuangan Saat Ini</h3>
@@ -1040,7 +1039,6 @@
         let saldoHitung = Math.round(saldoCache.data[namaDompet] || 0);
         return saldoHitung === -0 ? 0 : saldoHitung; 
     }
-    
     // =========================================================
     // 4. UTILITAS UMUM & TOAST ANIMASI
     // =========================================================
@@ -1901,12 +1899,14 @@
             
             if (tipe === 'expense') {
                 let saldoTersedia = getSaldoDompet(dompetBaru);
+                // LOGIKA BARU: Pastikan penambahan/pengurangan nominal edit aman untuk dompet tujuan
                 if (dompetBaru === dompetLama) saldoTersedia += nominalLama;
                 if (saldoTersedia < nomBaru) { saldoAman = false; pesanError = `Batal: Saldo ${dompetBaru} kurang ${Utils.formatRp(nomBaru - saldoTersedia)}!`; }
             } else if (tipe === 'income') {
+                // LOGIKA BARU: Proteksi Dompet Pemasukan yang diedit ke dompet lain
                 let saldoSaatIniLama = getSaldoDompet(dompetLama);
                 if (dompetBaru !== dompetLama) {
-                    if (saldoSaatIniLama - nominalLama < 0) { saldoAman = false; pesanError = `Batal: Saldo dompet ${dompetLama} sudah terpakai dan tidak cukup ditarik.`; }
+                    if (saldoSaatIniLama - nominalLama < 0) { saldoAman = false; pesanError = `Batal: Saldo dompet [${dompetLama}] sudah terpakai dan tidak cukup ditarik ke [${dompetBaru}].`; }
                 } else {
                     if (saldoSaatIniLama - nominalLama + nomBaru < 0) { saldoAman = false; pesanError = `Batal: Pengurangan nominal akan membuat dompet minus.`; }
                 }
@@ -2101,7 +2101,7 @@
     }
 
     // =========================================================
-    // 10. RENDER ENGINE & GRAFIK
+    // 10. RENDER ENGINE & GRAFIK (PLOT LOGIC UPDATED)
     // =========================================================
     function updatePlotList() {
         const filterEl = document.getElementById('plot-month-filter');
@@ -2147,17 +2147,27 @@
                 </div>`;
             } else {
                 let selisih = p.target - terpakai;
-                let tSelisih, nSelisih, cSelisih;
+                
+                // LOGIKA WARNA & TEKS BARU
+                let tSelisih, nSelisih, cSelisih, cBayar;
                 
                 if (selisih > 0) {
-                    tSelisih = "Kurang"; nSelisih = `(-${Utils.formatRp(selisih)})`; cSelisih = "var(--wa-green)";
+                    tSelisih = "Sisa"; 
+                    nSelisih = `(${Utils.formatRp(selisih)})`; 
+                    cSelisih = "var(--wa-green)";
+                    cBayar = "var(--wa-green)";
                 } else if (selisih < 0) {
-                    tSelisih = "Lebih"; nSelisih = `(+${Utils.formatRp(Math.abs(selisih))})`; cSelisih = "var(--danger)";
+                    tSelisih = "Lebih"; 
+                    nSelisih = `(+${Utils.formatRp(Math.abs(selisih))})`; 
+                    cSelisih = "var(--danger)";
+                    cBayar = "var(--danger)";
                 } else {
-                    tSelisih = "Kurang"; nSelisih = "(Rp 0)"; cSelisih = "var(--danger)";
+                    tSelisih = "Pas"; 
+                    nSelisih = "(Rp 0)"; 
+                    cSelisih = "#ffffff";
+                    cBayar = "#ffffff";
                 }
                 
-                const cBayar = (terpakai >= p.target && p.target > 0) ? 'var(--danger)' : 'var(--wa-green)';
                 let persen = 0;
                 if (p.target > 0) { persen = Math.min((terpakai / p.target) * 100, 100); }
                 else if (terpakai > 0) { persen = 100; }
@@ -2251,6 +2261,7 @@
         
         const searchTerms = kunciRaw.toLowerCase().split(' ').filter(t => t.trim() !== '');
 
+        // LOGIKA BARU: Filter dulu datanya agar Sorting (pengurutan) lebih ringan dan tidak bikin HP lag!
         const gabungan = [
             ...AppState.db.income.map(i => ({...i, type:'income', walletInfo: i.wallet})), 
             ...AppState.db.expense.map(e => ({...e, type:'expense', walletInfo: e.wallet})), 
@@ -2378,7 +2389,6 @@
             visibleExpenses: visibleExp
         };
     }
-
     function openChartModal() { 
         tutupSemuaMenuDrop();
         document.getElementById('chart-modal').classList.remove('hidden'); 
@@ -2706,7 +2716,6 @@
                 }
             });
         } else {
-            // FIX BOM WAKTU: Amankan data yang terikat dengan Menu Ekstra (Hutang, Cicilan, dll)
             let linkedIds = new Set();
             ['titipan', 'hutang', 'piutang', 'spaylater', 'spinjam'].forEach(table => {
                 AppState.db[table].forEach(item => {
@@ -2719,7 +2728,7 @@
             let kalk = { 'Tunai': 0, 'Bank': 0, 'e-Wallet': 0, 'Dana Darurat': 0 };
             AppState.tempImport.forEach(r => { 
                 const idStr = String(r.ID || '');
-                if (linkedIds.has(idStr)) return; // Jangan hitung ID Ekstra ke Saldo Ringkas
+                if (linkedIds.has(idStr)) return; 
 
                 let rawNom = String(r.Jumlah).replace(/\./g, '').replace(/,/g, '.');
                 let numTest = Number(rawNom);
@@ -2734,13 +2743,12 @@
                 } 
             });
             
-            // Simpan riwayat Dana Darurat dan semua riwayat yang terikat Menu Ekstra
             const oldRahasiaIn = AppState.db.income.filter(i => i.wallet === 'Dana Darurat 🔒' || linkedIds.has(i.id));
             const oldRahasiaOut = AppState.db.expense.filter(e => e.wallet === 'Dana Darurat 🔒' || linkedIds.has(e.id));
             
             AppState.db.income = oldRahasiaIn; 
             AppState.db.expense = oldRahasiaOut; 
-            AppState.db.mutations = []; // Mutasi lama dikosongkan karena sudah tergabung di kalkulasi
+            AppState.db.mutations = []; 
 
             const validDateStr = (AppState.tempImport.length > 0 && parseExcelDate(AppState.tempImport[0].Tanggal)) || Utils.tglHariIni();
 
@@ -2749,8 +2757,20 @@
                 else if (kalk[d] < 0) AppState.db.expense.push({ id: Utils.buatId(), date: validDateStr, desc: `Koreksi Saldo Ringkas`, amount: Math.abs(kalk[d]), wallet: d }); 
             });
         }
+        
         simpanDatabase(); updateRekap(); updatePlotList(); updateWalletDropdownBalances();
         
+        // ==========================================
+        // FIX: PEMBERSIHAN MEMORY LEAK SAAT IMPORT
+        // ==========================================
+        AppState.tempImport = [];
+        AppState.tempImportPlots = [];
+        AppState.tempImportTitipan = [];
+        AppState.tempImportHutang = [];
+        AppState.tempImportPiutang = [];
+        AppState.tempImportSpaylater = [];
+        AppState.tempImportSpinjam = [];
+
         setTimeout(() => {
             alert("Import Selesai!\n\nSilakan cek tab Rekap. Jika ada dompet Anda yang tiba-tiba bersaldo negatif (minus), itu artinya riwayat pengeluaran di Excel Anda lebih besar dari uang masuknya.");
         }, 500);
