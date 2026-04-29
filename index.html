@@ -902,6 +902,24 @@
     </div>
 </div>
 
+<div id="plot-detail-modal" class="modal-overlay hidden" style="z-index: 20002;" onclick="if(event.target===this) tutupModalAman('plot-detail-modal')">
+    <div class="modal-box" id="plot-detail-box" style="padding: 20px; width: 90%; max-width: 350px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 12px; margin-bottom: 10px;">
+            <div style="display: flex; flex-direction: column; text-align: left;">
+                <h3 id="plot-detail-title" class="audiowide-regular" style="margin:0; font-size:15px; color: var(--wa-blue);">Rincian Plot</h3>
+                <span id="plot-detail-filter" style="font-size: 10px; color: var(--text-muted); font-weight: 600; margin-top: 4px;"></span>
+            </div>
+            <button class="icon-btn" onclick="tutupModalAman('plot-detail-modal')" style="padding:4px;">
+                <svg class="svg-x" viewBox="0 0 24 24" fill="none" stroke="var(--danger)" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10" stroke-width="1.5"></circle>
+                    <path d="m15 9-6 6M9 9l6 6" stroke-width="2"></path>
+                </svg>
+            </button>
+        </div>
+        <ul id="list-plot-detail" class="titipan-list"></ul>
+    </div>
+</div>
+
 <div id="toast-notification" class="hidden">
     <span id="toast-message"></span>
 </div>
@@ -1164,8 +1182,8 @@
     ['in-amount', 'out-amount', 'plot-amount', 'mut-amount', 'edit-amount', 'extra-nominal', 'extra-principal', 'cicil-nominal', 'modal-input'].forEach(id => {
         const el = document.getElementById(id);
         if (el) el.addEventListener('input', function(e) {
+            // FIX: Hanya format ribuan jika inputMode adalah numeric
             if (id === 'modal-input') {
-                // FIX: Hanya format ke ribuan jika sedang mode input angka (numeric)
                 if (e.target.inputMode === 'numeric' && e.target.type !== 'password') {
                     Utils.formatRibuanInput(e);
                 }
@@ -1599,15 +1617,12 @@
         let displayTxt = customDisplay !== null ? customDisplay : (nilai === "" ? "-- Tanpa Plot --" : nilai);
         
         if (inputId === 'out-plot' || inputId === 'edit-plot-val') {
-             const descInput = document.getElementById(inputId === 'out-plot' ? 'out-desc' : 'edit-desc');
+             // FIX: Fitur Auto-fill Keterangan telah dicabut agar tidak menimpa teks pengguna
              if (nilai !== "") {
                  const plotObj = AppState.db.plots.find(p => p.id === nilai);
                  if (plotObj) {
                      displayTxt = customDisplay !== null ? customDisplay : `${plotObj.name} (Rp ${plotObj.target.toLocaleString('id-ID')})`;
-                     if (descInput && !descInput.readOnly) descInput.value = plotObj.name;
                  }
-             } else {
-                 if (descInput && !descInput.readOnly) descInput.value = ""; 
              }
         } else {
              if (inputId !== 'in-wallet' && inputId !== 'extra-wallet' && inputId !== 'cloud-month-val' && nilai !== "") {
@@ -1904,11 +1919,9 @@
             
             if (tipe === 'expense') {
                 let saldoTersedia = getSaldoDompet(dompetBaru);
-                // LOGIKA BARU: Pastikan penambahan/pengurangan nominal edit aman untuk dompet tujuan
                 if (dompetBaru === dompetLama) saldoTersedia += nominalLama;
                 if (saldoTersedia < nomBaru) { saldoAman = false; pesanError = `Batal: Saldo ${dompetBaru} kurang ${Utils.formatRp(nomBaru - saldoTersedia)}!`; }
             } else if (tipe === 'income') {
-                // LOGIKA BARU: Proteksi Dompet Pemasukan yang diedit ke dompet lain
                 let saldoSaatIniLama = getSaldoDompet(dompetLama);
                 if (dompetBaru !== dompetLama) {
                     if (saldoSaatIniLama - nominalLama < 0) { saldoAman = false; pesanError = `Batal: Saldo dompet [${dompetLama}] sudah terpakai dan tidak cukup ditarik ke [${dompetBaru}].`; }
@@ -2128,6 +2141,9 @@
 
         const expenseValid = AppState.db.expense.filter(e => isAllTime ? true : e.date.startsWith(currentPlotFilter));
 
+        // FIX: Ikon History (Ditaruh di sini agar bisa digunakan berkali-kali)
+        const svgHistory = `<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path><path d="M12 7v5l4 2"></path></svg>`;
+
         let htmlList = '';
         const sortedPlots = [...AppState.db.plots].sort((a, b) => a.name.localeCompare(b.name));
 
@@ -2148,6 +2164,9 @@
                     <div style="display:flex; justify-content:space-between; font-size:11px; color:var(--text-light); font-weight:500;">
                         <span style="color: var(--text-muted);">Total Terpakai Akumulasi (Semua Waktu):</span>
                         <span><strong style="color:var(--danger)">${Utils.formatRp(terpakai)}</strong></span>
+                    </div>
+                    <div style="display:flex; justify-content:flex-end; align-items:center; margin-top:-4px; margin-bottom:2px;">
+                        <button class="extra-btn" style="color:var(--text-muted); border:1px solid var(--border-color); display:flex; align-items:center; padding:4px; background: transparent; margin:0;" onclick="bukaRincianPlot('${p.id}', '${Utils.amanHTML(p.name).replace(/'/g, "\\'")}', 'var(--wa-blue)')" title="Rincian Pengeluaran">${svgHistory}</button>
                     </div>
                 </div>`;
             } else {
@@ -2177,6 +2196,7 @@
                 if (p.target > 0) { persen = Math.min((terpakai / p.target) * 100, 100); }
                 else if (terpakai > 0) { persen = 100; }
                 
+                // FIX: Memasukkan Ikon Riwayat di pojok kanan bawah
                 htmlList += `<div style="margin-bottom:12px; border-bottom:1px solid var(--border-color); padding-bottom:12px; display:flex; flex-direction:column; gap:8px;">
                     <div style="display:flex; justify-content:space-between; align-items:flex-start;">
                         <strong class="editable" onclick="editPlot('${p.id}','name')" style="font-size:14px; word-break:break-word; flex:1; padding-right:10px;">${Utils.amanHTML(p.name)}</strong>
@@ -2191,8 +2211,9 @@
                         <span class="editable" onclick="editPlot('${p.id}','target')" style="color: var(--text-muted);">Target: ${Utils.formatRp(p.target)}</span>
                         <span class="editable" onclick="editPlot('${p.id}','target')">${tSelisih}: <strong style="color:${cSelisih}">${nSelisih}</strong></span>
                     </div>
-                    <div style="display:flex; justify-content:space-between; font-size:10px; color:var(--text-muted); margin-top:-4px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; font-size:10px; color:var(--text-muted); margin-top:-4px; margin-bottom:2px;">
                         <span>Bayar: <span style="color:${cBayar}; font-weight:bold;">${Utils.formatRp(terpakai)}</span></span>
+                        <button class="extra-btn" style="color:var(--text-muted); border:1px solid var(--border-color); display:flex; align-items:center; padding:4px; background: transparent; margin:0;" onclick="bukaRincianPlot('${p.id}', '${Utils.amanHTML(p.name).replace(/'/g, "\\'")}', '${cBayar}')" title="Rincian Pengeluaran">${svgHistory}</button>
                     </div>
                     <div class="progress-container" style="height: 6px; background: #000; border-radius: 3px; overflow: hidden;"><div class="progress-bar" style="height: 100%; width:${Math.min(persen, 100)}%; background: ${cBayar};"></div></div>
                 </div>`;
@@ -2525,7 +2546,7 @@
     }
 
     // =========================================================
-    // 11. EXCEL IMPORT / EXPORT (TERMASUK PROTEKSI BOM WAKTU)
+    // 11. EXCEL IMPORT / EXPORT 
     // =========================================================
     const prepExtraForExcel = (dataArray) => {
         if(!dataArray) return [];
@@ -2765,9 +2786,7 @@
         
         simpanDatabase(); updateRekap(); updatePlotList(); updateWalletDropdownBalances();
         
-        // ==========================================
-        // FIX: PEMBERSIHAN MEMORY LEAK SAAT IMPORT
-        // ==========================================
+        // Pembersihan Memory Leak
         AppState.tempImport = [];
         AppState.tempImportPlots = [];
         AppState.tempImportTitipan = [];
@@ -3645,6 +3664,60 @@
                 execHapusPermanen();
             }
         });
+    }
+
+    // =========================================================
+    // FITUR BARU: MODAL RINCIAN PLOT
+    // =========================================================
+    function bukaRincianPlot(idPlot, namaPlot, warna) {
+        tutupSemuaMenuDrop();
+        const filterEl = document.getElementById('plot-month-filter');
+        const filterBulan = filterEl ? filterEl.dataset.rawDate : 'ALL';
+        const isAllTime = filterBulan === 'ALL';
+        
+        let currentPlotFilter = "";
+        let teksBulan = "(Semua Waktu)";
+        if (!isAllTime) {
+            let [fbY, fbM] = filterBulan.split('-');
+            currentPlotFilter = `${fbY}-${fbM}`;
+            teksBulan = `(Bulan: ${BlnPdk[parseInt(fbM, 10)-1]} ${fbY})`;
+        }
+
+        document.getElementById('plot-detail-title').innerText = `Rincian: ${namaPlot}`;
+        document.getElementById('plot-detail-title').style.color = warna;
+        document.getElementById('plot-detail-box').style.borderTopColor = warna;
+        document.getElementById('plot-detail-filter').innerText = teksBulan;
+
+        const pengeluaranTerkait = AppState.db.expense.filter(e => e.plotId === idPlot && (isAllTime ? true : e.date.startsWith(currentPlotFilter)));
+        
+        // Urutkan dari tanggal terbaru ke terlama
+        pengeluaranTerkait.sort((a, b) => b.date.localeCompare(a.date));
+
+        const ul = document.getElementById('list-plot-detail');
+        let html = '';
+
+        if (pengeluaranTerkait.length === 0) {
+            html = `<li style="text-align:center; padding: 30px 0; color:var(--border-color); font-size:11px;">- Belum ada pengeluaran -</li>`;
+        } else {
+            pengeluaranTerkait.forEach(e => {
+                html += `
+                <li class="titipan-item">
+                    <div class="titipan-header">
+                        <div class="titipan-name">
+                            <span style="color:var(--text-muted); font-size: 10px;">${Utils.formatTglTampil(e.date)}</span>
+                            <span style="color:var(--text-light); font-size: 12px; margin-top: 2px;">${Utils.amanHTML(e.desc)}</span>
+                        </div>
+                        <div style="display:flex; align-items:center; gap:10px;">
+                            <span class="titipan-amount" style="font-size:12px; font-weight:700; color:var(--danger);">- ${Utils.formatRp(e.amount)}</span>
+                        </div>
+                    </div>
+                </li>`;
+            });
+        }
+
+        ul.innerHTML = html;
+        document.getElementById('plot-detail-modal').classList.remove('hidden');
+        document.body.classList.add('modal-open');
     }
 
     function cekNotifikasiJatuhTempo() {
