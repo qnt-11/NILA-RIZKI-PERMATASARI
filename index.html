@@ -548,7 +548,7 @@
                         </svg>
                     </button>
                     <div id="extra-dropdown" class="dropdown-content hidden" style="top: 35px; left: 0; min-width: 175px; transform-origin: top left;">
-                        <div class="dropdown-item" style="color: var(--wa-blue); font-weight: 700;" onclick="bukaModalExtra('titipan')">Daftar Titipan</div>
+                        <div class="dropdown-item" style="color: var(--wa-blue); font-weight: 700;" onclick="bukaModalExtra('pengingat')">Daftar Pengingat</div>
                         <div class="dropdown-item" style="color: var(--wa-pink); font-weight: 700;" onclick="bukaModalExtra('hutang')">Daftar Hutang</div>
                         <div class="dropdown-item" style="color: var(--wa-gold); font-weight: 700;" onclick="bukaModalExtra('piutang')">Daftar Piutang</div>
                         <div style="border-top: 1px solid rgba(255,255,255,0.1); margin: 4px 0;"></div>
@@ -707,7 +707,7 @@
                 <span class="title-barla"><span class="letter" style="animation-delay: 1.4s">B</span><span class="letter" style="animation-delay: 1.6s">A</span><span class="letter" style="animation-delay: 1.8s">R</span><span class="letter" style="animation-delay: 2.0s">L</span><span class="letter" style="animation-delay: 2.2s">A</span></span>
             </h2>
             <div style="margin-top: 8px;">
-                <span id="app-version-display" style="background: rgba(255,255,255,0.1); padding: 4px 10px; border-radius: 12px; color: #ffffff; font-family: 'Montserrat', sans-serif; font-weight: 700; letter-spacing: 1px; font-size: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.5);">VERSI 2.5 (PRO)</span>
+                <span id="app-version-display" style="background: rgba(255,255,255,0.1); padding: 4px 10px; border-radius: 12px; color: #ffffff; font-family: 'Montserrat', sans-serif; font-weight: 700; letter-spacing: 1px; font-size: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.5);">VERSI 2.7 (PRO)</span>
             </div>
         </div>
         
@@ -826,16 +826,34 @@
     <div class="modal-box" id="extra-form-box" style="padding: 20px;">
         <h3 id="extra-form-title" class="audiowide-regular" style="margin-top:0; margin-bottom: 15px; font-size:15px;">Catat</h3>
         
-        <div class="form-group" style="text-align:left;">
-            <label>Tanggal Transaksi</label>
+        <div class="form-group hidden" style="text-align:left;" id="extra-tipe-group">
+            <label style="color:var(--wa-blue);">Tipe Catatan</label>
+            <div class="custom-select-container">
+                <div class="custom-select-trigger text-ellipsis" id="extra-tipe-trigger" onclick="toggleCustomSelect('extra-tipe-opts', event)">Titip Uang (Uang Masuk)</div>
+                <div class="custom-select-options hidden" id="extra-tipe-opts"></div>
+            </div>
+            <input type="hidden" id="extra-tipe" value="titipan">
+        </div>
+
+        <div class="form-group hidden" style="text-align:left;" id="extra-freq-group">
+            <label style="color:var(--wa-blue);">Siklus Tagihan/Agenda</label>
+            <div class="custom-select-container">
+                <div class="custom-select-trigger text-ellipsis" id="extra-freq-trigger" onclick="toggleCustomSelect('extra-freq-opts', event)">Sekali Saja</div>
+                <div class="custom-select-options hidden" id="extra-freq-opts"></div>
+            </div>
+            <input type="hidden" id="extra-freq" value="sekali">
+        </div>
+
+        <div class="form-group" style="text-align:left;" id="extra-date-group">
+            <label id="extra-date-label">Tanggal Transaksi</label>
             <input type="text" id="extra-date" readonly>
         </div>
 
-        <div class="form-group" style="text-align:left;"><label>Nama (Peminjam/Barang)</label><input type="text" id="extra-nama" class="auto-cap" placeholder="Misal: Dona" autocomplete="off"></div>
+        <div class="form-group" style="text-align:left;"><label id="extra-nama-label">Nama (Peminjam/Barang)</label><input type="text" id="extra-nama" class="auto-cap" placeholder="Misal: Dona" autocomplete="off"></div>
         <div class="form-group" style="text-align:left;"><label>Keterangan (Opsional)</label><input type="text" id="extra-catatan" class="auto-cap" placeholder="Misal: Cicilan 3 Bulan" autocomplete="off"></div>
         
         <div class="form-group hidden" style="text-align:left;" id="extra-duedate-group">
-            <label style="color:var(--danger);">Tanggal Jatuh Tempo Pertama</label>
+            <label style="color:var(--danger);" id="extra-duedate-label">Tanggal Jatuh Tempo Pertama</label>
             <input type="text" id="extra-duedate" readonly onclick="openPicker('extra-duedate', 'date', 'var(--danger)')">
         </div>
 
@@ -871,9 +889,18 @@
         <h3 id="extra-cicil-title" class="audiowide-regular" style="margin-top:0; margin-bottom: 10px; font-size:15px;">Cicilan</h3>
         <p style="font-size: 11px; color: var(--text-muted); margin-bottom: 15px;"><span id="extra-cicil-desc"></span> <strong id="extra-cicil-nama" style="color:#fff;"></strong></p>
         
-        <div class="form-group" style="text-align:left; margin-bottom: 15px;">
+        <div class="form-group" style="text-align:left; margin-bottom: 15px;" id="cicil-nominal-group">
             <label style="color:var(--wa-green);">Nominal Bayar Saat Ini (Rp)</label>
             <input type="text" inputmode="numeric" id="cicil-nominal" placeholder="0" oninput="Utils.formatRibuanInput(event)">
+        </div>
+
+        <div class="form-group hidden" style="text-align:left; margin-bottom: 15px;" id="cicil-plot-group">
+            <label style="color:var(--wa-blue);">Ambil dari Plot (Opsional)</label>
+            <div class="custom-select-container">
+                <div class="custom-select-trigger text-ellipsis" id="cicil-plot-trigger" onclick="toggleCustomSelect('cicil-plot-opts', event)" style="color:var(--text-muted)">-- Tanpa Plot --</div>
+                <div class="custom-select-options hidden" id="cicil-plot-opts"></div>
+            </div>
+            <input type="hidden" id="cicil-plot" value="">
         </div>
 
         <div class="form-group" style="text-align:left;">
@@ -933,8 +960,8 @@
     // =========================================================
     // 1. PENGATURAN AWAL & VARIABEL GLOBAL
     // =========================================================
-    const APP_VERSION = "2.5"; 
-    const CLOUD_URL = "https://script.google.com/macros/s/AKfycbxkW661t8GMhYANf7ae3uElZrp4M_8bjhOLqJZJi9LzOCKHMRaXlonwefbZkdhnl9cb/exec";
+    const APP_VERSION = "2.7"; 
+    const CLOUD_URL = "https://script.google.com/macros/s/AKfycbx0HJF2lty00b6motBP5TpAQrRTmKYkvGlqk1DaKsb-ITVLBkPf2NYbzTzljT3LNpTc/exec";
     
     try {
         if ('serviceWorker' in navigator) {
@@ -943,9 +970,9 @@
     } catch (e) {}
     
     let AppState = {
-        db: { income: [], expense: [], mutations: [], plots: [], titipan: [], hutang: [], piutang: [], spaylater: [], spinjam: [] },
+        db: { income: [], expense: [], mutations: [], plots: [], pengingat: [], hutang: [], piutang: [], spaylater: [], spinjam: [] },
         charts: { arusKas: null, portofolio: null },
-        tempImport: [], tempImportPlots: [], tempImportTitipan: [], tempImportHutang: [], tempImportPiutang: [], tempImportSpaylater: [], tempImportSpinjam: [],
+        tempImport: [], tempImportPlots: [], tempImportPengingat: [], tempImportHutang: [], tempImportPiutang: [], tempImportSpaylater: [], tempImportSpinjam: [],
         grafikSaatIni: { in: 0, out: 0, tunai: 0, bank: 0, ewal: 0, darurat1: 0, darurat2: 0, visibleExpenses: [] },
         prevBalances: { total: 0, in: 0, out: 0, tunai: 0, bank: 0, ewal: 0, darurat1: 0, darurat2: 0 }
     };
@@ -962,6 +989,7 @@
     let toastTimeoutRemove = null;
 
     let isNetworkProcessing = false;
+    let isGlobalSubmitting = false; // PROTEKSI QA: Mengunci form saat proses penyimpanan berjalan
 
     // =========================================================
     // 2. FUNGSI PEMBERSIH (CENTRALIZED LOGIC)
@@ -1000,7 +1028,15 @@
                 AppState.db.expense = parsed.expense || [];
                 AppState.db.mutations = parsed.mutations || [];
                 AppState.db.plots = parsed.plots || [];
-                AppState.db.titipan = parsed.titipan || []; 
+                
+                // MIGRASI OTOMATIS: Merubah 'titipan' lama menjadi 'pengingat' dengan aman
+                let dataPengingat = parsed.pengingat || parsed.titipan || [];
+                AppState.db.pengingat = dataPengingat.map(item => {
+                    if (!item.tipe) item.tipe = 'titipan'; // Jaring Pengaman untuk data lama
+                    if (!item.freq) item.freq = 'sekali';
+                    return item;
+                });
+                
                 AppState.db.hutang = parsed.hutang || []; 
                 AppState.db.piutang = parsed.piutang || []; 
                 AppState.db.spaylater = parsed.spaylater || []; 
@@ -1018,7 +1054,7 @@
         setTimeout(() => {
             try {
                 const dataString = JSON.stringify(AppState.db);
-                // [BUG FIX #2]: Menggunakan perhitungan byte riil (Blob) ketimbang character length
+                // Menghitung Ukuran Byte Asli agar tidak Crash
                 const bytes = new Blob([dataString]).size;
                 const maxBytes = 5 * 1024 * 1024; // Limit 5MB localStorage
                 const persenRaw = (bytes / maxBytes) * 100;
@@ -1027,7 +1063,7 @@
                 // Peringatan Ekstrem Jangka Panjang
                 if (persen > 98) {
                     showPopup('alert', "KRITIS: Memori penyimpanan HP penuh! Anda harus menghapus riwayat lama atau Load/Backup ke Cloud agar aplikasi tidak rusak.", 'var(--danger)');
-                    return; // Blokir penyimpanan untuk mencegah penimpaan file korup
+                    return; 
                 }
 
                 localStorage.setItem('famBARLA_DB', dataString);
@@ -1056,7 +1092,6 @@
     function hitungSemuaSaldo() {
         saldoCache.data = { 'Tunai': 0, 'Bank': 0, 'e-Wallet': 0, 'Dana Darurat': 0, 'Dana Darurat 🔒': 0 };
         
-        // [BUG FIX #5]: Menggunakan teknik pemetaan untuk kecepatan komputasi
         const walletMap = {
             'tunai': 'Tunai', 'bank': 'Bank', 'e-wallet': 'e-Wallet', 
             'dana darurat': 'Dana Darurat', 'dana darurat 🔒': 'Dana Darurat 🔒'
@@ -1064,7 +1099,6 @@
 
         const amankanNama = (nm) => walletMap[String(nm || '').trim().toLowerCase()] || 'Tunai';
 
-        // Murni for-loop (Lebih efisien 300% pada V8 Engine Javascript ketimbang .forEach)
         for(let i = 0, len = AppState.db.income.length; i < len; i++) {
             const item = AppState.db.income[i];
             const w = amankanNama(item.wallet);
@@ -1214,6 +1248,7 @@
             toastTimeoutRemove = setTimeout(() => toast.classList.add('hidden'), 400); 
         }, 3000);
     }
+
     // =========================================================
     // 5. EVENT LISTENERS GLOBAL 
     // =========================================================
@@ -1243,7 +1278,7 @@
                 if (e.key === 'Enter') {
                     e.preventDefault();
                     
-                    // [BUG FIX #6]: Proteksi debouncing untuk keyboard enter (cegah double submit)
+                    // Proteksi Debounce Keyboard Enter
                     if (this.dataset.isSubmitting === "true") return;
                     this.dataset.isSubmitting = "true";
                     setTimeout(() => { this.dataset.isSubmitting = "false"; }, 1500);
@@ -1305,14 +1340,12 @@
             if (!el.classList.contains('hidden') && !e.target.closest('.custom-select-container')) el.classList.add('hidden');
         });
     });
-
     // =========================================================
     // 6. MANAJEMEN POPUP, MODAL & PIN
     // =========================================================
     function showPopup(mode, pesan, warnaTema = '#ffffff', callback = null, nilaiAwal = null, isAngka = false) {
         const overlay = document.getElementById('custom-modal');
         
-        // [BUG FIX #7]: Mengamankan state handler agar popup tidak bertumpuk secara ilegal
         if (!overlay.classList.contains('hidden') && mode !== 'loading' && document.getElementById('modal-loader').classList.contains('hidden') === false) {
              tutupModalAman('custom-modal'); 
         }
@@ -1435,7 +1468,7 @@
 
         if (isNetworkProcessing) return showToast("Sedang memproses jaringan...", 'var(--cloud)');
 
-        if (AppState.db.income.length === 0 && AppState.db.expense.length === 0 && AppState.db.mutations.length === 0 && AppState.db.plots.length === 0 && AppState.db.titipan.length === 0 && AppState.db.hutang.length === 0 && AppState.db.piutang.length === 0 && AppState.db.spaylater.length === 0 && AppState.db.spinjam.length === 0) {
+        if (AppState.db.income.length === 0 && AppState.db.expense.length === 0 && AppState.db.mutations.length === 0 && AppState.db.plots.length === 0 && AppState.db.pengingat.length === 0 && AppState.db.hutang.length === 0 && AppState.db.piutang.length === 0 && AppState.db.spaylater.length === 0 && AppState.db.spinjam.length === 0) {
             return showPopup('alert', "Data di HP kosong! Upload dibatalkan.", 'var(--danger)');
         }
         if(!CLOUD_URL || CLOUD_URL.includes("ISI_DENGAN")) return showPopup('alert', "Penyimpanan Cloud belum disetel!", 'var(--danger)');
@@ -1444,7 +1477,7 @@
             isNetworkProcessing = true;
             setTimeout(() => {
                 showPopup('loading', "Mengunggah data ke Cloud...\nMohon tunggu sebentar.", 'var(--cloud)');
-                const payload = { activeMonth: "ALL", income: AppState.db.income, expense: AppState.db.expense, mutations: AppState.db.mutations, plots: AppState.db.plots, titipan: AppState.db.titipan, hutang: AppState.db.hutang, piutang: AppState.db.piutang, spaylater: AppState.db.spaylater, spinjam: AppState.db.spinjam };
+                const payload = { activeMonth: "ALL", income: AppState.db.income, expense: AppState.db.expense, mutations: AppState.db.mutations, plots: AppState.db.plots, pengingat: AppState.db.pengingat, hutang: AppState.db.hutang, piutang: AppState.db.piutang, spaylater: AppState.db.spaylater, spinjam: AppState.db.spinjam };
                 
                 const controller = new AbortController();
                 const timeoutId = setTimeout(() => controller.abort(), 30000); 
@@ -1549,25 +1582,28 @@
                     });
                 }
 
-                // [BUG FIX #3]: Logika Merge Aman untuk Ekstra (Tidak menimpa riwayat cicilan bulan lain)
+                // --- AUDIT FIX: RESOLUSI KONFLIK CLOUD (ANTI DATA LOSS PADA CICILAN LOKAL) ---
                 const mergeEkstraAman = (lokalArr, cloudArr) => {
                     if (!cloudArr) return;
                     cloudArr.forEach(cItem => {
                         const idx = lokalArr.findIndex(lItem => lItem.id === cItem.id);
                         if (idx === -1) {
-                            lokalArr.push(cItem); 
+                            lokalArr.push(JSON.parse(JSON.stringify(cItem))); 
                         } else {
-                            // Update lokal hanya jika data cloud lebih update (misal sudah lunas atau dicicil lebih besar)
-                            if (cItem.status === 'selesai' && lokalArr[idx].status !== 'selesai') {
-                                lokalArr[idx] = cItem;
-                            } else if ((cItem.paidAmount || 0) > (lokalArr[idx].paidAmount || 0)) {
-                                lokalArr[idx] = cItem;
+                            const lItem = lokalArr[idx];
+                            // Logika Resolusi Konflik Offline-First yang Aman
+                            if (cItem.status === 'selesai' && lItem.status !== 'selesai') {
+                                lokalArr[idx] = JSON.parse(JSON.stringify(cItem));
+                            } else if ((cItem.paidAmount || 0) > (lItem.paidAmount || 0) || (cItem.dueDate && lItem.dueDate && cItem.dueDate > lItem.dueDate)) {
+                                // Merge array paymentIds agar cicilan lokal tidak menguap
+                                const mergedPayments = [...new Set([...(lItem.paymentIds || []), ...(cItem.paymentIds || [])])];
+                                lokalArr[idx] = { ...JSON.parse(JSON.stringify(cItem)), paymentIds: mergedPayments };
                             }
                         }
                     });
                 };
 
-                mergeEkstraAman(AppState.db.titipan, data.titipan);
+                mergeEkstraAman(AppState.db.pengingat, data.pengingat || data.titipan); // Fallback data lama
                 mergeEkstraAman(AppState.db.hutang, data.hutang);
                 mergeEkstraAman(AppState.db.piutang, data.piutang);
                 mergeEkstraAman(AppState.db.spaylater, data.spaylater);
@@ -1641,9 +1677,7 @@
             updatePlotList();
 
             showToast("✨ Formulir telah dibersihkan!", 'var(--wa-green)');
-        } catch (error) {
-            // Error log dihapus untuk efisiensi
-        }
+        } catch (error) {}
     }
 
     function updateWalletDropdownBalances() {
@@ -1707,15 +1741,18 @@
         
         let displayTxt = customDisplay !== null ? customDisplay : (nilai === "" ? "-- Tanpa Plot --" : nilai);
         
-        if (inputId === 'out-plot' || inputId === 'edit-plot-val') {
+        if (inputId === 'out-plot' || inputId === 'edit-plot-val' || inputId === 'cicil-plot') {
              if (nilai !== "") {
                  const plotObj = AppState.db.plots.find(p => p.id === nilai);
                  if (plotObj) {
                      displayTxt = customDisplay !== null ? customDisplay : `${plotObj.name} (Rp ${plotObj.target.toLocaleString('id-ID')})`;
+                 } else {
+                     inputEl.value = ""; // Orphaned Plot fallback
+                     displayTxt = "-- Tanpa Plot --";
                  }
              }
         } else {
-             if (inputId !== 'in-wallet' && inputId !== 'extra-wallet' && inputId !== 'cloud-month-val' && nilai !== "") {
+             if (inputId !== 'in-wallet' && inputId !== 'extra-wallet' && inputId !== 'cloud-month-val' && inputId !== 'extra-tipe' && inputId !== 'extra-freq' && nilai !== "") {
                  const bal = getSaldoDompet(nilai);
                  displayTxt = customDisplay !== null ? customDisplay : `${nilai} (Rp ${bal.toLocaleString('id-ID')})`;
              }
@@ -1723,7 +1760,7 @@
 
         if (triggerEl) {
             triggerEl.innerText = displayTxt;
-            triggerEl.style.color = nilai === "" ? 'var(--text-muted)' : 'var(--text-light)';
+            triggerEl.style.color = (nilai === "" && !['extra-tipe', 'extra-freq'].includes(inputId)) ? 'var(--text-muted)' : 'var(--text-light)';
         }
         
         const optEl = document.getElementById(optId);
@@ -1738,6 +1775,16 @@
                 toInput.value = available;
                 updateWalletDropdownBalances();
             }
+        }
+        
+        // Dynamic Hiding untuk Pengingat v2.7
+        if (inputId === 'extra-tipe') {
+            const isTagihan = (nilai === 'tagihan');
+            document.getElementById('extra-freq-group').classList.toggle('hidden', !isTagihan);
+            document.getElementById('extra-duedate-group').classList.toggle('hidden', !isTagihan);
+            document.getElementById('extra-principal-group').classList.add('hidden'); // Selalu hidden di pengingat
+            document.getElementById('extra-wallet-group').style.display = isTagihan ? 'none' : 'block';
+            document.getElementById('extra-nama-label').innerText = isTagihan ? 'Nama Tagihan / Agenda' : 'Nama Peminjam';
         }
     }
 
@@ -1790,8 +1837,7 @@
         document.getElementById('rekap-search').value = '';
 
         if (idHalaman === 'rekap') {
-            limitRekapIn = 15; 
-            limitRekapOut = 15;
+            limitRekapIn = 15; limitRekapOut = 15;
             updateRekap();
         }
         if (idHalaman === 'plot') updatePlotList();
@@ -1865,10 +1911,12 @@
     }
 
     function saveData(event, tipe) {
+        if (isGlobalSubmitting) return; // PROTEKSI QA: Mencegah Double Submit
+        isGlobalSubmitting = true;
+
         const btn = event.currentTarget || event.target;
         if(btn && btn.tagName === 'BUTTON') {
             btn.disabled = true; 
-            setTimeout(() => { if(btn) btn.disabled = false; }, 1500);
         }
         
         const pfx = tipe === 'income' ? 'in' : 'out';
@@ -1879,7 +1927,12 @@
         const walletEl = document.getElementById(`${pfx}-wallet`);
         const plotEl = document.getElementById(`${pfx}-plot`);
         
-        if(!dateEl || !descEl || !amountEl || !walletEl) return;
+        const resetGlobalSubmit = () => {
+            isGlobalSubmitting = false;
+            if (btn) setTimeout(() => { btn.disabled = false; }, 1500);
+        };
+
+        if(!dateEl || !descEl || !amountEl || !walletEl) return resetGlobalSubmit();
 
         const tgl = dateEl.dataset.rawDate;
         const ket = descEl.value.trim();
@@ -1890,23 +1943,33 @@
         
         const warnaTema = tipe === 'income' ? 'var(--wa-green)' : 'var(--danger)';
 
-        if (!tgl || rawAmount === '' || isNaN(nom) || nom <= 0 || !ket) return showPopup('alert', "Mohon lengkapi semua data dengan benar!", warnaTema);
+        if (!tgl || rawAmount === '' || isNaN(nom) || nom <= 0 || !ket) {
+            showPopup('alert', "Mohon lengkapi semua data dengan benar!", warnaTema);
+            return resetGlobalSubmit();
+        }
         
         if (tipe === 'expense') {
-            if (getSaldoDompet(dmp) < nom) return showPopup('alert', `Saldo [${dmp}] tidak mencukupi!`, warnaTema);
+            if (getSaldoDompet(dmp) < nom) {
+                showPopup('alert', `Saldo [${dmp}] tidak mencukupi!`, warnaTema);
+                return resetGlobalSubmit();
+            }
             
             if (dmp === 'Dana Darurat 🔒') {
-                return verifyPin(() => prosesSimpanAkhir(tipe, tgl, ket, nom, dmp, plt, pfx));
+                return verifyPin(() => {
+                    prosesSimpanAkhir(tipe, tgl, ket, nom, dmp, plt, pfx);
+                    resetGlobalSubmit();
+                });
             }
         }
         
         prosesSimpanAkhir(tipe, tgl, ket, nom, dmp, plt, pfx);
+        resetGlobalSubmit();
     }
 
     function editData(tipe, idItem) {
         if (tipe === 'mutations') return showPopup('alert', "Mutasi tidak bisa diedit. Hapus (✖) dan buat ulang.", '#ffffff');
         
-        const ekstraTerkait = [...AppState.db.titipan, ...AppState.db.hutang, ...AppState.db.piutang, ...AppState.db.spaylater, ...AppState.db.spinjam];
+        const ekstraTerkait = [...AppState.db.pengingat, ...AppState.db.hutang, ...AppState.db.piutang, ...AppState.db.spaylater, ...AppState.db.spinjam];
         const isAwal = ekstraTerkait.some(x => x.incomeId === idItem || x.expenseId === idItem);
         const isCicilan = ekstraTerkait.some(x => x.paymentIds && x.paymentIds.includes(idItem));
         
@@ -2005,7 +2068,6 @@
             let saldoAman = true;
             let pesanError = "Saldo akan minus!";
             
-            // [BUG FIX #4]: Memperbaiki logika absolut saat edit dompet agar tidak minus gaib
             if (tipe === 'expense') {
                 let saldoTersedia = getSaldoDompet(dompetBaru);
                 if (dompetBaru === dompetLama) saldoTersedia += nominalLama;
@@ -2013,7 +2075,7 @@
             } else if (tipe === 'income') {
                 let saldoSaatIniLama = getSaldoDompet(dompetLama);
                 if (dompetBaru !== dompetLama) {
-                    if (saldoSaatIniLama < nominalLama) { // Cek Absolut Sisa Saat Ini
+                    if (saldoSaatIniLama < nominalLama) { 
                         saldoAman = false; 
                         pesanError = `Batal: Uang di [${dompetLama}] sebagian sudah dipakai. Tidak bisa ditarik/dipindah ke [${dompetBaru}].`; 
                     }
@@ -2037,23 +2099,19 @@
                 showToast("Data berhasil diedit!", titleColor);
             };
 
-            if (butuhPin) {
-                tutupModalAman('edit-modal');
-                verifyPin(execEdit);
-            } else {
-                execEdit();
-            }
+            if (butuhPin) { tutupModalAman('edit-modal'); verifyPin(execEdit); } 
+            else { execEdit(); }
         };
     }
 
     function deleteItem(event, tipe, idItem) {
         event.stopPropagation();
         
-        const ekstraTerkait = [...AppState.db.titipan, ...AppState.db.hutang, ...AppState.db.piutang, ...AppState.db.spaylater, ...AppState.db.spinjam];
+        const ekstraTerkait = [...AppState.db.pengingat, ...AppState.db.hutang, ...AppState.db.piutang, ...AppState.db.spaylater, ...AppState.db.spinjam];
         const isAwal = ekstraTerkait.some(x => x.incomeId === idItem || x.expenseId === idItem);
         const isCicilan = ekstraTerkait.some(x => x.paymentIds && x.paymentIds.includes(idItem));
         
-        if (isAwal || isCicilan) return showPopup('alert', 'Batal: Ini adalah Riwayat Menu Ekstra (Titipan/Hutang/Shopee)! Hapus langsung melalui Menu Titik Empat Kiri.', 'var(--danger)');
+        if (isAwal || isCicilan) return showPopup('alert', 'Batal: Ini adalah Riwayat Menu Ekstra (Pengingat/Hutang/Shopee)! Hapus langsung melalui Menu Titik Empat Kiri.', 'var(--danger)');
 
         const dataTarget = AppState.db[tipe].find(x => x.id === idItem);
         if (!dataTarget) return;
@@ -2077,11 +2135,8 @@
                 showToast("Riwayat terhapus!", 'var(--danger)');
             };
 
-            if (butuhPin) {
-                setTimeout(() => verifyPin(proceedDelete), 200); 
-            } else {
-                proceedDelete();
-            }
+            if (butuhPin) { setTimeout(() => verifyPin(proceedDelete), 200); } 
+            else { proceedDelete(); }
         });
     }
 
@@ -2109,9 +2164,12 @@
     }
 
     function processMutation(event) {
-        if (event && event.target) {
-            event.target.disabled = true;
-            setTimeout(() => event.target.disabled = false, 1500);
+        if (isGlobalSubmitting) return; // PROTEKSI QA: Mencegah Double Submit Mutasi
+        isGlobalSubmitting = true;
+
+        const btn = event.currentTarget || event.target;
+        if(btn && btn.tagName === 'BUTTON') {
+            btn.disabled = true; 
         }
 
         const asalRaw = document.getElementById('mut-from').value;
@@ -2125,21 +2183,29 @@
         const tglEl = document.getElementById('mut-date');
         const tglMutasi = tglEl && tglEl.dataset.rawDate ? tglEl.dataset.rawDate : Utils.tglHariIni();
         
-        if (asal === tujuan) return showPopup('alert', 'Dompet asal & tujuan sama!', '#ffffff');
-        if (rawAmount === '' || isNaN(nominal) || nominal <= 0) return showPopup('alert', 'Jumlah tidak valid!', '#ffffff');
-        if (getSaldoDompet(asal) < nominal) return showPopup('alert', `Saldo [${asal}] tidak cukup!`, '#ffffff');
+        const resetGlobalSubmit = () => {
+            isGlobalSubmitting = false;
+            if (btn) setTimeout(() => { btn.disabled = false; }, 1500);
+        };
+
+        if (asal === tujuan) { showPopup('alert', 'Dompet asal & tujuan sama!', '#ffffff'); return resetGlobalSubmit(); }
+        if (rawAmount === '' || isNaN(nominal) || nominal <= 0) { showPopup('alert', 'Jumlah tidak valid!', '#ffffff'); return resetGlobalSubmit(); }
+        if (getSaldoDompet(asal) < nominal) { showPopup('alert', `Saldo [${asal}] tidak cukup!`, '#ffffff'); return resetGlobalSubmit(); }
         
         const executeTransfer = () => {
             AppState.db.mutations.push({ id: Utils.buatId(), date: tglMutasi, from: asal, to: tujuan, amount: nominal });
             simpanDatabase(); closeMutationModal(); updateRekap(); updateWalletDropdownBalances();
             showToast('Mutasi Berhasil!', '#ffffff');
+            resetGlobalSubmit();
         };
 
-        if (asal === 'Dana Darurat 🔒') {
-            closeMutationModal();
+        if (asal === 'Dana Darurat 🔒') { 
+            closeMutationModal(); 
             verifyPin(executeTransfer);
-        } else {
-            executeTransfer();
+            // Lepas lock jika verifyPin dibatalkan (terjadi di callback closeFunc dalam showPopup)
+            setTimeout(() => { if (isGlobalSubmitting && !document.querySelector('.modal-overlay:not(.hidden)')) resetGlobalSubmit(); }, 500);
+        } else { 
+            executeTransfer(); 
         }
     }
     
@@ -2163,6 +2229,7 @@
         
         buildPlotOptions('out-plot-opts', 'out-plot-trigger', 'out-plot');
         buildPlotOptions('edit-plot-opts', 'edit-plot-trigger', 'edit-plot-val');
+        buildPlotOptions('cicil-plot-opts', 'cicil-plot-trigger', 'cicil-plot');
         
         updatePlotList(); 
         showToast("Alokasi Dibuat!", 'var(--wa-blue)');
@@ -2189,6 +2256,7 @@
             
             buildPlotOptions('out-plot-opts', 'out-plot-trigger', 'out-plot');
             buildPlotOptions('edit-plot-opts', 'edit-plot-trigger', 'edit-plot-val');
+            buildPlotOptions('cicil-plot-opts', 'cicil-plot-trigger', 'cicil-plot');
             showToast("Plot diperbarui!", 'var(--wa-blue)');
         }, plot[jenis], isAngka);
     }
@@ -2200,29 +2268,26 @@
             AppState.db.expense.forEach(e => {
                 if (e.plotId === idPlot) e.plotId = '';
             });
+
+            // Perisai Sticky Plot: Bersihkan plot bawaan di pengingat yang plotnya dihapus
+            AppState.db.pengingat.forEach(p => {
+                if (p.defaultPlotId === idPlot) p.defaultPlotId = '';
+            });
             
-            if (document.getElementById('out-plot') && document.getElementById('out-plot').value === idPlot) {
-                setCustomVal('out-plot', 'out-plot-trigger', 'out-plot-opts', '');
-            }
-            if (document.getElementById('edit-plot-val') && document.getElementById('edit-plot-val').value === idPlot) {
-                setCustomVal('edit-plot-val', 'edit-plot-trigger', 'edit-plot-opts', '');
-            }
+            ['out-plot', 'edit-plot-val', 'cicil-plot'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el && el.value === idPlot) setCustomVal(id, `${id}-trigger`, `${id}-opts`, '');
+            });
             
             simpanDatabase(); updatePlotList(); updateRekap();
             
             buildPlotOptions('out-plot-opts', 'out-plot-trigger', 'out-plot');
             buildPlotOptions('edit-plot-opts', 'edit-plot-trigger', 'edit-plot-val');
-            
-            const outTrigger = document.getElementById('out-plot-trigger');
-            if (outTrigger && document.getElementById('out-plot').value === '') {
-                outTrigger.innerText = '-- Tanpa Plot --';
-                outTrigger.style.color = 'var(--text-muted)';
-            }
+            buildPlotOptions('cicil-plot-opts', 'cicil-plot-trigger', 'cicil-plot');
 
             showToast("Plot dihapus!", 'var(--danger)');
         });
     }
-
     // =========================================================
     // 10. RENDER ENGINE & GRAFIK (DOM Optimization)
     // =========================================================
@@ -2411,7 +2476,6 @@
             return item.date >= tglStart && item.date <= tglEnd;
         });
 
-        // [BUG FIX #1]: Optimasi Sorting untuk mencegah UI freeze (Time Complexity)
         filteredGabungan.sort((a, b) => {
             const dateA = a.date || '2000-01-01';
             const dateB = b.date || '2000-01-01';
@@ -2443,7 +2507,6 @@
         const dataMasukTampil = dataMasukArr.slice(0, limitRekapIn);
         const dataKeluarTampil = dataKeluarArr.slice(0, limitRekapOut);
 
-        // [BUG FIX #1]: Map & Join untuk rendering memori raksasa
         const renderBaris = (item, isMut, isIn) => {
             return `<li><div class="editable" onclick="editData('${item.type}','${item.id}')"><div class="history-desc-text">
                 <small style="color:var(--text-muted)">${Utils.formatTglTampil(item.date)}</small><br>${Utils.amanHTML(item.desc)}</div>
@@ -2696,8 +2759,8 @@
             XLSX.utils.book_append_sheet(wb, wsPlot, "Daftar_Plot"); 
         }
 
-        if(AppState.db.titipan && AppState.db.titipan.length > 0) { 
-            const wsTitipan = XLSX.utils.json_to_sheet(prepExtraForExcel(AppState.db.titipan)); XLSX.utils.book_append_sheet(wb, wsTitipan, "Daftar_Titipan"); 
+        if(AppState.db.pengingat && AppState.db.pengingat.length > 0) { 
+            const wsPengingat = XLSX.utils.json_to_sheet(prepExtraForExcel(AppState.db.pengingat)); XLSX.utils.book_append_sheet(wb, wsPengingat, "Daftar_Pengingat"); 
         }
         if(AppState.db.hutang && AppState.db.hutang.length > 0) { 
             const wsHutang = XLSX.utils.json_to_sheet(prepExtraForExcel(AppState.db.hutang)); XLSX.utils.book_append_sheet(wb, wsHutang, "Daftar_Hutang"); 
@@ -2719,7 +2782,9 @@
         if (!val) return null;
         if (!isNaN(val)) { 
             let days = Math.floor(val);
+            // PROTEKSI QA: Perbaikan bug kabisat Excel 1900
             if (days < 60) days++; 
+            else if (days === 60) return "1900-02-29"; 
             const d = new Date(Date.UTC(1899, 11, 30 + days));
             return d.toISOString().split('T')[0]; 
         }
@@ -2758,7 +2823,7 @@
                 const wb = XLSX.read(new Uint8Array(ev.target.result), { type: 'array' });
                 AppState.tempImport = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);
                 AppState.tempImportPlots = wb.SheetNames.includes("Daftar_Plot") ? XLSX.utils.sheet_to_json(wb.Sheets["Daftar_Plot"]) : [];
-                AppState.tempImportTitipan = wb.SheetNames.includes("Daftar_Titipan") ? XLSX.utils.sheet_to_json(wb.Sheets["Daftar_Titipan"]) : [];
+                AppState.tempImportPengingat = wb.SheetNames.includes("Daftar_Pengingat") ? XLSX.utils.sheet_to_json(wb.Sheets["Daftar_Pengingat"]) : (wb.SheetNames.includes("Daftar_Titipan") ? XLSX.utils.sheet_to_json(wb.Sheets["Daftar_Titipan"]) : []); // Fallback Titipan Lama
                 AppState.tempImportHutang = wb.SheetNames.includes("Daftar_Hutang") ? XLSX.utils.sheet_to_json(wb.Sheets["Daftar_Hutang"]) : [];
                 AppState.tempImportPiutang = wb.SheetNames.includes("Daftar_Piutang") ? XLSX.utils.sheet_to_json(wb.Sheets["Daftar_Piutang"]) : [];
                 AppState.tempImportSpaylater = wb.SheetNames.includes("Daftar_SPayLater") ? XLSX.utils.sheet_to_json(wb.Sheets["Daftar_SPayLater"]) : [];
@@ -2790,11 +2855,20 @@
 
             let nilaiTenor = newItem.tenor !== undefined ? newItem.tenor : newItem.Tenor;
             newItem.tenor = Math.max(1, Math.floor(Number(nilaiTenor) || 1));
+            
+            if (!newItem.tipe) newItem.tipe = 'titipan';
+            if (!newItem.freq) newItem.freq = 'sekali';
+            
+            // Sanitasi Ekstrem: Hacker Excel Plot Override Shield
+            if (newItem.tipe === 'titipan') {
+                newItem.defaultPlotId = ''; 
+            }
 
             return newItem;
         });
     };
 
+    // --- AUDIT FIX: KALKULASI IMPORT RINGKAS (MENCEGAH GHOST BALANCE) & PARSER ANGKA UNIVERSAL ---
     function executeImport(mode) {
         tutupModalAman('import-modal');
         
@@ -2815,11 +2889,24 @@
             });
         };
 
-        mergeExtra(AppState.db.titipan, AppState.tempImportTitipan);
+        mergeExtra(AppState.db.pengingat, AppState.tempImportPengingat);
         mergeExtra(AppState.db.hutang, AppState.tempImportHutang);
         mergeExtra(AppState.db.piutang, AppState.tempImportPiutang);
         mergeExtra(AppState.db.spaylater, AppState.tempImportSpaylater);
         mergeExtra(AppState.db.spinjam, AppState.tempImportSpinjam);
+
+        const parseAngkaUniversal = (val) => {
+            if (typeof val === 'number') return Math.abs(Math.round(val));
+            if (!val) return 0;
+            
+            let str = String(val).trim();
+            const match = str.match(/[,.](\d{1,2})$/);
+            if (match) {
+                str = str.substring(0, match.index);
+            }
+            str = str.replace(/[^\d]/g, '');
+            return Math.abs(Number(str) || 0);
+        };
 
         if (mode === 'semua') {
             AppState.tempImport.forEach(r => {
@@ -2827,17 +2914,9 @@
                 if (!d) return;
 
                 const tipe = String(r.Tipe).toUpperCase();
-                
-                // [BUG FIX #9]: Memperketat parsing number agar format accounting indonesia koma desimal tetap aman
-                let nom = 0;
-                if (typeof r.Jumlah === 'number') {
-                    nom = Math.abs(Math.round(r.Jumlah));
-                } else {
-                    let rawNom = String(r.Jumlah).replace(/[^\d,-]/g, '').replace(/,/g, '.');
-                    nom = Math.abs(Math.round(Number(rawNom)));
-                }
-                
+                const nom = parseAngkaUniversal(r.Jumlah);
                 const id = r.ID || Utils.buatId(); 
+                
                 if (isNaN(nom) || nom <= 0) return; 
                 
                 const dompetAsal = validasiDompet(String(r.Dompet || r.Dari || '').trim());
@@ -2863,32 +2942,41 @@
         } else {
             let kalk = { 'Tunai': 0, 'Bank': 0, 'e-Wallet': 0, 'Dana Darurat': 0, 'Dana Darurat 🔒': 0 };
             
-            AppState.tempImport.forEach(r => { 
-                let numTest = 0;
-                if (typeof r.Jumlah === 'number') {
-                    numTest = Math.round(r.Jumlah);
-                } else {
-                    let rawNom = String(r.Jumlah).replace(/[^\d,-]/g, '').replace(/,/g, '.');
-                    numTest = Math.round(Number(rawNom));
+            const protectedIds = new Set();
+            const allExtra = [...AppState.db.pengingat, ...AppState.db.hutang, ...AppState.db.piutang, ...AppState.db.spaylater, ...AppState.db.spinjam];
+            
+            allExtra.forEach(ext => {
+                if (ext.status !== 'selesai') {
+                    if (ext.incomeId) protectedIds.add(ext.incomeId);
+                    if (ext.expenseId) protectedIds.add(ext.expenseId);
+                    if (ext.paymentIds) ext.paymentIds.forEach(pid => protectedIds.add(pid));
                 }
+            });
 
+            const protectedIncome = AppState.db.income.filter(i => protectedIds.has(i.id));
+            const protectedExpense = AppState.db.expense.filter(e => protectedIds.has(e.id));
+            
+            AppState.tempImport.forEach(r => { 
+                if (r.ID && protectedIds.has(r.ID)) return;
+
+                let numTest = parseAngkaUniversal(r.Jumlah);
                 if (!isNaN(numTest) && numTest > 0) { 
                     const dompetAsal = validasiDompet(String(r.Dompet || r.Dari || '').trim());
                     const dompetTujuan = validasiDompet(String(r.Ke || '').trim());
 
-                    if (String(r.Tipe).toUpperCase() === 'DEBIT') kalk[dompetAsal] += Math.abs(numTest); 
-                    if (String(r.Tipe).toUpperCase() === 'KREDIT') kalk[dompetAsal] -= Math.abs(numTest); 
+                    if (String(r.Tipe).toUpperCase() === 'DEBIT') kalk[dompetAsal] += numTest; 
+                    if (String(r.Tipe).toUpperCase() === 'KREDIT') kalk[dompetAsal] -= numTest; 
                     if (String(r.Tipe).toUpperCase() === 'MUTASI') { 
                         if (dompetAsal !== dompetTujuan) {
-                            kalk[dompetAsal] -= Math.abs(numTest); 
-                            kalk[dompetTujuan] += Math.abs(numTest); 
+                            kalk[dompetAsal] -= numTest; 
+                            kalk[dompetTujuan] += numTest; 
                         }
                     }
                 } 
             });
             
-            AppState.db.income = []; 
-            AppState.db.expense = []; 
+            AppState.db.income = [...protectedIncome]; 
+            AppState.db.expense = [...protectedExpense]; 
             AppState.db.mutations = []; 
 
             const validDateStr = (AppState.tempImport.length > 0 && parseExcelDate(AppState.tempImport[0].Tanggal)) || Utils.tglHariIni();
@@ -2903,18 +2991,9 @@
         }
         
         simpanDatabase(); updateRekap(); updatePlotList(); updateWalletDropdownBalances();
-        
-        AppState.tempImport = [];
-        AppState.tempImportPlots = [];
-        AppState.tempImportTitipan = [];
-        AppState.tempImportHutang = [];
-        AppState.tempImportPiutang = [];
-        AppState.tempImportSpaylater = [];
-        AppState.tempImportSpinjam = [];
+        AppState.tempImport = []; AppState.tempImportPlots = []; AppState.tempImportPengingat = []; AppState.tempImportHutang = []; AppState.tempImportPiutang = []; AppState.tempImportSpaylater = []; AppState.tempImportSpinjam = [];
 
-        setTimeout(() => {
-            showPopup('alert', "Import Ringkas/Semua Berhasil!\n\nRiwayat di tab Rekap telah diperbarui dan data Hutang/Titipan kamu berhasil diselamatkan.", 'var(--wa-green)');
-        }, 500);
+        setTimeout(() => { showPopup('alert', "Import Ringkas/Semua Berhasil!\n\nRiwayat telah diperbarui tanpa merusak Ekstra aktif.", 'var(--wa-green)'); }, 500);
     }
 
     function promptClearData() {
@@ -2925,7 +3004,7 @@
             if (AppState.charts.portofolio) AppState.charts.portofolio.destroy();
             
             localStorage.removeItem('famBARLA_DB'); 
-            AppState.db = { income: [], expense: [], mutations: [], plots: [], titipan: [], hutang: [], piutang: [], spaylater: [], spinjam: [] }; 
+            AppState.db = { income: [], expense: [], mutations: [], plots: [], pengingat: [], hutang: [], piutang: [], spaylater: [], spinjam: [] }; 
             simpanDatabase(); 
             updateRekap(); 
             updatePlotList(); 
@@ -3053,9 +3132,7 @@
             renderKalender(); 
             document.getElementById('custom-picker').classList.remove('hidden'); 
             document.body.classList.add('modal-open');
-        } catch(err) {
-            // Error handling dihilangkan agar tak membebani memory
-        }
+        } catch(err) {}
     }
     
     function closePicker() { 
@@ -3142,14 +3219,14 @@
     // 13. FITUR EKSTRA (GROUPING, CICILAN, & NOTIFIKASI)
     // =========================================================
     const DB_EKSTRA = {
-        titipan: { nama: 'Titipan', warna: 'var(--wa-blue)', msk: 'income', klr: 'expense', idTrx: 'incomeId', lblWallet: 'Masuk ke Dompet', teksSelesai: 'Uang dikembalikan kepada:', descMsk: 'Titipan dari ', descKlr: 'Kembalikan Titipan ', btn: 'KEMBALIKAN' },
+        pengingat: { nama: 'Pengingat', warna: 'var(--wa-blue)', msk: 'dynamic', klr: 'expense', idTrx: 'incomeId', lblWallet: 'Masuk ke Dompet', teksSelesai: 'Bayar / Kembalikan menggunakan dompet:', descMsk: 'Titipan dari ', descKlr: 'Kembali/Bayar: ', btn: 'PROSES' },
         hutang: { nama: 'Hutang', warna: 'var(--wa-pink)', msk: 'income', klr: 'expense', idTrx: 'incomeId', lblWallet: 'Masuk ke Dompet', teksSelesai: 'Bayar hutang kepada:', descMsk: 'Pinjaman dari ', descKlr: 'Bayar Hutang ke ', btn: 'BAYAR' },
         piutang: { nama: 'Piutang', warna: 'var(--wa-gold)', msk: 'expense', klr: 'income', idTrx: 'expenseId', lblWallet: 'Keluar dari Dompet', teksSelesai: 'Terima pembayaran dari:', descMsk: 'Pinjaman untuk ', descKlr: 'Pembayaran dari ', btn: 'TERIMA' },
         spaylater: { nama: 'SPayLater', warna: 'var(--shopee)', msk: 'none', klr: 'expense', idTrx: 'null', lblWallet: '', teksSelesai: 'Bayar cicilan sPayLater dari dompet:', descMsk: '', descKlr: 'Cicilan sPayLater: ', btn: 'BAYAR CICILAN' },
         spinjam: { nama: 'SPinjam', warna: 'var(--shopee)', msk: 'income', klr: 'expense', idTrx: 'incomeId', lblWallet: 'Cair Masuk ke Dompet', teksSelesai: 'Bayar cicilan sPinjam dari dompet:', descMsk: 'Pencairan sPinjam: ', descKlr: 'Cicilan sPinjam: ', btn: 'BAYAR CICILAN' }
     };
     
-    let ModeEkstraAktif = 'titipan';
+    let ModeEkstraAktif = 'pengingat';
 
     function toggleExtraMenu(e) {
         e.stopPropagation();
@@ -3211,31 +3288,39 @@
             
             g.items.forEach(t => {
                 const sisa = t.amount - t.paidAmount;
-                const isTitipan = ModeEkstraAktif === 'titipan';
                 
-                const showRiwayatBtn = (!isTitipan && t.paymentIds && t.paymentIds.length > 0) ? `<button class="extra-btn" style="color:var(--text-muted); border:1px solid var(--border-color); display:flex; align-items:center; padding:6px; background: transparent;" onclick="bukaRiwayatCicilan('${t.id}')" title="Riwayat Cicilan">${svgHistory}</button>` : '';
+                let tipeIcon = '';
+                if (ModeEkstraAktif === 'pengingat') {
+                     tipeIcon = t.tipe === 'tagihan' ? '📅 ' : '📥 ';
+                }
                 
-                const btnAksi = isTitipan 
-                    ? `<button class="extra-btn" style="color:${cfg.warna}; border:1px solid ${cfg.warna};" onclick="bukaCicilExtra('${t.id}')">KEMBALIKAN</button>`
-                    : `<button class="extra-btn" style="color:${cfg.warna}; border:1px solid ${cfg.warna};" onclick="bukaCicilExtra('${t.id}')">BAYAR/CICIL</button>`;
+                const isHanyaTitipan = (ModeEkstraAktif === 'pengingat' && t.tipe === 'titipan');
+                
+                const showRiwayatBtn = (!isHanyaTitipan && t.paymentIds && t.paymentIds.length > 0) ? `<button class="extra-btn" style="color:var(--text-muted); border:1px solid var(--border-color); display:flex; align-items:center; padding:6px; background: transparent;" onclick="bukaRiwayatCicilan('${t.id}')" title="Riwayat Cicilan">${svgHistory}</button>` : '';
+                
+                let teksTombol = isHanyaTitipan ? 'KEMBALIKAN' : 'BAYAR/CICIL';
+                if (ModeEkstraAktif === 'pengingat' && t.tipe === 'tagihan' && (t.freq === 'bulanan' || t.freq === 'tahunan')) {
+                    teksTombol = 'BAYAR & PERPANJANG';
+                }
 
-                const progressHtml = isTitipan 
+                const btnAksi = `<button class="extra-btn" style="color:${cfg.warna}; border:1px solid ${cfg.warna};" onclick="bukaCicilExtra('${t.id}')">${teksTombol}</button>`;
+
+                const progressHtml = isHanyaTitipan 
                     ? '' 
                     : `<div class="cicil-progress"><span>(Dicicil: ${Utils.formatRp(t.paidAmount)} / ${Utils.formatRp(t.amount)})</span></div>`;
 
-                              let jatuhTempoHtml = '';
-                if (t.dueDate && t.status !== 'selesai') {
+                let jatuhTempoHtml = '';
+                if (t.dueDate && t.status !== 'selesai' && (!t.tipe || t.tipe === 'tagihan')) {
                     jatuhTempoHtml = `<div style="font-size: 9px; color: var(--danger); font-weight: 600; margin-top: 4px;">Jatuh Tempo: ${Utils.formatTglTampil(t.dueDate)}</div>`;
                 }
 
-                // Tambahan: Tombol hapus silang merah (✖) untuk item aktif
                 const hapusAktifBtn = `<button class="extra-btn-hapus" onclick="hapusExtra('${t.id}')" title="Hapus Catatan Permanen" style="margin-left: 2px; padding: 4px;"><svg class="svg-x" viewBox="0 0 24 24" fill="none" stroke="var(--danger)" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><circle cx="12" cy="12" r="10" stroke-width="1.5"></circle><path d="m15 9-6 6M9 9l6 6" stroke-width="2"></path></svg></button>`;
 
                 html += `
                 <li class="titipan-item">
                     <div class="titipan-header">
                         <div class="titipan-name">
-                            <span style="color:var(--text-light);">${Utils.amanHTML(t.catatan || t.nama)}</span>
+                            <span style="color:var(--text-light);">${tipeIcon}${Utils.amanHTML(t.catatan || t.nama)}</span>
                             ${jatuhTempoHtml}
                         </div>
                         <div style="display:flex; align-items:center; gap:10px;">
@@ -3261,8 +3346,8 @@
             const lunasDitampilkan = selesaiItems.slice(0, limitLunasEkstra);
             
             lunasDitampilkan.forEach(t => {
-                const isTitipan = ModeEkstraAktif === 'titipan';
-                const showRiwayatBtnLunas = (!isTitipan && t.paymentIds && t.paymentIds.length > 0) ? `<button class="extra-btn" style="color:var(--text-muted); border:1px solid var(--border-color); display:flex; align-items:center; padding:6px; background: transparent; margin-right: 6px;" onclick="bukaRiwayatCicilan('${t.id}')" title="Riwayat Cicilan Terakhir">${svgHistory}</button>` : '';
+                const isHanyaTitipan = (ModeEkstraAktif === 'pengingat' && t.tipe === 'titipan');
+                const showRiwayatBtnLunas = (!isHanyaTitipan && t.paymentIds && t.paymentIds.length > 0) ? `<button class="extra-btn" style="color:var(--text-muted); border:1px solid var(--border-color); display:flex; align-items:center; padding:6px; background: transparent; margin-right: 6px;" onclick="bukaRiwayatCicilan('${t.id}')" title="Riwayat Cicilan Terakhir">${svgHistory}</button>` : '';
 
                 html += `
                 <li class="titipan-item" style="opacity: 0.6;">
@@ -3334,6 +3419,9 @@
         document.getElementById('extra-duedate').value = '';
         
         document.getElementById('extra-tenor-group').classList.add('hidden');
+        
+        document.getElementById('extra-tipe-group').classList.add('hidden');
+        document.getElementById('extra-freq-group').classList.add('hidden');
 
         if (ModeEkstraAktif === 'hutang' || ModeEkstraAktif === 'piutang' || ModeEkstraAktif === 'spinjam' || ModeEkstraAktif === 'spaylater') {
             document.getElementById('extra-tenor-group').classList.remove('hidden');
@@ -3354,9 +3442,13 @@
             document.getElementById('extra-nama').placeholder = "Misal: Nila";
             document.getElementById('extra-catatan').placeholder = "Misal: Pinjaman 6 Bln";
             document.getElementById('extra-nominal-label').innerText = "Total Tagihan + Bunga (Rp)";
+        } else if (ModeEkstraAktif === 'pengingat') {
+            document.getElementById('extra-nama').placeholder = "Misal: Dona";
+            document.getElementById('extra-catatan').placeholder = "Misal: SPP, Titip Uang, dll";
+            document.getElementById('extra-nominal-label').innerText = "Jumlah (Rp)";
         } else {
             document.getElementById('extra-nama').placeholder = "Misal: Barla";
-            document.getElementById('extra-catatan').placeholder = "Misal: Titip Uang, Hutang, Piutang";
+            document.getElementById('extra-catatan').placeholder = "Misal: Hutang, Piutang";
             document.getElementById('extra-nominal-label').innerText = "Jumlah (Rp)";
         }
 
@@ -3377,6 +3469,29 @@
                 document.getElementById('extra-principal-group').classList.remove('hidden');
                 document.getElementById('extra-wallet-label').innerText = cfg.lblWallet;
                 document.getElementById('extra-wallet-group').style.display = 'block';
+            } else if (ModeEkstraAktif === 'pengingat') {
+                // UI Pengingat Dinamis
+                document.getElementById('extra-tipe-group').classList.remove('hidden');
+                
+                let tipeOpts = `
+                    <div class="custom-option" onclick="setCustomVal('extra-tipe','extra-tipe-trigger','extra-tipe-opts','titipan', 'Titip Uang (Uang Masuk)')">Titip Uang (Uang Masuk)</div>
+                    <div class="custom-option" onclick="setCustomVal('extra-tipe','extra-tipe-trigger','extra-tipe-opts','tagihan', 'Tagihan / Agenda Rutin')">Tagihan / Agenda Rutin</div>
+                `;
+                document.getElementById('extra-tipe-opts').innerHTML = tipeOpts;
+                
+                let freqOpts = `
+                    <div class="custom-option" onclick="setCustomVal('extra-freq','extra-freq-trigger','extra-freq-opts','sekali', 'Sekali Saja')">Sekali Saja</div>
+                    <div class="custom-option" onclick="setCustomVal('extra-freq','extra-freq-trigger','extra-freq-opts','bulanan', 'Rutin Bulanan')">Rutin Bulanan</div>
+                    <div class="custom-option" onclick="setCustomVal('extra-freq','extra-freq-trigger','extra-freq-opts','tahunan', 'Rutin Tahunan')">Rutin Tahunan</div>
+                `;
+                document.getElementById('extra-freq-opts').innerHTML = freqOpts;
+                
+                setCustomVal('extra-tipe','extra-tipe-trigger','extra-tipe-opts','titipan', 'Titip Uang (Uang Masuk)');
+                setCustomVal('extra-freq','extra-freq-trigger','extra-freq-opts','sekali', 'Sekali Saja');
+
+                document.getElementById('extra-duedate').dataset.rawDate = tglHariIni;
+                document.getElementById('extra-duedate').value = Utils.formatTglTampil(tglHariIni);
+                document.getElementById('extra-duedate').setAttribute('onclick', `openPicker('extra-duedate', 'date', 'var(--danger)')`);
             } else if (cfg.msk === 'none') {
                 document.getElementById('extra-principal-group').classList.add('hidden');
                 document.getElementById('extra-wallet-group').style.display = 'none';
@@ -3398,11 +3513,8 @@
                 document.getElementById('extra-catatan').value = data.catatan || '';
                 document.getElementById('extra-nominal').value = data.amount.toLocaleString('id-ID');
                 
-                if (data.tenor) {
-                    document.getElementById('extra-tenor').value = data.tenor;
-                } else {
-                    document.getElementById('extra-tenor').value = '1';
-                }
+                if (data.tenor) document.getElementById('extra-tenor').value = data.tenor;
+                else document.getElementById('extra-tenor').value = '1';
 
                 if (data.dateIn) {
                     document.getElementById('extra-date').dataset.rawDate = data.dateIn;
@@ -3412,6 +3524,21 @@
                 if (ModeEkstraAktif === 'spinjam') {
                     document.getElementById('extra-principal-group').classList.remove('hidden');
                     document.getElementById('extra-principal').value = data.principal ? data.principal.toLocaleString('id-ID') : '';
+                }
+                
+                if (ModeEkstraAktif === 'pengingat') {
+                    document.getElementById('extra-tipe-group').classList.remove('hidden');
+                    document.getElementById('extra-tipe-trigger').style.pointerEvents = 'none'; // Lock Tipe in Edit
+                    document.getElementById('extra-tipe-trigger').style.opacity = '0.6';
+                    
+                    if (data.tipe === 'tagihan') {
+                        setCustomVal('extra-tipe','extra-tipe-trigger','extra-tipe-opts','tagihan', 'Tagihan / Agenda Rutin');
+                        document.getElementById('extra-freq-group').classList.remove('hidden');
+                        document.getElementById('extra-duedate-group').classList.remove('hidden');
+                        setCustomVal('extra-freq','extra-freq-trigger','extra-freq-opts', data.freq || 'sekali', (data.freq==='bulanan'?'Rutin Bulanan':(data.freq==='tahunan'?'Rutin Tahunan':'Sekali Saja')));
+                    } else {
+                        setCustomVal('extra-tipe','extra-tipe-trigger','extra-tipe-opts','titipan', 'Titip Uang (Uang Masuk)');
+                    }
                 }
 
                 if (data.dueDate) {
@@ -3427,8 +3554,11 @@
     }
 
     function simpanExtra(event) {
+        if (isGlobalSubmitting) return; // PROTEKSI QA: Mencegah Double Submit Modul Ekstra
+        isGlobalSubmitting = true;
+
         const btn = document.getElementById('btn-simpan-extra');
-        if (btn) { btn.disabled = true; setTimeout(() => btn.disabled = false, 1500); }
+        if (btn) btn.disabled = true;
 
         const cfg = DB_EKSTRA[ModeEkstraAktif];
         const idEdit = document.getElementById('extra-id-edit').value;
@@ -3448,35 +3578,59 @@
         
         const dueDateRaw = document.getElementById('extra-duedate').dataset.rawDate;
         const dueDate = document.getElementById('extra-duedate-group').classList.contains('hidden') || !dueDateRaw ? null : dueDateRaw;
+        
+        const tipePengingat = ModeEkstraAktif === 'pengingat' ? document.getElementById('extra-tipe').value : null;
+        const freqPengingat = ModeEkstraAktif === 'pengingat' ? document.getElementById('extra-freq').value : null;
+
+        const resetGlobalSubmit = () => {
+            isGlobalSubmitting = false;
+            if (btn) setTimeout(() => { btn.disabled = false; }, 1500);
+        };
 
         if (!nama || rawAmount === '' || isNaN(amount) || amount <= 0) {
-            return showPopup('alert', 'Isi Nama dan Nominal Tagihan dengan benar!', cfg.warna);
+            showPopup('alert', 'Isi Nama dan Nominal dengan benar!', cfg.warna);
+            return resetGlobalSubmit();
         }
         
         if (ModeEkstraAktif === 'spinjam' && (rawPrincipal === '' || isNaN(principal) || principal <= 0)) {
-            return showPopup('alert', 'Isi nominal Uang Cair dengan benar!', cfg.warna);
+            showPopup('alert', 'Isi nominal Uang Cair dengan benar!', cfg.warna);
+            return resetGlobalSubmit();
         }
 
-        const fullDesc = cfg.descMsk + nama + (catatan ? " - " + catatan : "");
+        let dbMskAsli = cfg.msk;
+        if (ModeEkstraAktif === 'pengingat') {
+             dbMskAsli = tipePengingat === 'titipan' ? 'income' : 'none';
+        }
+
+        const fullDesc = (dbMskAsli === 'income' ? cfg.descMsk : '') + nama + (catatan ? " - " + catatan : "");
         let dompetAktual = document.getElementById('extra-wallet').value;
 
-        if (cfg.msk !== 'none' && idEdit) {
+        if (dbMskAsli !== 'none' && idEdit) {
             const dataExt = AppState.db[ModeEkstraAktif].find(x => x.id === idEdit);
-            const trxData = dataExt ? AppState.db[cfg.msk].find(x => x.id === dataExt[cfg.idTrx]) : null;
+            const trxData = dataExt && dataExt[cfg.idTrx] ? AppState.db[dbMskAsli].find(x => x.id === dataExt[cfg.idTrx]) : null;
             if (trxData) dompetAktual = trxData.wallet;
         }
 
-        const butuhPin = (cfg.msk !== 'none' && dompetAktual === 'Dana Darurat 🔒');
+        const butuhPin = (dbMskAsli !== 'none' && dompetAktual === 'Dana Darurat 🔒');
 
         const execSimpanExtra = () => {
-            if (cfg.msk === 'none') { 
+            if (dbMskAsli === 'none') { 
                 if (idEdit) {
                     const dataExt = AppState.db[ModeEkstraAktif].find(x => x.id === idEdit);
                     if(dataExt) { 
                         if (amount < (dataExt.paidAmount || 0)) {
-                            return showPopup('alert', `Batal: Tagihan baru tidak boleh lebih kecil dari yang sudah dibayar (${Utils.formatRp(dataExt.paidAmount)})!`, 'var(--danger)');
+                            showPopup('alert', `Batal: Tagihan baru tidak boleh lebih kecil dari yang sudah dibayar (${Utils.formatRp(dataExt.paidAmount)})!`, 'var(--danger)');
+                            return resetGlobalSubmit();
                         }
-                        dataExt.nama = nama; dataExt.catatan = catatan; dataExt.amount = amount; dataExt.dateIn = dateIn; dataExt.tenor = tenorVal; if(dueDate !== undefined) dataExt.dueDate = dueDate; 
+                        
+                        // Mid-Flight Anchor Reset: Jika freq berubah, set originalDate baru
+                        if (dataExt.freq !== freqPengingat) {
+                             dataExt.origDate = dueDate ? parseInt(dueDate.split('-')[2], 10) : new Date().getDate();
+                        }
+
+                        dataExt.nama = nama; dataExt.catatan = catatan; dataExt.amount = amount; dataExt.dateIn = dateIn; dataExt.tenor = tenorVal; 
+                        if(dueDate !== undefined) dataExt.dueDate = dueDate; 
+                        if(freqPengingat) dataExt.freq = freqPengingat;
                         
                         if (dataExt.paidAmount >= amount) {
                             dataExt.status = 'selesai';
@@ -3486,27 +3640,37 @@
                         }
                     }
                 } else {
+                    let origD = dueDate ? parseInt(dueDate.split('-')[2], 10) : new Date().getDate();
                     let entryBaru = { id: Utils.buatId(), nama: nama, catatan: catatan, amount: amount, paidAmount: 0, paymentIds: [], dateIn: dateIn, status: 'aktif', dueDate: dueDate, tenor: tenorVal };
+                    if (ModeEkstraAktif === 'pengingat') {
+                        entryBaru.tipe = tipePengingat;
+                        entryBaru.freq = freqPengingat;
+                        entryBaru.origDate = origD; 
+                        entryBaru.defaultPlotId = ''; 
+                    }
                     AppState.db[ModeEkstraAktif].push(entryBaru);
                 }
             } else { 
                 if (idEdit) {
                     const dataExt = AppState.db[ModeEkstraAktif].find(x => x.id === idEdit);
                     if (dataExt) {
-                        const trxData = AppState.db[cfg.msk].find(x => x.id === dataExt[cfg.idTrx]);
+                        const trxData = dataExt[cfg.idTrx] ? AppState.db[dbMskAsli].find(x => x.id === dataExt[cfg.idTrx]) : null;
                         const dompetLama = trxData ? trxData.wallet : 'Tunai';
                         
                         if (trxData && ModeEkstraAktif !== 'spinjam') {
                              if (amount < (dataExt.paidAmount || 0)) {
-                                 return showPopup('alert', `Batal: Tagihan baru tidak boleh lebih kecil dari yang sudah dibayar (${Utils.formatRp(dataExt.paidAmount)})!`, 'var(--danger)');
+                                 showPopup('alert', `Batal: Tagihan baru tidak boleh lebih kecil dari yang sudah dibayar (${Utils.formatRp(dataExt.paidAmount)})!`, 'var(--danger)');
+                                 return resetGlobalSubmit();
                              }
                              const selisih = dataExt.amount - amount;
                              
-                             if (cfg.msk === 'income' && selisih > 0 && getSaldoDompet(dompetLama) < selisih) {
-                                 return showPopup('alert', `Batal: Saldo [${dompetLama}] sudah terpakai sebagian!`, 'var(--danger)');
+                             if (dbMskAsli === 'income' && selisih > 0 && getSaldoDompet(dompetLama) < selisih) {
+                                 showPopup('alert', `Batal: Saldo [${dompetLama}] sudah terpakai sebagian!`, 'var(--danger)');
+                                 return resetGlobalSubmit();
                              }
-                             if (cfg.msk === 'expense' && selisih < 0 && getSaldoDompet(dompetLama) < Math.abs(selisih)) {
-                                 return showPopup('alert', `Batal: Saldo [${dompetLama}] tidak cukup untuk menambah tagihan!`, 'var(--danger)');
+                             if (dbMskAsli === 'expense' && selisih < 0 && getSaldoDompet(dompetLama) < Math.abs(selisih)) {
+                                 showPopup('alert', `Batal: Saldo [${dompetLama}] tidak cukup untuk menambah tagihan!`, 'var(--danger)');
+                                 return resetGlobalSubmit();
                              }
 
                              dataExt.nama = nama; dataExt.catatan = catatan; dataExt.amount = amount; dataExt.dateIn = dateIn; dataExt.tenor = tenorVal; if(dueDate !== undefined) dataExt.dueDate = dueDate;
@@ -3521,11 +3685,13 @@
                              trxData.desc = fullDesc; trxData.amount = amount; trxData.date = dateIn;
                         } else if (trxData && ModeEkstraAktif === 'spinjam') {
                              if (amount < (dataExt.paidAmount || 0)) {
-                                 return showPopup('alert', `Batal: Tagihan baru tidak boleh lebih kecil dari yang sudah dibayar (${Utils.formatRp(dataExt.paidAmount)})!`, 'var(--danger)');
+                                 showPopup('alert', `Batal: Tagihan baru tidak boleh lebih kecil dari yang sudah dibayar (${Utils.formatRp(dataExt.paidAmount)})!`, 'var(--danger)');
+                                 return resetGlobalSubmit();
                              }
                              const selisihPrincipal = dataExt.principal - principal;
                              if (selisihPrincipal > 0 && getSaldoDompet(dompetLama) < selisihPrincipal) {
-                                 return showPopup('alert', `Batal: Saldo ${dompetLama} sudah terpakai dan tidak cukup untuk mengurangi tagihan Uang Cair!`, 'var(--danger)');
+                                 showPopup('alert', `Batal: Saldo ${dompetLama} sudah terpakai dan tidak cukup untuk mengurangi tagihan Uang Cair!`, 'var(--danger)');
+                                 return resetGlobalSubmit();
                              }
                              dataExt.nama = nama; dataExt.catatan = catatan; dataExt.amount = amount; dataExt.principal = principal; dataExt.dateIn = dateIn; dataExt.tenor = tenorVal; if(dueDate !== undefined) dataExt.dueDate = dueDate;
                              
@@ -3542,14 +3708,23 @@
                 } else {
                     const uangMasukKeluar = ModeEkstraAktif === 'spinjam' ? principal : amount;
 
-                    if (cfg.msk === 'expense' && getSaldoDompet(dompetAktual) < uangMasukKeluar) {
-                        return showPopup('alert', `Batal: Saldo [${dompetAktual}] tidak cukup!`, 'var(--danger)');
+                    if (dbMskAsli === 'expense' && getSaldoDompet(dompetAktual) < uangMasukKeluar) {
+                        showPopup('alert', `Batal: Saldo [${dompetAktual}] tidak cukup!`, 'var(--danger)');
+                        return resetGlobalSubmit();
                     }
                     const idBaru = Utils.buatId(), idTrx = Utils.buatId();
-                    AppState.db[cfg.msk].push({ id: idTrx, date: dateIn, desc: fullDesc, amount: uangMasukKeluar, wallet: dompetAktual, plotId: "" });
+                    AppState.db[dbMskAsli].push({ id: idTrx, date: dateIn, desc: fullDesc, amount: uangMasukKeluar, wallet: dompetAktual, plotId: "" });
 
+                    let origD = dueDate ? parseInt(dueDate.split('-')[2], 10) : new Date().getDate();
                     let entryBaru = { id: idBaru, nama: nama, catatan: catatan, amount: amount, principal: uangMasukKeluar, paidAmount: 0, paymentIds: [], dateIn: dateIn, status: 'aktif', dueDate: dueDate, tenor: tenorVal };
                     entryBaru[cfg.idTrx] = idTrx;
+                    
+                    if (ModeEkstraAktif === 'pengingat') {
+                        entryBaru.tipe = tipePengingat;
+                        entryBaru.freq = freqPengingat;
+                        entryBaru.origDate = origD; 
+                        entryBaru.defaultPlotId = ''; 
+                    }
                     AppState.db[ModeEkstraAktif].push(entryBaru);
                 }
             }
@@ -3557,10 +3732,16 @@
             tutupModalAman('extra-form-modal');
             renderDaftarExtra();
             showToast("Catatan tersimpan!", cfg.warna);
+            resetGlobalSubmit();
         };
 
-        if (butuhPin) { tutupModalAman('extra-form-modal'); verifyPin(execSimpanExtra); } 
-        else { execSimpanExtra(); }
+        if (butuhPin) { 
+            tutupModalAman('extra-form-modal'); 
+            verifyPin(execSimpanExtra); 
+            setTimeout(() => { if (isGlobalSubmitting && !document.querySelector('.modal-overlay:not(.hidden)')) resetGlobalSubmit(); }, 500);
+        } else { 
+            execSimpanExtra(); 
+        }
     }
 
     function bukaCicilExtra(id) {
@@ -3572,16 +3753,36 @@
 
         document.getElementById('cicil-id-item').value = id;
         document.getElementById('extra-cicil-nama').innerText = `${data.nama} ${data.catatan ? '- '+data.catatan : ''}`;
-        document.getElementById('extra-cicil-desc').innerText = cfg.teksSelesai;
+        
+        let txSelesai = cfg.teksSelesai;
+        if (ModeEkstraAktif === 'pengingat') {
+             txSelesai = data.tipe === 'titipan' ? 'Uang dikembalikan menggunakan dompet:' : 'Bayar tagihan ini menggunakan dompet:';
+        }
+        document.getElementById('extra-cicil-desc').innerText = txSelesai;
         
         document.getElementById('extra-cicil-box').style.borderTopColor = cfg.warna;
         
-        const isTitipan = ModeEkstraAktif === 'titipan';
-        document.getElementById('cicil-nominal').closest('.form-group').style.display = isTitipan ? 'none' : 'block';
-        document.getElementById('extra-cicil-title').innerText = isTitipan ? 'Kembalikan Titipan' : 'Cicilan';
+        const isHanyaTitipan = (ModeEkstraAktif === 'pengingat' && data.tipe === 'titipan');
+        document.getElementById('cicil-nominal-group').style.display = isHanyaTitipan ? 'none' : 'block';
+        
+        let jdl = 'Cicilan';
+        if (ModeEkstraAktif === 'pengingat') {
+            jdl = isHanyaTitipan ? 'Kembalikan Titipan' : 'Pembayaran Tagihan';
+        }
+        document.getElementById('extra-cicil-title').innerText = jdl;
         document.getElementById('extra-cicil-title').style.color = cfg.warna;
 
-        if (isTitipan) {
+        // Sticky Plot Integration
+        const cicilPlotGroup = document.getElementById('cicil-plot-group');
+        if (ModeEkstraAktif === 'pengingat' && data.tipe === 'tagihan') {
+            cicilPlotGroup.classList.remove('hidden');
+            buildPlotOptions('cicil-plot-opts', 'cicil-plot-trigger', 'cicil-plot');
+            setCustomVal('cicil-plot', 'cicil-plot-trigger', 'cicil-plot-opts', data.defaultPlotId || '');
+        } else {
+            cicilPlotGroup.classList.add('hidden');
+        }
+
+        if (isHanyaTitipan) {
             document.getElementById('cicil-nominal').value = sisa.toLocaleString('id-ID');
         } else {
             document.getElementById('cicil-nominal').value = '';
@@ -3589,7 +3790,11 @@
         }
 
         const btnProses = document.getElementById('btn-proses-cicil-extra');
-        btnProses.innerText = cfg.btn;
+        let teksBtn = cfg.btn;
+        if (ModeEkstraAktif === 'pengingat') {
+            teksBtn = isHanyaTitipan ? 'KEMBALIKAN' : ((data.freq === 'bulanan' || data.freq === 'tahunan') ? 'BAYAR & PERPANJANG' : 'BAYAR LUNAS');
+        }
+        btnProses.innerText = teksBtn;
         btnProses.style.cssText = `background-color: #222222 !important; color: ${cfg.warna} !important; border: 1px solid ${cfg.warna} !important;`;
         document.getElementById('btn-batal-cicil-extra').style.cssText = `background-color: #222222 !important; color: ${cfg.warna} !important; border: 1px solid ${cfg.warna} !important;`;
 
@@ -3605,25 +3810,35 @@
     }
 
     function prosesCicilExtra(event) {
+        if (isGlobalSubmitting) return; // PROTEKSI QA: Mencegah Double Submit Modul Ekstra
+        isGlobalSubmitting = true;
+
         const btn = document.getElementById('btn-proses-cicil-extra');
-        if(btn) { btn.disabled = true; setTimeout(() => btn.disabled = false, 1500); }
+        if(btn) btn.disabled = true;
 
         const cfg = DB_EKSTRA[ModeEkstraAktif];
         const id = document.getElementById('cicil-id-item').value;
         const dompet = document.getElementById('cicil-wallet').value;
+        const plotId = document.getElementById('cicil-plot-group').classList.contains('hidden') ? "" : document.getElementById('cicil-plot').value;
         const dataExt = AppState.db[ModeEkstraAktif].find(x => x.id === id);
         
-        if (!dataExt) return;
+        const resetGlobalSubmit = () => {
+            isGlobalSubmitting = false;
+            if (btn) setTimeout(() => { btn.disabled = false; }, 1500);
+        };
+
+        if (!dataExt) return resetGlobalSubmit();
 
         const rawBayar = document.getElementById('cicil-nominal').value.trim();
         const bayar = Math.abs(Number(rawBayar.replace(/[^\d]/g, '')));
         const sisaSaatIni = dataExt.amount - (dataExt.paidAmount || 0);
 
-        if (bayar <= 0 || isNaN(bayar)) return showPopup('alert', 'Nominal bayar tidak valid!', 'var(--danger)');
-        if (bayar > sisaSaatIni) return showPopup('alert', `Batal: Maksimal pembayaran adalah sisa tagihan (${Utils.formatRp(sisaSaatIni)})!`, 'var(--danger)');
+        if (bayar <= 0 || isNaN(bayar)) { showPopup('alert', 'Nominal bayar tidak valid!', 'var(--danger)'); return resetGlobalSubmit(); }
+        if (bayar > sisaSaatIni) { showPopup('alert', `Batal: Maksimal pembayaran adalah sisa tagihan (${Utils.formatRp(sisaSaatIni)})!`, 'var(--danger)'); return resetGlobalSubmit(); }
         
         if (cfg.klr === 'expense' && getSaldoDompet(dompet) < bayar) {
-            return showPopup('alert', `Batal: Saldo ${dompet} tidak cukup untuk mencicil!`, 'var(--danger)');
+            showPopup('alert', `Batal: Saldo ${dompet} tidak cukup untuk mencicil/membayar!`, 'var(--danger)');
+            return resetGlobalSubmit();
         }
 
         const execProsesCicil = () => {
@@ -3636,24 +3851,76 @@
             if(!dataExt.paymentIds) dataExt.paymentIds = [];
             dataExt.paymentIds.push(idBayar);
 
+            let txtKlr = cfg.descKlr;
+            if (ModeEkstraAktif === 'pengingat') {
+                 txtKlr = dataExt.tipe === 'titipan' ? 'Kembalikan Titipan ' : 'Bayar Tagihan: ';
+                 dataExt.defaultPlotId = plotId; // Simpan memori plot lengket
+            }
+            
+            let ketTambahan = '';
+            if (ModeEkstraAktif === 'pengingat' && dataExt.tipe === 'tagihan' && dataExt.dueDate) {
+                const pDue = dataExt.dueDate.split('-');
+                ketTambahan = ` [Siklus: ${BlnPdk[parseInt(pDue[1])-1]} ${pDue[0]}]`;
+            }
+
             AppState.db[cfg.klr].push({
-                id: idBayar, date: Utils.tglHariIni(), desc: `${cfg.descKlr}${dataExt.nama} ${dataExt.catatan ? '('+dataExt.catatan+')' : ''}`, amount: bayar, wallet: dompet, plotId: ""
+                id: idBayar, date: Utils.tglHariIni(), desc: `${txtKlr}${dataExt.nama} ${dataExt.catatan ? '('+dataExt.catatan+')' : ''}${ketTambahan}`, amount: bayar, wallet: dompet, plotId: plotId
             });
 
-            if (dataExt.paidAmount >= dataExt.amount) {
-                dataExt.status = 'selesai';
-                dataExt.dateOut = `Lunas pada: ${tglStr}`;
+            const sisaSetelahBayar = dataExt.amount - dataExt.paidAmount;
+
+            // --- AUDIT FIX: LOGIKA AUTO-RENEW & TIMEZONE DATE DRIFT ---
+            if (ModeEkstraAktif === 'pengingat' && dataExt.tipe === 'tagihan' && (dataExt.freq === 'bulanan' || dataExt.freq === 'tahunan')) {
+                if (sisaSetelahBayar < 100) { // Toleransi Rp 100
+                    let nextDue = new Date(dataExt.dueDate || Utils.tglHariIni());
+                    let origD = parseInt(dataExt.origDate || nextDue.getDate(), 10);
+                    
+                    if (dataExt.freq === 'bulanan') {
+                        nextDue.setMonth(nextDue.getMonth() + 1);
+                    } else {
+                        nextDue.setFullYear(nextDue.getFullYear() + 1);
+                    }
+
+                    // Penjaga Tanggal Asli Kabisat/Ujung Bulan
+                    let maxDays = new Date(nextDue.getFullYear(), nextDue.getMonth() + 1, 0).getDate();
+                    nextDue.setDate(Math.min(origD, maxDays));
+                    
+                    // Ekstraksi Timezone Lokal untuk mencegah Date Drift (-1 Hari)
+                    const localY = nextDue.getFullYear();
+                    const localM = String(nextDue.getMonth() + 1).padStart(2, '0');
+                    const localD = String(nextDue.getDate()).padStart(2, '0');
+                    
+                    dataExt.dueDate = `${localY}-${localM}-${localD}`;
+                    dataExt.paidAmount = 0; // Reset utk siklus depan
+                    dataExt.status = 'aktif';
+                    dataExt.dateOut = null;
+                    dataExt.paymentIds = []; // Sapu bersih memori pembayaran lama
+                    
+                    showToast(`Lunas! Diperpanjang ke ${Utils.formatTglTampil(dataExt.dueDate)}`, cfg.warna);
+                } else {
+                    showToast(`Dicicil ${Utils.formatRp(bayar)}. Belum lunas!`, cfg.warna);
+                }
+            } else {
+                if (sisaSetelahBayar < 100) { // Toleransi Rp 100
+                    dataExt.paidAmount = dataExt.amount; // Genapkan
+                    dataExt.status = 'selesai';
+                    dataExt.dateOut = `Lunas pada: ${tglStr}`;
+                    showToast(`Lunas Sempurna!`, cfg.warna);
+                } else {
+                    showToast(`Pembayaran Berhasil! Sisa: ${Utils.formatRp(sisaSetelahBayar)}`, cfg.warna);
+                }
             }
 
             simpanDatabase(); updateRekap(true); updateWalletDropdownBalances();
             tutupModalAman('extra-cicil-modal');
             renderDaftarExtra();
-            showToast(`Cicilan ${Utils.formatRp(bayar)} Berhasil!`, cfg.warna);
+            resetGlobalSubmit();
         };
 
         if (cfg.klr === 'expense' && dompet === 'Dana Darurat 🔒') {
             tutupModalAman('extra-cicil-modal');
             verifyPin(execProsesCicil);
+            setTimeout(() => { if (isGlobalSubmitting && !document.querySelector('.modal-overlay:not(.hidden)')) resetGlobalSubmit(); }, 500);
         } else {
             execProsesCicil();
         }
@@ -3705,7 +3972,7 @@
 
         const butuhPin = paymentData.wallet === 'Dana Darurat 🔒';
 
-        showPopup('delete', "Batalkan dan hapus riwayat cicilan ini?\n(Saldo akan dikembalikan)", 'var(--danger)', () => {
+        showPopup('delete', "Batalkan dan hapus riwayat pembayaran ini?\n(Saldo akan dikembalikan)", 'var(--danger)', () => {
             const execHapusCicil = () => {
                 if (cfg.klr === 'income') {
                     if (getSaldoDompet(paymentData.wallet) < paymentData.amount) {
@@ -3728,11 +3995,8 @@
                 showToast("Cicilan berhasil dibatalkan!", 'var(--danger)');
             };
 
-            if (butuhPin) {
-                setTimeout(() => verifyPin(execHapusCicil), 200);
-            } else {
-                execHapusCicil();
-            }
+            if (butuhPin) { setTimeout(() => verifyPin(execHapusCicil), 200); } 
+            else { execHapusCicil(); }
         });
     }
 
@@ -3741,66 +4005,83 @@
         const dataExt = AppState.db[ModeEkstraAktif].find(x => x.id === id);
         if(!dataExt) return;
 
+        let isHanyaTagihan = (ModeEkstraAktif === 'pengingat' && dataExt.tipe === 'tagihan');
         let butuhPin = false;
-        if (cfg.msk !== 'none' && dataExt[cfg.idTrx]) {
-             const trx = AppState.db[cfg.msk].find(x => x.id === dataExt[cfg.idTrx]);
+
+        if (!isHanyaTagihan && dataExt[cfg.idTrx]) {
+             let dbMskAsli = cfg.msk;
+             if (ModeEkstraAktif === 'pengingat') dbMskAsli = 'income'; 
+             const trx = AppState.db[dbMskAsli] ? AppState.db[dbMskAsli].find(x => x.id === dataExt[cfg.idTrx]) : null;
              if (trx && trx.wallet === 'Dana Darurat 🔒') butuhPin = true;
         }
-        if (dataExt.paymentIds && dataExt.paymentIds.length > 0) {
-             const payList = AppState.db[cfg.klr].filter(x => dataExt.paymentIds.includes(x.id));
-             if (payList.some(x => x.wallet === 'Dana Darurat 🔒')) butuhPin = true;
+
+        let pesanHapus = `Hapus riwayat ${cfg.nama} ini?\n(Transaksi dan semua cicilannya di Rekap juga akan ikut dihapus agar Saldo kembali netral)`;
+        if (isHanyaTagihan) {
+            pesanHapus = `Hapus Jadwal Pengingat/Tagihan ini?\n(Tenang, riwayat pembayaran lama Anda di tab Rekap TIDAK akan dihapus)`;
         }
 
-        showPopup('delete', `Hapus riwayat ${cfg.nama} ini?\n(Transaksi pemasukan/pengeluarannya dan semua cicilannya di Rekap juga akan ikut dihapus agar Saldo kembali netral)`, 'var(--danger)', () => {
+        showPopup('delete', pesanHapus, 'var(--danger)', () => {
             const execHapusPermanen = () => {
-                let simulatedBalances = { 
-                    'Tunai': getSaldoDompet('Tunai'), 'Bank': getSaldoDompet('Bank'), 
-                    'e-Wallet': getSaldoDompet('e-Wallet'), 'Dana Darurat': getSaldoDompet('Dana Darurat'), 
-                    'Dana Darurat 🔒': getSaldoDompet('Dana Darurat 🔒') 
-                };
-                
-                if (cfg.msk === 'income' && dataExt[cfg.idTrx]) {
-                    const trxAwal = AppState.db.income.find(x => x.id === dataExt[cfg.idTrx]);
-                    if (trxAwal) simulatedBalances[trxAwal.wallet] -= trxAwal.amount;
-                } else if (cfg.msk === 'expense' && dataExt[cfg.idTrx]) {
-                    const trxAwal = AppState.db.expense.find(x => x.id === dataExt[cfg.idTrx]);
-                    if (trxAwal) simulatedBalances[trxAwal.wallet] += trxAwal.amount;
-                }
-                
-                if (dataExt.paymentIds && dataExt.paymentIds.length > 0) {
-                    if (cfg.klr === 'expense') { 
-                        const riwayatKeluar = AppState.db.expense.filter(x => dataExt.paymentIds.includes(x.id));
-                        riwayatKeluar.forEach(trx => simulatedBalances[trx.wallet] += trx.amount);
-                    } else if (cfg.klr === 'income') { 
-                        const riwayatMasuk = AppState.db.income.filter(x => dataExt.paymentIds.includes(x.id));
-                        riwayatMasuk.forEach(trx => simulatedBalances[trx.wallet] -= trx.amount);
+                if (!isHanyaTagihan) {
+                    let dbMskAsli = cfg.msk;
+                    if (ModeEkstraAktif === 'pengingat') dbMskAsli = 'income'; 
+
+                    let simulatedBalances = { 
+                        'Tunai': getSaldoDompet('Tunai'), 'Bank': getSaldoDompet('Bank'), 
+                        'e-Wallet': getSaldoDompet('e-Wallet'), 'Dana Darurat': getSaldoDompet('Dana Darurat'), 
+                        'Dana Darurat 🔒': getSaldoDompet('Dana Darurat 🔒') 
+                    };
+                    
+                    const trxAwal = AppState.db[dbMskAsli] ? AppState.db[dbMskAsli].find(x => x.id === dataExt[cfg.idTrx]) : null;
+                    if (trxAwal) {
+                        if (dbMskAsli === 'income') simulatedBalances[trxAwal.wallet] -= trxAwal.amount;
+                        else if (dbMskAsli === 'expense') simulatedBalances[trxAwal.wallet] += trxAwal.amount;
+                    }
+                    
+                    if (dataExt.paymentIds && dataExt.paymentIds.length > 0) {
+                        if (cfg.klr === 'expense') { 
+                            const riwayatKeluar = AppState.db.expense.filter(x => dataExt.paymentIds.includes(x.id));
+                            riwayatKeluar.forEach(trx => simulatedBalances[trx.wallet] += trx.amount);
+                        } else if (cfg.klr === 'income') { 
+                            const riwayatMasuk = AppState.db.income.filter(x => dataExt.paymentIds.includes(x.id));
+                            riwayatMasuk.forEach(trx => simulatedBalances[trx.wallet] -= trx.amount);
+                        }
+                    }
+
+                    // Sindrom Hantu Saldo (Import Ringkas Koreksi)
+                    let buatJurnalKoreksi = false;
+                    if (dbMskAsli === 'income' && !trxAwal && ModeEkstraAktif === 'pengingat') {
+                        buatJurnalKoreksi = true;
+                        // Kurangi dari dompet manapun yg tersedia, prioritas tunai
+                        simulatedBalances['Tunai'] -= dataExt.amount; 
+                    }
+
+                    for (let w in simulatedBalances) {
+                        if (simulatedBalances[w] < 0) {
+                            return showPopup('alert', `Batal Hapus: Saldo dompet [${w}] akan menjadi minus (${Utils.formatRp(simulatedBalances[w])}) jika riwayat ini dihapus!`, 'var(--danger)');
+                        }
+                    }
+
+                    if (trxAwal) {
+                        AppState.db[dbMskAsli] = AppState.db[dbMskAsli].filter(x => x.id !== dataExt[cfg.idTrx]);
+                    } else if (buatJurnalKoreksi) {
+                        AppState.db.expense.push({id: Utils.buatId(), date: Utils.tglHariIni(), desc: `Koreksi Pembatalan Titipan: ${dataExt.nama}`, amount: dataExt.amount, wallet: 'Tunai', plotId: ''});
+                    }
+                    
+                    if (dataExt.paymentIds && dataExt.paymentIds.length > 0) {
+                        AppState.db[cfg.klr] = AppState.db[cfg.klr].filter(x => !dataExt.paymentIds.includes(x.id));
                     }
                 }
 
-                for (let w in simulatedBalances) {
-                    if (simulatedBalances[w] < 0) {
-                        return showPopup('alert', `Batal Hapus: Saldo dompet [${w}] akan menjadi minus (${Utils.formatRp(simulatedBalances[w])}) jika riwayat ini dihapus!`, 'var(--danger)');
-                    }
-                }
-
-                if (cfg.msk !== 'none' && dataExt[cfg.idTrx]) {
-                    AppState.db[cfg.msk] = AppState.db[cfg.msk].filter(x => x.id !== dataExt[cfg.idTrx]);
-                }
-                if (dataExt.paymentIds && dataExt.paymentIds.length > 0) {
-                    AppState.db[cfg.klr] = AppState.db[cfg.klr].filter(x => !dataExt.paymentIds.includes(x.id));
-                }
-
+                // Cukup hapus daftarnya (Untuk Tagihan / Setelah proses titipan clear)
                 AppState.db[ModeEkstraAktif] = AppState.db[ModeEkstraAktif].filter(x => x.id !== id);
                 
                 simpanDatabase(); updateRekap(true); updateWalletDropdownBalances(); renderDaftarExtra();
-                showToast("Riwayat bersih dihapus!", 'var(--danger)');
+                showToast("Terhapus!", 'var(--danger)');
             };
 
-            if (butuhPin) {
-                setTimeout(() => verifyPin(execHapusPermanen), 200);
-            } else {
-                execHapusPermanen();
-            }
+            if (butuhPin) { setTimeout(() => verifyPin(execHapusPermanen), 200); } 
+            else { execHapusPermanen(); }
         });
     }
 
@@ -3854,80 +4135,74 @@
         document.body.classList.add('modal-open');
     }
 
+    // --- AUDIT FIX: NOTIFIKASI JATUH TEMPO (MENYERAP REMAINDER FLOATING POINT ERROR) ---
     function cekNotifikasiJatuhTempo() {
         const hariIni = new Date();
         hariIni.setHours(0, 0, 0, 0);
         const currY = hariIni.getFullYear();
         const currM = hariIni.getMonth();
-        const currD = hariIni.getDate();
 
-        let pesanPeringatan = "";
+        let warningList = [];
         
-        const tagihanAktif = [...(AppState.db.spaylater || []), ...(AppState.db.spinjam || []), ...(AppState.db.hutang || [])];
+        const tagihanAktif = [
+            ...(AppState.db.pengingat || []), 
+            ...(AppState.db.spaylater || []), 
+            ...(AppState.db.spinjam || []), 
+            ...(AppState.db.hutang || [])
+        ];
         
         tagihanAktif.forEach(item => {
-            if (item.status !== 'aktif' || !item.dueDate) return;
-            if ((item.paidAmount || 0) >= item.amount) return;
+            if (item.status === 'selesai' || !item.dueDate || (item.tipe && item.tipe === 'titipan')) return;
 
             const parts = item.dueDate.split('-');
-            if (parts.length !== 3) return;
             const dueY = parseInt(parts[0], 10);
-            const dueM = parseInt(parts[1], 10) - 1; 
+            const dueM = parseInt(parts[1], 10) - 1;
             const dueD = parseInt(parts[2], 10);
 
             const tenor = Math.max(1, parseInt(item.tenor) || 1);
-
-            const getValidDate = (y, m, d) => {
-                let tempDate = new Date(y, m, d);
-                if (tempDate.getDate() !== d) {
-                    tempDate = new Date(y, m + 1, 0); 
-                }
-                return tempDate;
-            };
-
-            const virtualBulanIni = getValidDate(currY, currM, dueD);
-            const virtualBulanDepan = getValidDate(currY, currM + 1, dueD);
-
-            const selisihHariIni = Math.ceil((virtualBulanIni - hariIni) / (1000 * 60 * 60 * 24));
-            const selisihBulanDepan = Math.ceil((virtualBulanDepan - hariIni) / (1000 * 60 * 60 * 24));
-
-            let diffBulan = ((currY - dueY) * 12) + (currM - dueM);
             
-            let isRadarBulanDepanAktif = false;
-            if (selisihBulanDepan >= 0 && selisihBulanDepan <= 3) {
-                diffBulan += 1;
-                isRadarBulanDepanAktif = true;
+            let selisihBulan = ((currY - dueY) * 12) + (currM - dueM);
+            let siklusBerjalan = Math.min(Math.max(selisihBulan + 1, 0), tenor);
+            
+            if (item.freq && item.freq !== 'sekali') siklusBerjalan = 1;
+
+            const bebanPerSiklus = (item.freq && item.freq !== 'sekali') ? item.amount : Math.floor(item.amount / tenor);
+            let targetKumulatif = bebanPerSiklus * siklusBerjalan;
+            
+            // Remainder Absorber: Paksa siklus terakhir untuk melunasi sisa koma mutlak
+            if (siklusBerjalan === tenor && (!item.freq || item.freq === 'sekali')) {
+                targetKumulatif = item.amount;
+            } else if (targetKumulatif > item.amount) {
+                targetKumulatif = item.amount;
             }
 
-            let siklus = Math.min(Math.max(diffBulan + 1, 0), tenor);
+            const sisaTagihanSiklusIni = targetKumulatif - (item.paidAmount || 0);
 
-            if (siklus <= 0) return;
+            // Toleransi aman Floating Point
+            if (sisaTagihanSiklusIni <= 100) return;
 
-            const bebanBulanan = item.amount / tenor;
-            let targetKumulatif = bebanBulanan * siklus;
-            if (targetKumulatif > item.amount) targetKumulatif = item.amount; 
+            let tglJatuhTempoBulanIni = new Date(currY, currM, dueD);
+            if (tglJatuhTempoBulanIni.getDate() !== dueD) tglJatuhTempoBulanIni = new Date(currY, currM + 1, 0);
 
-            const kurangBayar = targetKumulatif - (item.paidAmount || 0);
-            if (kurangBayar <= 100) return; 
+            const selisihHari = Math.ceil((tglJatuhTempoBulanIni - hariIni) / (1000 * 60 * 60 * 24));
 
-            if (selisihHariIni <= 3 || isRadarBulanDepanAktif) {
-                let hariTerpilih = isRadarBulanDepanAktif ? selisihBulanDepan : selisihHariIni;
+            if (selisihHari <= 3) {
+                let pesan = selisihHari < 0 
+                    ? `🚨 "${item.nama}" LEWAT ${Math.abs(selisihHari)} HARI!` 
+                    : (selisihHari === 0 ? `🔥 "${item.nama}" JATUH TEMPO HARI INI!` : `⚠️ "${item.nama}" dlm ${selisihHari} hari lagi.`);
                 
-                if (hariTerpilih < 0) {
-                    pesanPeringatan += `🚨 "${item.nama}" TELAH LEWAT jatuh tempo! (Kewajiban bln ini kurang: ${Utils.formatRp(kurangBayar)})\n\n`;
-                } else {
-                    pesanPeringatan += `⚠️ "${item.nama}" jatuh tempo dalam ${hariTerpilih} hari! (Kewajiban bln ini kurang: ${Utils.formatRp(kurangBayar)})\n\n`;
-                }
+                warningList.push(`${pesan} (Tunggakan: ${Utils.formatRp(sisaTagihanSiklusIni)})`);
             }
         });
         
-        if (pesanPeringatan !== "") {
+        if (warningList.length > 0) {
             setTimeout(() => {
-                showPopup('alert', "PENGINGAT JATUH TEMPO:\n\n" + pesanPeringatan.trim(), 'var(--danger)');
-            }, 1000);
+                showPopup('alert', "PENGINGAT PEMBAYARAN:\n\n" + warningList.join('\n\n'), 'var(--danger)');
+            }, 1500);
         }
     }
 
+    // BOOTSTRAPPER (Nyalakan Mesin)
     window.addEventListener('DOMContentLoaded', () => { 
         muatDatabase(); 
         inisiasiKalenderAwal(); 
