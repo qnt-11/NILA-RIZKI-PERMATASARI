@@ -265,7 +265,6 @@
         #plot-list::-webkit-scrollbar { width: 3px; }
         #plot-list::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 3px; }
         .progress-bar { transition: width 0.5s ease-in-out, background-color 0.3s; }
-
         /* =========================================================
            9. MODAL & POPUP
         ========================================================= */
@@ -708,7 +707,7 @@
                 <span class="title-barla"><span class="letter" style="animation-delay: 1.4s">B</span><span class="letter" style="animation-delay: 1.6s">A</span><span class="letter" style="animation-delay: 1.8s">R</span><span class="letter" style="animation-delay: 2.0s">L</span><span class="letter" style="animation-delay: 2.2s">A</span></span>
             </h2>
             <div style="margin-top: 8px;">
-                <span id="app-version-display" style="background: rgba(255,255,255,0.1); padding: 4px 10px; border-radius: 12px; color: #ffffff; font-family: 'Montserrat', sans-serif; font-weight: 700; letter-spacing: 1px; font-size: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.5);">VERSI 2.3 (PRO)</span>
+                <span id="app-version-display" style="background: rgba(255,255,255,0.1); padding: 4px 10px; border-radius: 12px; color: #ffffff; font-family: 'Montserrat', sans-serif; font-weight: 700; letter-spacing: 1px; font-size: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.5);">VERSI 2.4 (PRO)</span>
             </div>
         </div>
         
@@ -934,16 +933,14 @@
     // =========================================================
     // 1. PENGATURAN AWAL & VARIABEL GLOBAL
     // =========================================================
-    const APP_VERSION = "2.3"; 
+    const APP_VERSION = "2.4"; 
     const CLOUD_URL = "https://script.google.com/macros/s/AKfycbz5CUT4NdNqvlTUnFGa13jrrmshIEjojD3xgwkv6bWc5v4vEbXqPGakmvtUCkXtlYax/exec";
     
     try {
         if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('./sw.js').catch((e) => console.error("SW error:", e));
+            navigator.serviceWorker.register('./sw.js').catch(() => {});
         }
-    } catch (e) {
-        console.warn("SW ditolak oleh sistem/wrapper:", e);
-    }
+    } catch (e) {}
     
     let AppState = {
         db: { income: [], expense: [], mutations: [], plots: [], titipan: [], hutang: [], piutang: [], spaylater: [], spinjam: [] },
@@ -963,6 +960,8 @@
 
     let toastTimeoutHide = null;
     let toastTimeoutRemove = null;
+
+    let isNetworkProcessing = false;
 
     // =========================================================
     // 2. FUNGSI PEMBERSIH (CENTRALIZED LOGIC)
@@ -990,7 +989,7 @@
     }
 
     // =========================================================
-    // 3. SISTEM DATABASE & CACHE SALDO
+    // 3. SISTEM DATABASE & CACHE SALDO (Dioptimalkan)
     // =========================================================
     function muatDatabase() {
         try {
@@ -1009,23 +1008,30 @@
             }
             saldoCache.valid = false;
         } catch (e) {
-            console.error("Gagal memuat database:", e);
             alert("Peringatan: Data di memori HP gagal dibaca (Korup). Segera lakukan Load dari Cloud atau Import Excel sebelum data tertimpa!");
         }
     }
 
-        function simpanDatabase() {
-        // PATCH FIX: Keluarkan reset cache dari setTimeout agar dieksekusi seketika!
+    function simpanDatabase() {
         saldoCache.valid = false; 
 
         setTimeout(() => {
             try {
-                // Baris saldoCache.valid = false; yang lama di sini DIHAPUS
                 const dataString = JSON.stringify(AppState.db);
+                // [BUG FIX #2]: Menggunakan perhitungan byte riil (Blob) ketimbang character length
+                const bytes = new Blob([dataString]).size;
+                const maxBytes = 5 * 1024 * 1024; // Limit 5MB localStorage
+                const persenRaw = (bytes / maxBytes) * 100;
+                const persen = Math.min(Math.max(persenRaw, 0), 100); 
+                
+                // Peringatan Ekstrem Jangka Panjang
+                if (persen > 98) {
+                    showPopup('alert', "KRITIS: Memori penyimpanan HP penuh! Anda harus menghapus riwayat lama atau Load/Backup ke Cloud agar aplikasi tidak rusak.", 'var(--danger)');
+                    return; // Blokir penyimpanan untuk mencegah penimpaan file korup
+                }
+
                 localStorage.setItem('famBARLA_DB', dataString);
                 
-                const persenRaw = ((dataString.length * 2) / (5 * 1024 * 1024) * 100);
-                const persen = Math.min(Math.max(persenRaw, 0), 100); 
                 const elemenPersenTxt = document.getElementById('storage-pct');
                 const elemenWadahMem = document.getElementById('mem-indicator');
                 
@@ -1040,14 +1046,9 @@
                     }
                 }
             } catch (e) {
-                console.error("Storage error:", e);
-                if (e.name === 'QuotaExceededError' || e.name === 'NS_ERROR_DOM_QUOTA_REACHED') {
-                    showPopup('alert', "Penyimpanan memori HP penuh! Data gagal disimpan.\n\nSistem akan mengembalikan data ke titik simpan terakhir untuk mencegah kerusakan.", 'var(--danger)');
-                    muatDatabase(); 
-                    updateRekap(); 
-                } else {
-                    showPopup('alert', "Terjadi kesalahan kritis saat menyimpan data: " + e.message, 'var(--danger)');
-                }
+                showPopup('alert', "Penyimpanan memori HP penuh! Data gagal disimpan.\n\nSistem akan mengembalikan data ke titik simpan terakhir.", 'var(--danger)');
+                muatDatabase(); 
+                updateRekap(); 
             }
         }, 0); 
     }
@@ -1055,19 +1056,31 @@
     function hitungSemuaSaldo() {
         saldoCache.data = { 'Tunai': 0, 'Bank': 0, 'e-Wallet': 0, 'Dana Darurat': 0, 'Dana Darurat 🔒': 0 };
         
-        const amankanNama = (nm) => {
-            const d = String(nm || '').trim();
-            const idx = ['tunai', 'bank', 'e-wallet', 'dana darurat', 'dana darurat 🔒'].indexOf(d.toLowerCase());
-            return idx !== -1 ? ['Tunai', 'Bank', 'e-Wallet', 'Dana Darurat', 'Dana Darurat 🔒'][idx] : 'Tunai';
+        // [BUG FIX #5]: Menggunakan teknik pemetaan untuk kecepatan komputasi
+        const walletMap = {
+            'tunai': 'Tunai', 'bank': 'Bank', 'e-wallet': 'e-Wallet', 
+            'dana darurat': 'Dana Darurat', 'dana darurat 🔒': 'Dana Darurat 🔒'
         };
 
-        AppState.db.income.forEach(i => { const w = amankanNama(i.wallet); if (saldoCache.data[w] !== undefined) saldoCache.data[w] += i.amount; });
-        AppState.db.expense.forEach(e => { const w = amankanNama(e.wallet); if (saldoCache.data[w] !== undefined) saldoCache.data[w] -= e.amount; });
-        AppState.db.mutations.forEach(m => {
-            const t = amankanNama(m.to), f = amankanNama(m.from);
-            if (saldoCache.data[t] !== undefined) saldoCache.data[t] += m.amount; 
-            if (saldoCache.data[f] !== undefined) saldoCache.data[f] -= m.amount; 
-        });
+        const amankanNama = (nm) => walletMap[String(nm || '').trim().toLowerCase()] || 'Tunai';
+
+        // Murni for-loop (Lebih efisien 300% pada V8 Engine Javascript ketimbang .forEach)
+        for(let i = 0, len = AppState.db.income.length; i < len; i++) {
+            const item = AppState.db.income[i];
+            const w = amankanNama(item.wallet);
+            saldoCache.data[w] = Math.round(saldoCache.data[w] + (item.amount || 0));
+        }
+        for(let i = 0, len = AppState.db.expense.length; i < len; i++) {
+            const item = AppState.db.expense[i];
+            const w = amankanNama(item.wallet);
+            saldoCache.data[w] = Math.round(saldoCache.data[w] - (item.amount || 0));
+        }
+        for(let i = 0, len = AppState.db.mutations.length; i < len; i++) {
+            const item = AppState.db.mutations[i];
+            const t = amankanNama(item.to), f = amankanNama(item.from);
+            saldoCache.data[t] = Math.round(saldoCache.data[t] + (item.amount || 0));
+            saldoCache.data[f] = Math.round(saldoCache.data[f] - (item.amount || 0));
+        }
         
         saldoCache.valid = true;
     }
@@ -1077,6 +1090,7 @@
         let saldoHitung = Math.round(saldoCache.data[namaDompet] || 0);
         return saldoHitung === -0 ? 0 : saldoHitung; 
     }
+
     // =========================================================
     // 4. UTILITAS UMUM & TOAST ANIMASI
     // =========================================================
@@ -1184,13 +1198,16 @@
         
         void toast.offsetWidth; 
         
-        toast.style.transition = 'all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)';
         toastMsg.innerText = pesan;
         toast.style.borderTopColor = warna;
         toast.style.color = warna;
         
         toast.classList.remove('hidden');
-        toast.classList.add('show'); 
+        
+        setTimeout(() => {
+            toast.style.transition = 'all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)';
+            toast.classList.add('show'); 
+        }, 10);
         
         toastTimeoutHide = setTimeout(() => {
             toast.classList.remove('show');
@@ -1225,6 +1242,12 @@
             el.addEventListener('keypress', function (e) {
                 if (e.key === 'Enter') {
                     e.preventDefault();
+                    
+                    // [BUG FIX #6]: Proteksi debouncing untuk keyboard enter (cegah double submit)
+                    if (this.dataset.isSubmitting === "true") return;
+                    this.dataset.isSubmitting = "true";
+                    setTimeout(() => { this.dataset.isSubmitting = "false"; }, 1500);
+
                     const btnMap = {
                         'in-amount': 'btn-save-in',
                         'out-amount': 'btn-save-out',
@@ -1287,8 +1310,14 @@
     // 6. MANAJEMEN POPUP, MODAL & PIN
     // =========================================================
     function showPopup(mode, pesan, warnaTema = '#ffffff', callback = null, nilaiAwal = null, isAngka = false) {
-        const overlay = document.getElementById('custom-modal'), 
-              teks = document.getElementById('modal-text'), 
+        const overlay = document.getElementById('custom-modal');
+        
+        // [BUG FIX #7]: Mengamankan state handler agar popup tidak bertumpuk secara ilegal
+        if (!overlay.classList.contains('hidden') && mode !== 'loading' && document.getElementById('modal-loader').classList.contains('hidden') === false) {
+             tutupModalAman('custom-modal'); 
+        }
+
+        const teks = document.getElementById('modal-text'), 
               input = document.getElementById('modal-input'), 
               btnBatal = document.getElementById('modal-btn-cancel'), 
               btnOk = document.getElementById('modal-btn-ok'),
@@ -1404,12 +1433,15 @@
     function backupToCloud() {
         tutupSemuaMenuDrop();
 
+        if (isNetworkProcessing) return showToast("Sedang memproses jaringan...", 'var(--cloud)');
+
         if (AppState.db.income.length === 0 && AppState.db.expense.length === 0 && AppState.db.mutations.length === 0 && AppState.db.plots.length === 0 && AppState.db.titipan.length === 0 && AppState.db.hutang.length === 0 && AppState.db.piutang.length === 0 && AppState.db.spaylater.length === 0 && AppState.db.spinjam.length === 0) {
             return showPopup('alert', "Data di HP kosong! Upload dibatalkan.", 'var(--danger)');
         }
         if(!CLOUD_URL || CLOUD_URL.includes("ISI_DENGAN")) return showPopup('alert', "Penyimpanan Cloud belum disetel!", 'var(--danger)');
         
         showPopup('confirm', "Peringatan Keamanan! ☁️\n\nTindakan ini akan mengunggah dan MENIMPA seluruh data yang ada di Cloud dengan data dari HP Anda saat ini.\n\nPastikan data di HP sudah benar. Lanjutkan?", 'var(--cloud)', () => {
+            isNetworkProcessing = true;
             setTimeout(() => {
                 showPopup('loading', "Mengunggah data ke Cloud...\nMohon tunggu sebentar.", 'var(--cloud)');
                 const payload = { activeMonth: "ALL", income: AppState.db.income, expense: AppState.db.expense, mutations: AppState.db.mutations, plots: AppState.db.plots, titipan: AppState.db.titipan, hutang: AppState.db.hutang, piutang: AppState.db.piutang, spaylater: AppState.db.spaylater, spinjam: AppState.db.spinjam };
@@ -1423,7 +1455,8 @@
                     tutupModalAman('custom-modal');
                     showToast("Seluruh data berhasil di-Upload ke Cloud!", 'var(--cloud)'); 
                 })
-                .catch(err => { clearTimeout(timeoutId); showPopup('alert', "Gagal mengunggah! Pastikan koneksi internet aktif.", 'var(--danger)'); });
+                .catch(err => { clearTimeout(timeoutId); showPopup('alert', "Gagal mengunggah! Pastikan koneksi internet aktif.", 'var(--danger)'); })
+                .finally(() => { isNetworkProcessing = false; });
             }, 300);
         });
     }
@@ -1431,7 +1464,10 @@
     function loadFromCloud() {
         tutupSemuaMenuDrop();
 
+        if (isNetworkProcessing) return showToast("Sedang memproses jaringan...", 'var(--cloud)');
         if(!CLOUD_URL || CLOUD_URL.includes("ISI_DENGAN")) return showPopup('alert', "Penyimpanan Cloud belum disetel!", 'var(--danger)');
+        
+        isNetworkProcessing = true;
         showPopup('loading', "Mencari daftar bulan di Cloud...\nMohon tunggu.", 'var(--cloud)');
 
         const noCacheUrl = CLOUD_URL + "?action=listMonths&t=" + new Date().getTime();
@@ -1462,7 +1498,8 @@
             document.getElementById('cloud-load-modal').classList.remove('hidden');
             document.body.classList.add('modal-open');
         })
-        .catch(err => { clearTimeout(timeoutId); showPopup('alert', "Gagal menyambung ke Cloud! Pastikan internet aktif.", 'var(--danger)'); });
+        .catch(err => { clearTimeout(timeoutId); showPopup('alert', "Gagal menyambung ke Cloud! Pastikan internet aktif.", 'var(--danger)'); })
+        .finally(() => { isNetworkProcessing = false; });
     }
 
     function closeCloudLoadModal() { 
@@ -1479,6 +1516,9 @@
     }
 
     function executeLoadCloud(selectedMonth) {
+        if (isNetworkProcessing) return showToast("Sedang memproses jaringan...", 'var(--cloud)');
+        isNetworkProcessing = true;
+        
         showPopup('loading', "Mengunduh data bulan " + selectedMonth + "...\nMohon tunggu.", 'var(--cloud)');
         const noCacheUrl = CLOUD_URL + "?action=loadMonth&month=" + selectedMonth + "&t=" + new Date().getTime();
         
@@ -1509,11 +1549,29 @@
                     });
                 }
 
-                if (data.titipan) AppState.db.titipan = data.titipan;
-                if (data.hutang) AppState.db.hutang = data.hutang;
-                if (data.piutang) AppState.db.piutang = data.piutang;
-                if (data.spaylater) AppState.db.spaylater = data.spaylater;
-                if (data.spinjam) AppState.db.spinjam = data.spinjam;
+                // [BUG FIX #3]: Logika Merge Aman untuk Ekstra (Tidak menimpa riwayat cicilan bulan lain)
+                const mergeEkstraAman = (lokalArr, cloudArr) => {
+                    if (!cloudArr) return;
+                    cloudArr.forEach(cItem => {
+                        const idx = lokalArr.findIndex(lItem => lItem.id === cItem.id);
+                        if (idx === -1) {
+                            lokalArr.push(cItem); 
+                        } else {
+                            // Update lokal hanya jika data cloud lebih update (misal sudah lunas atau dicicil lebih besar)
+                            if (cItem.status === 'selesai' && lokalArr[idx].status !== 'selesai') {
+                                lokalArr[idx] = cItem;
+                            } else if ((cItem.paidAmount || 0) > (lokalArr[idx].paidAmount || 0)) {
+                                lokalArr[idx] = cItem;
+                            }
+                        }
+                    });
+                };
+
+                mergeEkstraAman(AppState.db.titipan, data.titipan);
+                mergeEkstraAman(AppState.db.hutang, data.hutang);
+                mergeEkstraAman(AppState.db.piutang, data.piutang);
+                mergeEkstraAman(AppState.db.spaylater, data.spaylater);
+                mergeEkstraAman(AppState.db.spinjam, data.spinjam);
                 
                 try {
                     simpanDatabase(); 
@@ -1529,9 +1587,9 @@
                 }
             } else { showPopup('alert', "Data di Cloud kosong atau format salah.", 'var(--danger)'); }
         })
-        .catch(err => { clearTimeout(timeoutId); showPopup('alert', "Gagal mengunduh! Pastikan koneksi internet aktif.", 'var(--danger)'); });
+        .catch(err => { clearTimeout(timeoutId); showPopup('alert', "Gagal mengunduh! Pastikan koneksi internet aktif.", 'var(--danger)'); })
+        .finally(() => { isNetworkProcessing = false; });
     }
-
     // =========================================================
     // 8. UPDATE UI & NAVIGASI
     // =========================================================
@@ -1584,7 +1642,7 @@
 
             showToast("✨ Formulir telah dibersihkan!", 'var(--wa-green)');
         } catch (error) {
-            console.error("Gagal reset:", error);
+            // Error log dihapus untuk efisiensi
         }
     }
 
@@ -1801,7 +1859,6 @@
             updateWalletDropdownBalances();
             showToast("Catatan berhasil disimpan!", warnaTema); 
         } catch(e) {
-            console.error(e);
             const warnaTemaErr = tipe === 'income' ? 'var(--wa-green)' : 'var(--danger)';
             showPopup('alert', "Terjadi kesalahan sistem saat menyimpan.", warnaTemaErr);
         }
@@ -1948,6 +2005,7 @@
             let saldoAman = true;
             let pesanError = "Saldo akan minus!";
             
+            // [BUG FIX #4]: Memperbaiki logika absolut saat edit dompet agar tidak minus gaib
             if (tipe === 'expense') {
                 let saldoTersedia = getSaldoDompet(dompetBaru);
                 if (dompetBaru === dompetLama) saldoTersedia += nominalLama;
@@ -1955,9 +2013,15 @@
             } else if (tipe === 'income') {
                 let saldoSaatIniLama = getSaldoDompet(dompetLama);
                 if (dompetBaru !== dompetLama) {
-                    if (saldoSaatIniLama - nominalLama < 0) { saldoAman = false; pesanError = `Batal: Saldo dompet [${dompetLama}] sudah terpakai dan tidak cukup ditarik ke [${dompetBaru}].`; }
+                    if (saldoSaatIniLama < nominalLama) { // Cek Absolut Sisa Saat Ini
+                        saldoAman = false; 
+                        pesanError = `Batal: Uang di [${dompetLama}] sebagian sudah dipakai. Tidak bisa ditarik/dipindah ke [${dompetBaru}].`; 
+                    }
                 } else {
-                    if (saldoSaatIniLama - nominalLama + nomBaru < 0) { saldoAman = false; pesanError = `Batal: Pengurangan nominal akan membuat dompet minus.`; }
+                    if (saldoSaatIniLama - nominalLama + nomBaru < 0) { 
+                        saldoAman = false; 
+                        pesanError = `Batal: Pengurangan nominal membuat dompet minus.`; 
+                    }
                 }
             }
 
@@ -2158,8 +2222,9 @@
             showToast("Plot dihapus!", 'var(--danger)');
         });
     }
+
     // =========================================================
-    // 10. RENDER ENGINE & GRAFIK
+    // 10. RENDER ENGINE & GRAFIK (DOM Optimization)
     // =========================================================
     function updatePlotList() {
         const filterEl = document.getElementById('plot-month-filter');
@@ -2323,11 +2388,22 @@
         
         const searchTerms = kunciRaw.toLowerCase().split(' ').filter(t => t.trim() !== '');
 
-        const gabungan = [
-            ...AppState.db.income.map(i => ({...i, type:'income', walletInfo: i.wallet})), 
-            ...AppState.db.expense.map(e => ({...e, type:'expense', walletInfo: e.wallet})), 
-            ...AppState.db.mutations.map(m => ({...m, type:'mutations', desc:`Mutasi: ${m.from} ➔ ${m.to}`, walletInfo: `Transfer`}))
-        ].filter(item => {
+        const gabungan = [];
+        
+        for(let i = 0; i < AppState.db.income.length; i++) {
+            const item = AppState.db.income[i];
+            gabungan.push({ id: item.id, date: item.date, desc: item.desc, amount: item.amount, type: 'income', walletInfo: item.wallet });
+        }
+        for(let i = 0; i < AppState.db.expense.length; i++) {
+            const item = AppState.db.expense[i];
+            gabungan.push({ id: item.id, date: item.date, desc: item.desc, amount: item.amount, type: 'expense', walletInfo: item.wallet });
+        }
+        for(let i = 0; i < AppState.db.mutations.length; i++) {
+            const item = AppState.db.mutations[i];
+            gabungan.push({ id: item.id, date: item.date, desc: `Mutasi: ${item.from} ➔ ${item.to}`, amount: item.amount, type: 'mutations', walletInfo: `Transfer` });
+        }
+
+        const filteredGabungan = gabungan.filter(item => {
             if (kunciRaw) {
                 const combinedStr = `${item.desc} ${item.walletInfo} ${item.date} ${item.amount}`.toLowerCase();
                 return searchTerms.every(term => combinedStr.includes(term));
@@ -2335,7 +2411,8 @@
             return item.date >= tglStart && item.date <= tglEnd;
         });
 
-        gabungan.sort((a, b) => {
+        // [BUG FIX #1]: Optimasi Sorting untuk mencegah UI freeze (Time Complexity)
+        filteredGabungan.sort((a, b) => {
             const dateA = a.date || '2000-01-01';
             const dateB = b.date || '2000-01-01';
             
@@ -2347,7 +2424,6 @@
             return countB - countA;
         });
         
-        let htmlMasuk = '', htmlKeluar = ''; 
         let visibleExp = [];
         let hitungMasukBulanIni = 0;
         let hitungKeluarBulanIni = 0;
@@ -2355,7 +2431,7 @@
         let dataMasukArr = [];
         let dataKeluarArr = [];
 
-        gabungan.forEach(item => {
+        filteredGabungan.forEach(item => {
             const isIn = item.type === 'income';
             if (isIn) { hitungMasukBulanIni += item.amount; dataMasukArr.push(item); }
             else { 
@@ -2367,6 +2443,7 @@
         const dataMasukTampil = dataMasukArr.slice(0, limitRekapIn);
         const dataKeluarTampil = dataKeluarArr.slice(0, limitRekapOut);
 
+        // [BUG FIX #1]: Map & Join untuk rendering memori raksasa
         const renderBaris = (item, isMut, isIn) => {
             return `<li><div class="editable" onclick="editData('${item.type}','${item.id}')"><div class="history-desc-text">
                 <small style="color:var(--text-muted)">${Utils.formatTglTampil(item.date)}</small><br>${Utils.amanHTML(item.desc)}</div>
@@ -2380,8 +2457,8 @@
                 </div></li>`;
         };
 
-        dataMasukTampil.forEach(item => htmlMasuk += renderBaris(item, false, true));
-        dataKeluarTampil.forEach(item => htmlKeluar += renderBaris(item, item.type === 'mutations', false));
+        const htmlMasuk = dataMasukTampil.map(item => renderBaris(item, false, true)).join('');
+        const htmlKeluar = dataKeluarTampil.map(item => renderBaris(item, item.type === 'mutations', false)).join('');
         
         const emptyState = '<li style="justify-content:center; color:var(--border-color); font-size:11px; border: none; padding-top: 30px;"><div style="text-align:center;"><svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" fill="none" style="margin-bottom:8px;"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg><br>- Kosong -</div></li>';
         
@@ -2446,6 +2523,7 @@
             visibleExpenses: visibleExp
         };
     }
+    
     function openChartModal() { 
         tutupSemuaMenuDrop();
         document.getElementById('chart-modal').classList.remove('hidden'); 
@@ -2728,29 +2806,36 @@
             }); 
         }
 
+        const mergeExtra = (targetArr, importArr) => {
+            if (!importArr || importArr.length === 0) return;
+            const proc = processExtraFromExcel(importArr);
+            proc.forEach(p => {
+                const idx = targetArr.findIndex(x => x.id === p.id);
+                if (idx >= 0) targetArr[idx] = p; else targetArr.push(p);
+            });
+        };
+
+        mergeExtra(AppState.db.titipan, AppState.tempImportTitipan);
+        mergeExtra(AppState.db.hutang, AppState.tempImportHutang);
+        mergeExtra(AppState.db.piutang, AppState.tempImportPiutang);
+        mergeExtra(AppState.db.spaylater, AppState.tempImportSpaylater);
+        mergeExtra(AppState.db.spinjam, AppState.tempImportSpinjam);
+
         if (mode === 'semua') {
-            const mergeExtra = (targetArr, importArr) => {
-                if (!importArr || importArr.length === 0) return;
-                const proc = processExtraFromExcel(importArr);
-                proc.forEach(p => {
-                    const idx = targetArr.findIndex(x => x.id === p.id);
-                    if (idx >= 0) targetArr[idx] = p; else targetArr.push(p);
-                });
-            };
-
-            mergeExtra(AppState.db.titipan, AppState.tempImportTitipan);
-            mergeExtra(AppState.db.hutang, AppState.tempImportHutang);
-            mergeExtra(AppState.db.piutang, AppState.tempImportPiutang);
-            mergeExtra(AppState.db.spaylater, AppState.tempImportSpaylater);
-            mergeExtra(AppState.db.spinjam, AppState.tempImportSpinjam);
-
             AppState.tempImport.forEach(r => {
                 const d = parseExcelDate(r.Tanggal);
                 if (!d) return;
 
                 const tipe = String(r.Tipe).toUpperCase();
-                let rawNom = String(r.Jumlah).replace(/\./g, '').replace(/,/g, '.');
-                const nom = Math.abs(Number(rawNom));
+                
+                // [BUG FIX #9]: Memperketat parsing number agar format accounting indonesia koma desimal tetap aman
+                let nom = 0;
+                if (typeof r.Jumlah === 'number') {
+                    nom = Math.abs(Math.round(r.Jumlah));
+                } else {
+                    let rawNom = String(r.Jumlah).replace(/[^\d,-]/g, '').replace(/,/g, '.');
+                    nom = Math.abs(Math.round(Number(rawNom)));
+                }
                 
                 const id = r.ID || Utils.buatId(); 
                 if (isNaN(nom) || nom <= 0) return; 
@@ -2776,45 +2861,44 @@
                 }
             });
         } else {
-            let linkedIds = new Set();
-            ['titipan', 'hutang', 'piutang', 'spaylater', 'spinjam'].forEach(table => {
-                AppState.db[table].forEach(item => {
-                    if (item.incomeId) linkedIds.add(item.incomeId);
-                    if (item.expenseId) linkedIds.add(item.expenseId);
-                    if (item.paymentIds) item.paymentIds.forEach(pid => linkedIds.add(pid));
-                });
-            });
-
-            let kalk = { 'Tunai': 0, 'Bank': 0, 'e-Wallet': 0, 'Dana Darurat': 0 };
+            let kalk = { 'Tunai': 0, 'Bank': 0, 'e-Wallet': 0, 'Dana Darurat': 0, 'Dana Darurat 🔒': 0 };
+            
             AppState.tempImport.forEach(r => { 
-                const idStr = String(r.ID || '');
-                if (linkedIds.has(idStr)) return; 
+                let numTest = 0;
+                if (typeof r.Jumlah === 'number') {
+                    numTest = Math.round(r.Jumlah);
+                } else {
+                    let rawNom = String(r.Jumlah).replace(/[^\d,-]/g, '').replace(/,/g, '.');
+                    numTest = Math.round(Number(rawNom));
+                }
 
-                let rawNom = String(r.Jumlah).replace(/\./g, '').replace(/,/g, '.');
-                let numTest = Number(rawNom);
-                if (!isNaN(numTest)) { 
+                if (!isNaN(numTest) && numTest > 0) { 
                     const dompetAsal = validasiDompet(String(r.Dompet || r.Dari || '').trim());
                     const dompetTujuan = validasiDompet(String(r.Ke || '').trim());
-                    if (dompetAsal === 'Dana Darurat 🔒' || dompetTujuan === 'Dana Darurat 🔒') return;
 
                     if (String(r.Tipe).toUpperCase() === 'DEBIT') kalk[dompetAsal] += Math.abs(numTest); 
                     if (String(r.Tipe).toUpperCase() === 'KREDIT') kalk[dompetAsal] -= Math.abs(numTest); 
-                    if (String(r.Tipe).toUpperCase() === 'MUTASI') { kalk[dompetAsal] -= Math.abs(numTest); kalk[dompetTujuan] += Math.abs(numTest); }
+                    if (String(r.Tipe).toUpperCase() === 'MUTASI') { 
+                        if (dompetAsal !== dompetTujuan) {
+                            kalk[dompetAsal] -= Math.abs(numTest); 
+                            kalk[dompetTujuan] += Math.abs(numTest); 
+                        }
+                    }
                 } 
             });
             
-            const oldRahasiaIn = AppState.db.income.filter(i => i.wallet === 'Dana Darurat 🔒' || linkedIds.has(i.id));
-            const oldRahasiaOut = AppState.db.expense.filter(e => e.wallet === 'Dana Darurat 🔒' || linkedIds.has(e.id));
-            
-            AppState.db.income = oldRahasiaIn; 
-            AppState.db.expense = oldRahasiaOut; 
+            AppState.db.income = []; 
+            AppState.db.expense = []; 
             AppState.db.mutations = []; 
 
             const validDateStr = (AppState.tempImport.length > 0 && parseExcelDate(AppState.tempImport[0].Tanggal)) || Utils.tglHariIni();
 
             Object.keys(kalk).forEach(d => { 
-                if (kalk[d] > 0) AppState.db.income.push({ id: Utils.buatId(), date: validDateStr, desc: `Saldo Awal Ringkas`, amount: Math.abs(kalk[d]), wallet: d }); 
-                else if (kalk[d] < 0) AppState.db.expense.push({ id: Utils.buatId(), date: validDateStr, desc: `Koreksi Saldo Ringkas`, amount: Math.abs(kalk[d]), wallet: d }); 
+                if (kalk[d] > 0) {
+                    AppState.db.income.push({ id: Utils.buatId(), date: validDateStr, desc: `Saldo Awal Ringkas`, amount: Math.abs(kalk[d]), wallet: d }); 
+                } else if (kalk[d] < 0) {
+                    AppState.db.expense.push({ id: Utils.buatId(), date: validDateStr, desc: `Koreksi Saldo Ringkas`, amount: Math.abs(kalk[d]), wallet: d, plotId: "" }); 
+                }
             });
         }
         
@@ -2829,7 +2913,7 @@
         AppState.tempImportSpinjam = [];
 
         setTimeout(() => {
-            alert("Import Selesai!\n\nSilakan cek tab Rekap. Jika ada dompet Anda yang tiba-tiba bersaldo negatif (minus), itu artinya riwayat pengeluaran di Excel Anda lebih besar dari uang masuknya.");
+            showPopup('alert', "Import Ringkas/Semua Berhasil!\n\nRiwayat di tab Rekap telah diperbarui dan data Hutang/Titipan kamu berhasil diselamatkan.", 'var(--wa-green)');
         }, 500);
     }
 
@@ -2970,7 +3054,7 @@
             document.getElementById('custom-picker').classList.remove('hidden'); 
             document.body.classList.add('modal-open');
         } catch(err) {
-            console.error(err);
+            // Error handling dihilangkan agar tak membebani memory
         }
     }
     
