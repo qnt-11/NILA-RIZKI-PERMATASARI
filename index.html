@@ -707,7 +707,7 @@
                 <span class="title-barla"><span class="letter" style="animation-delay: 1.4s">B</span><span class="letter" style="animation-delay: 1.6s">A</span><span class="letter" style="animation-delay: 1.8s">R</span><span class="letter" style="animation-delay: 2.0s">L</span><span class="letter" style="animation-delay: 2.2s">A</span></span>
             </h2>
             <div style="margin-top: 8px;">
-                <span id="app-version-display" style="background: rgba(255,255,255,0.1); padding: 4px 10px; border-radius: 12px; color: #ffffff; font-family: 'Montserrat', sans-serif; font-weight: 700; letter-spacing: 1px; font-size: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.5);">VERSI 2.4 (PRO)</span>
+                <span id="app-version-display" style="background: rgba(255,255,255,0.1); padding: 4px 10px; border-radius: 12px; color: #ffffff; font-family: 'Montserrat', sans-serif; font-weight: 700; letter-spacing: 1px; font-size: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.5);">VERSI 2.5 (PRO)</span>
             </div>
         </div>
         
@@ -933,8 +933,8 @@
     // =========================================================
     // 1. PENGATURAN AWAL & VARIABEL GLOBAL
     // =========================================================
-    const APP_VERSION = "2.4"; 
-    const CLOUD_URL = "https://script.google.com/macros/s/AKfycbz5CUT4NdNqvlTUnFGa13jrrmshIEjojD3xgwkv6bWc5v4vEbXqPGakmvtUCkXtlYax/exec";
+    const APP_VERSION = "2.5"; 
+    const CLOUD_URL = "https://script.google.com/macros/s/AKfycbxkW661t8GMhYANf7ae3uElZrp4M_8bjhOLqJZJi9LzOCKHMRaXlonwefbZkdhnl9cb/exec";
     
     try {
         if ('serviceWorker' in navigator) {
@@ -3223,10 +3223,13 @@
                     ? '' 
                     : `<div class="cicil-progress"><span>(Dicicil: ${Utils.formatRp(t.paidAmount)} / ${Utils.formatRp(t.amount)})</span></div>`;
 
-                let jatuhTempoHtml = '';
+                              let jatuhTempoHtml = '';
                 if (t.dueDate && t.status !== 'selesai') {
                     jatuhTempoHtml = `<div style="font-size: 9px; color: var(--danger); font-weight: 600; margin-top: 4px;">Jatuh Tempo: ${Utils.formatTglTampil(t.dueDate)}</div>`;
                 }
+
+                // Tambahan: Tombol hapus silang merah (✖) untuk item aktif
+                const hapusAktifBtn = `<button class="extra-btn-hapus" onclick="hapusExtra('${t.id}')" title="Hapus Catatan Permanen" style="margin-left: 2px; padding: 4px;"><svg class="svg-x" viewBox="0 0 24 24" fill="none" stroke="var(--danger)" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><circle cx="12" cy="12" r="10" stroke-width="1.5"></circle><path d="m15 9-6 6M9 9l6 6" stroke-width="2"></path></svg></button>`;
 
                 html += `
                 <li class="titipan-item">
@@ -3242,11 +3245,13 @@
                     ${progressHtml}
                     <div class="titipan-actions" style="display:flex; gap:8px; margin-top:8px; align-items:center;">
                         ${showRiwayatBtn}
+                        ${hapusAktifBtn}
                         <div style="flex:1;"></div>
                         <button class="extra-btn" style="color:var(--text-light); border:1px solid var(--border-color);" onclick="bukaFormExtra('edit', '${t.id}')">EDIT</button>
                         ${btnAksi}
                     </div>
                 </li>`;
+
             });
             html += `</div>`; 
         });
