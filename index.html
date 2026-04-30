@@ -2053,7 +2053,7 @@
         const isAwal = ekstraTerkait.some(x => x.incomeId === idItem || x.expenseId === idItem);
         const isCicilan = ekstraTerkait.some(x => x.paymentIds && x.paymentIds.includes(idItem));
         
-        if (isAwal || isCicilan) return showPopup('alert', 'Batal: Ini adalah Riwayat Menu Ekstra (Titipan/Hutang/Shopee)! Hapus langsung melalui Menu Titik Tiga Kiri.', 'var(--danger)');
+        if (isAwal || isCicilan) return showPopup('alert', 'Batal: Ini adalah Riwayat Menu Ekstra (Titipan/Hutang/Shopee)! Hapus langsung melalui Menu Titik Empat Kiri.', 'var(--danger)');
 
         const dataTarget = AppState.db[tipe].find(x => x.id === idItem);
         if (!dataTarget) return;
