@@ -1,10 +1,10 @@
 /**
  * SERVICE WORKER uang famBARLA (ENTERPRISE SECURITY & SMART CACHE)
- * Versi 2.4 (EXTREME PRO)
+ * Versi 2.5 (EXTREME PRO)
  * Optimasi: Anti-Quota Crash, Concurrency Lock CPU, & Background Sync Prep
  */
 
-const APP_VERSION = '2.4'; 
+const APP_VERSION = '2.5'; 
 const CACHE_PREFIX = 'uang-fambarla-';
 const CACHE_STATIC = CACHE_PREFIX + 'static-v' + APP_VERSION;
 const CACHE_DYNAMIC = CACHE_PREFIX + 'dynamic-v' + APP_VERSION;
