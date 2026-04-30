@@ -1,10 +1,10 @@
 /**
  * SERVICE WORKER uang famBARLA (ENTERPRISE SECURITY & SMART CACHE)
- * Versi 2.3 (PRO)
- * Optimasi: Anti-Quota Crash & Concurrency Lock CPU
+ * Versi 2.4 (EXTREME PRO)
+ * Optimasi: Anti-Quota Crash, Concurrency Lock CPU, & Background Sync Prep
  */
 
-const APP_VERSION = '2.3'; 
+const APP_VERSION = '2.4'; 
 const CACHE_PREFIX = 'uang-fambarla-';
 const CACHE_STATIC = CACHE_PREFIX + 'static-v' + APP_VERSION;
 const CACHE_DYNAMIC = CACHE_PREFIX + 'dynamic-v' + APP_VERSION;
@@ -19,11 +19,10 @@ const staticAssets = [
   'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js'
 ];
 
-// Anti-Race Condition Flag untuk mencegah CPU Spiking
 let isCleaning = false;
 
 const limitCacheSize = (name, size) => {
-  if (isCleaning) return Promise.resolve(); // Jika sedang bersih-bersih, abaikan request baru
+  if (isCleaning) return Promise.resolve(); 
   isCleaning = true;
   
   return caches.open(name).then(cache => {
@@ -36,7 +35,7 @@ const limitCacheSize = (name, size) => {
   }).catch(err => {
     console.warn('Pembersihan cache dilewati:', err);
   }).finally(() => {
-    isCleaning = false; // Buka kunci setelah selesai
+    isCleaning = false; 
   });
 };
 
@@ -49,7 +48,6 @@ self.addEventListener('install', event => {
           return fetch(asset)
             .then(response => {
               if (response.ok || response.type === 'opaque') {
-                // Tangkap error jika storage benar-benar 0 Byte agar SW tidak crash
                 return cache.put(asset, response).catch(() => {}); 
               }
             })
@@ -91,14 +89,43 @@ self.addEventListener('message', event => {
   }
 });
 
+// =========================================================
+// [NEW] BACKGROUND SYNC API (EXTREME PHASE 2)
+// Mengirim data raksasa ke Cloud secara diam-diam saat sinyal kembali
+// =========================================================
+self.addEventListener('sync', event => {
+  if (event.tag === 'sync-cloud-upload') {
+    console.log('[SW] Sinyal internet terdeteksi. Memulai Background Sync ke Cloud...');
+    event.waitUntil(prosesUploadTertunda());
+  }
+});
+
+// Fungsi pembantu untuk membaca IndexedDB dan mengirim payload ke GAS
+async function prosesUploadTertunda() {
+  try {
+    // Catatan Arsitek: Logika IndexedDB akan diletakkan di sini.
+    // SW akan membaca payload dari IndexedDB lalu melakukan fetch ke Google Script.
+    // Jika berhasil, data di antrean IndexedDB akan dihapus.
+    console.log('[SW] Proses Background Sync selesai.');
+  } catch (error) {
+    console.error('[SW] Background Sync gagal, akan diulang otomatis oleh browser:', error);
+    throw error; // Melempar error agar browser tahu untuk mencoba lagi (retry)
+  }
+}
+
+// =========================================================
+// INTERCEPTOR JARINGAN & CACHE STRATEGY
+// =========================================================
 self.addEventListener('fetch', event => {
   let req = event.request;
   let reqUrl = new URL(req.url);
 
+  // Jangan cache request non-GET (seperti POST ke Cloud)
   if (req.method !== 'GET') return;
   if (!reqUrl.protocol.startsWith('http')) return;
   if (reqUrl.pathname.endsWith('sw.js')) return;
 
+  // Bebaskan Google Script dari Cache, biarkan Network murni (Nanti di-handle oleh Background Sync)
   if (reqUrl.hostname.includes('script.google')) {
     event.respondWith(fetch(req));
     return;
@@ -113,7 +140,7 @@ self.addEventListener('fetch', event => {
         const fetchPromise = fetch(req).then(networkRes => {
           if (networkRes && networkRes.ok) {
             caches.open(CACHE_DYNAMIC).then(cache => {
-              cache.put(req, networkRes.clone()).catch(() => {}); // Fallback memori penuh
+              cache.put(req, networkRes.clone()).catch(() => {}); 
               limitCacheSize(CACHE_DYNAMIC, 50); 
             });
           }
