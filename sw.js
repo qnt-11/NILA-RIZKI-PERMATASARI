@@ -1,10 +1,10 @@
 /**
  * SERVICE WORKER uang famBARLA (ENTERPRISE SECURITY & SMART CACHE)
- * Versi 2.5 (EXTREME PRO)
- * Optimasi: Anti-Quota Crash, Concurrency Lock CPU, & Background Sync Prep
+ * Versi 2.7 (EXTREME PRO - PATCHED)
+ * Optimasi: Network-First HTML, Safe Cache Limit, & Background Sync Prep
  */
 
-const APP_VERSION = '2.5'; 
+const APP_VERSION = '2.7'; 
 const CACHE_PREFIX = 'uang-fambarla-';
 const CACHE_STATIC = CACHE_PREFIX + 'static-v' + APP_VERSION;
 const CACHE_DYNAMIC = CACHE_PREFIX + 'dynamic-v' + APP_VERSION;
@@ -33,7 +33,7 @@ const limitCacheSize = (name, size) => {
       }
     });
   }).catch(err => {
-    console.warn('Pembersihan cache dilewati:', err);
+    console.warn('[SW] Pembersihan cache dilewati:', err);
   }).finally(() => {
     isCleaning = false; 
   });
@@ -52,7 +52,7 @@ self.addEventListener('install', event => {
               }
             })
             .catch(error => {
-              console.warn('Lewati cache sementara (offline/CDN down):', asset);
+              console.warn('[SW] Lewati cache sementara (offline/CDN down):', asset);
             });
         })
       );
@@ -67,7 +67,7 @@ self.addEventListener('activate', event => {
       return Promise.all(
         keys.map(key => {
           if (key.startsWith(CACHE_PREFIX) && key !== CACHE_STATIC && key !== CACHE_DYNAMIC) {
-            console.log('Menghapus cache versi lama:', key);
+            console.log('[SW] Menghapus cache versi lama:', key);
             return caches.delete(key);
           }
         })
@@ -90,8 +90,7 @@ self.addEventListener('message', event => {
 });
 
 // =========================================================
-// [NEW] BACKGROUND SYNC API (EXTREME PHASE 2)
-// Mengirim data raksasa ke Cloud secara diam-diam saat sinyal kembali
+// BACKGROUND SYNC API (EXTREME PHASE 2 PREP)
 // =========================================================
 self.addEventListener('sync', event => {
   if (event.tag === 'sync-cloud-upload') {
@@ -100,32 +99,28 @@ self.addEventListener('sync', event => {
   }
 });
 
-// Fungsi pembantu untuk membaca IndexedDB dan mengirim payload ke GAS
 async function prosesUploadTertunda() {
   try {
-    // Catatan Arsitek: Logika IndexedDB akan diletakkan di sini.
-    // SW akan membaca payload dari IndexedDB lalu melakukan fetch ke Google Script.
-    // Jika berhasil, data di antrean IndexedDB akan dihapus.
-    console.log('[SW] Proses Background Sync selesai.');
+    // Catatan Arsitek: Implementasi baca IndexedDB -> Fetch ke GAS -> Hapus antrean
+    console.log('[SW] Proses Background Sync selesai (Placeholder).');
   } catch (error) {
-    console.error('[SW] Background Sync gagal, akan diulang otomatis oleh browser:', error);
-    throw error; // Melempar error agar browser tahu untuk mencoba lagi (retry)
+    console.error('[SW] Background Sync gagal, browser akan retry:', error);
+    throw error;
   }
 }
 
 // =========================================================
-// INTERCEPTOR JARINGAN & CACHE STRATEGY
+// INTERCEPTOR JARINGAN & CACHE STRATEGY TERPISAH
 // =========================================================
 self.addEventListener('fetch', event => {
   let req = event.request;
   let reqUrl = new URL(req.url);
 
-  // Jangan cache request non-GET (seperti POST ke Cloud)
   if (req.method !== 'GET') return;
   if (!reqUrl.protocol.startsWith('http')) return;
   if (reqUrl.pathname.endsWith('sw.js')) return;
 
-  // Bebaskan Google Script dari Cache, biarkan Network murni (Nanti di-handle oleh Background Sync)
+  // Bebaskan Google Script (API) dari Cache
   if (reqUrl.hostname.includes('script.google')) {
     event.respondWith(fetch(req));
     return;
@@ -134,6 +129,24 @@ self.addEventListener('fetch', event => {
   const isHtmlRequest = req.mode === 'navigate' || (req.headers.get('accept') && req.headers.get('accept').includes('text/html'));
   const cacheKey = isHtmlRequest ? './index.html' : req;
 
+  // 1. STRATEGI NETWORK-FIRST UNTUK HTML (Mencegah Zombie App saat Hotfix)
+  if (isHtmlRequest) {
+    event.respondWith(
+      fetch(req).then(networkResponse => {
+        if (networkResponse && networkResponse.ok) {
+          const clone = networkResponse.clone();
+          caches.open(CACHE_STATIC).then(cache => cache.put(cacheKey, clone));
+        }
+        return networkResponse;
+      }).catch(() => {
+        // Fallback ke Cache jika Offline
+        return caches.match(cacheKey).then(cachedRes => cachedRes || caches.match('./'));
+      })
+    );
+    return;
+  }
+
+  // 2. STRATEGI STALE-WHILE-REVALIDATE UNTUK GOOGLE FONTS (CSS)
   if (reqUrl.hostname === 'fonts.googleapis.com') {
     event.respondWith(
       caches.match(req).then(cachedRes => {
@@ -141,22 +154,21 @@ self.addEventListener('fetch', event => {
           if (networkRes && networkRes.ok) {
             caches.open(CACHE_DYNAMIC).then(cache => {
               cache.put(req, networkRes.clone()).catch(() => {}); 
-              limitCacheSize(CACHE_DYNAMIC, 50); 
+              // FIX: Penambahan waitUntil agar SW tidak dibunuh browser saat membersihkan memori
+              event.waitUntil(limitCacheSize(CACHE_DYNAMIC, 50)); 
             });
           }
           return networkRes;
         }).catch(() => cachedRes);
         
-        if (cachedRes) {
-            event.waitUntil(fetchPromise);
-        }
-        
+        if (cachedRes) event.waitUntil(fetchPromise);
         return cachedRes || fetchPromise;
       })
     );
     return;
   }
 
+  // 3. STRATEGI CACHE-FIRST UNTUK GOOGLE FONTS (WOFF2)
   if (reqUrl.hostname === 'fonts.gstatic.com') {
     event.respondWith(
       caches.match(req).then(cachedRes => {
@@ -173,15 +185,15 @@ self.addEventListener('fetch', event => {
     return;
   }
 
+  // 4. STRATEGI CACHE-FIRST UNTUK ASET STATIS LOKAL & CDN
   const isLocalStatic = staticAssets.some(asset => {
     if (asset.startsWith('http')) return false;
-    if (asset === './') return isHtmlRequest;
     const assetUrl = new URL(asset, self.location.href);
     return reqUrl.pathname === assetUrl.pathname;
   });
   const isCDNStatic = staticAssets.some(asset => asset.startsWith('http') && reqUrl.href === asset);
 
-  if (isHtmlRequest || isLocalStatic || isCDNStatic) {
+  if (isLocalStatic || isCDNStatic) {
     event.respondWith(
       caches.match(cacheKey, { ignoreSearch: true }).then(cachedResponse => {
         return cachedResponse || fetch(req).then(networkResponse => {
@@ -191,15 +203,11 @@ self.addEventListener('fetch', event => {
             });
           }
           return networkResponse;
-        }).catch(() => {
-          if (isHtmlRequest) {
-            return caches.match('./index.html').then(res => res || caches.match('./'));
-          }
-          return Response.error(); 
-        });
+        }).catch(() => Response.error());
       })
     );
   } else {
+    // 5. STRATEGI STALE-WHILE-REVALIDATE UNTUK REQUEST DINAMIS LAINNYA
     event.respondWith(
       caches.match(req, { ignoreSearch: true }).then(cachedResponse => {
         const fetchPromise = fetch(req).then(networkResponse => {
@@ -210,12 +218,7 @@ self.addEventListener('fetch', event => {
             });
           }
           return networkResponse;
-        }).catch(() => {
-          if (isHtmlRequest) {
-            return caches.match('./index.html').then(res => res || caches.match('./'));
-          }
-          return Response.error();
-        });
+        }).catch(() => Response.error());
 
         if (cachedResponse) {
           event.waitUntil(fetchPromise); 
