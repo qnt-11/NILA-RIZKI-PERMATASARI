@@ -1,10 +1,10 @@
 /**
  * SERVICE WORKER uang famBARLA (ENTERPRISE SECURITY & SMART CACHE)
- * Versi 2.7 (EXTREME PRO - PATCHED)
+ * Versi 3.0 (EXTREME PRO - PATCHED)
  * Optimasi: Network-First HTML, Safe Cache Limit, & Background Sync Prep
  */
 
-const APP_VERSION = '2.7'; 
+const APP_VERSION = '3.0'; 
 const CACHE_PREFIX = 'uang-fambarla-';
 const CACHE_STATIC = CACHE_PREFIX + 'static-v' + APP_VERSION;
 const CACHE_DYNAMIC = CACHE_PREFIX + 'dynamic-v' + APP_VERSION;
@@ -152,16 +152,17 @@ self.addEventListener('fetch', event => {
       caches.match(req).then(cachedRes => {
         const fetchPromise = fetch(req).then(networkRes => {
           if (networkRes && networkRes.ok) {
+            const clone = networkRes.clone();
             caches.open(CACHE_DYNAMIC).then(cache => {
-              cache.put(req, networkRes.clone()).catch(() => {}); 
-              // FIX: Penambahan waitUntil agar SW tidak dibunuh browser saat membersihkan memori
-              event.waitUntil(limitCacheSize(CACHE_DYNAMIC, 50)); 
+              cache.put(req, clone).then(() => {
+                limitCacheSize(CACHE_DYNAMIC, 50); // FIX: Eksekusi aman tanpa event.waitUntil yang kadaluarsa
+              }).catch(() => {}); 
             });
           }
           return networkRes;
         }).catch(() => cachedRes);
         
-        if (cachedRes) event.waitUntil(fetchPromise);
+        if (cachedRes) event.waitUntil(fetchPromise); // Menjaga SW tetap hidup untuk fetchPromise
         return cachedRes || fetchPromise;
       })
     );
@@ -174,8 +175,9 @@ self.addEventListener('fetch', event => {
       caches.match(req).then(cachedRes => {
         return cachedRes || fetch(req).then(networkRes => {
           if (networkRes && networkRes.ok) {
+            const clone = networkRes.clone();
             caches.open(CACHE_STATIC).then(cache => {
-              cache.put(req, networkRes.clone()).catch(() => {});
+              cache.put(req, clone).catch(() => {});
             });
           }
           return networkRes;
@@ -198,8 +200,9 @@ self.addEventListener('fetch', event => {
       caches.match(cacheKey, { ignoreSearch: true }).then(cachedResponse => {
         return cachedResponse || fetch(req).then(networkResponse => {
           if (networkResponse && (networkResponse.ok || networkResponse.type === 'opaque')) {
+            const clone = networkResponse.clone();
             caches.open(CACHE_STATIC).then(cache => {
-              cache.put(cacheKey, networkResponse.clone()).catch(() => {});
+              cache.put(cacheKey, clone).catch(() => {});
             });
           }
           return networkResponse;
@@ -212,16 +215,18 @@ self.addEventListener('fetch', event => {
       caches.match(req, { ignoreSearch: true }).then(cachedResponse => {
         const fetchPromise = fetch(req).then(networkResponse => {
           if (networkResponse && networkResponse.ok && networkResponse.type !== 'opaque') {
+            const clone = networkResponse.clone();
             caches.open(CACHE_DYNAMIC).then(cache => {
-              cache.put(req, networkResponse.clone()).catch(() => {});
-              event.waitUntil(limitCacheSize(CACHE_DYNAMIC, 60)); 
+              cache.put(req, clone).then(() => {
+                limitCacheSize(CACHE_DYNAMIC, 60); // FIX: Eksekusi aman tanpa event.waitUntil yang kadaluarsa
+              }).catch(() => {});
             });
           }
           return networkResponse;
         }).catch(() => Response.error());
 
         if (cachedResponse) {
-          event.waitUntil(fetchPromise); 
+          event.waitUntil(fetchPromise); // Menjaga SW tetap hidup untuk fetchPromise
           return cachedResponse; 
         }
         
