@@ -19,7 +19,6 @@ const staticAssets = [
 // =========================================================
 let gcQueue = Promise.resolve();
 
-// Membatasi ukuran cache dinamis agar memori HP tidak penuh
 const limitCacheSize = (name, size) => {
   gcQueue = gcQueue.then(() => {
     return caches.open(name).then(cache => {
@@ -37,13 +36,12 @@ const limitCacheSize = (name, size) => {
 // 2. FASE INSTALASI (PRE-CACHING)
 // =========================================================
 self.addEventListener('install', event => {
-  self.skipWaiting(); // Memaksa SW baru untuk segera mengambil alih
+  self.skipWaiting(); 
   event.waitUntil(
     caches.open(CACHE_STATIC).then(cache => {
       console.log('[SW] Menyimpan aset statis...');
       return Promise.all(
         staticAssets.map(asset => {
-          // Menangani masalah CORS pada CDN (Chart.js & SheetJS)
           const reqOpt = asset.startsWith('http') ? { mode: 'cors', credentials: 'omit' } : {};
           return fetch(asset, reqOpt)
             .then(response => {
@@ -53,7 +51,6 @@ self.addEventListener('install', event => {
               throw new Error("Respons Opaque atau Non-OK");
             })
             .catch(() => {
-              // Mode darurat (no-cors) jika CDN memblokir, agar app tetap bisa offline
               if (asset.startsWith('http')) {
                 return fetch(asset, { mode: 'no-cors' })
                   .then(fallbackRes => cache.put(asset, fallbackRes))
@@ -75,7 +72,6 @@ self.addEventListener('activate', event => {
     caches.keys().then(keys => {
       return Promise.all(
         keys.map(key => {
-          // Hapus cache yang depannya 'uang-fambarla-' tapi bukan versi saat ini
           if (key.startsWith(CACHE_PREFIX) && key !== CACHE_STATIC && key !== CACHE_DYNAMIC) {
             console.log('[SW] Menghapus cache versi lama:', key);
             return caches.delete(key);
@@ -86,7 +82,6 @@ self.addEventListener('activate', event => {
   );
 });
 
-// Mendengarkan sinyal hapus semua data dari index.html (Prompt Clear Data)
 self.addEventListener('message', event => {
   if (event.data && event.data.action === 'CLEAR_CACHE') {
     event.waitUntil(
@@ -104,12 +99,10 @@ self.addEventListener('fetch', event => {
   const req = event.request;
   const reqUrl = new URL(req.url);
 
-  // Abaikan permintaan yang bukan GET atau bukan protokol HTTP/HTTPS
   if (req.method !== 'GET' || !reqUrl.protocol.startsWith('http') || reqUrl.pathname.endsWith('sw.js')) return;
 
   // STRATEGI 1: BYPASS GOOGLE CLOUD (Wajib Network-Only)
-  // Mencegah error gagal sinkronisasi saat Load/Upload Cloud
-  if (reqUrl.hostname.includes('script.google.com')) {
+  if (reqUrl.hostname.includes('script.google.com') || reqUrl.hostname.includes('script.googleusercontent.com')) {
     event.respondWith(fetch(req).catch(() => Response.error()));
     return;
   }
@@ -117,11 +110,10 @@ self.addEventListener('fetch', event => {
   const isHtmlRequest = req.mode === 'navigate' || (req.headers.get('accept') && req.headers.get('accept').includes('text/html'));
   const cacheKey = isHtmlRequest ? './index.html' : req;
 
-  // STRATEGI 2: STALE-WHILE-REVALIDATE UNTUK HTML (Offline-First Sejati)
+  // STRATEGI 2: STALE-WHILE-REVALIDATE UNTUK HTML
   if (isHtmlRequest) {
     event.respondWith(
       caches.match(cacheKey, { ignoreSearch: true }).then(cachedResponse => {
-        // Ambil pembaruan dari internet secara diam-diam di latar belakang
         const networkFetch = fetch(req).then(networkResponse => {
           if (networkResponse && networkResponse.ok) {
             const clone = networkResponse.clone();
@@ -129,14 +121,12 @@ self.addEventListener('fetch', event => {
           }
           return networkResponse;
         }).catch(() => {
-          console.log('[SW] Anda sedang Offline. Menggunakan HTML dari Cache.');
+          console.log('[SW] Offline/Timeout. Menggunakan HTML Fallback.');
+          return caches.match('./', { ignoreSearch: true });
         });
 
-        // Mengunci proses agar Service Worker tidak mati sebelum fetch selesai
         event.waitUntil(networkFetch);
-
-        // Langsung tampilkan cache jika ada, jika tidak, tunggu hasil download dari internet
-        return cachedResponse || networkFetch || caches.match('./', { ignoreSearch: true });
+        return cachedResponse || networkFetch;
       })
     );
     return;
@@ -158,14 +148,13 @@ self.addEventListener('fetch', event => {
     return;
   }
 
-  // Identifikasi aset statis yang didaftarkan di atas
   const isLocalStatic = staticAssets.some(asset => {
     if (asset.startsWith('http')) return false;
     return reqUrl.pathname === new URL(asset, self.location.href).pathname;
   });
   const isCDNStatic = staticAssets.some(asset => asset.startsWith('http') && reqUrl.href === asset);
 
-  // STRATEGI 4: CACHE-FIRST UNTUK ASET STATIS (Gambar, JS, CSS Utama)
+  // STRATEGI 4: CACHE-FIRST UNTUK ASET STATIS
   if (isLocalStatic || isCDNStatic) {
     event.respondWith(
       caches.match(cacheKey, { ignoreSearch: true }).then(cachedResponse => {
