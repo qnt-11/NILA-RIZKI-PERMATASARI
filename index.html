@@ -39,7 +39,7 @@
             background-color: var(--wa-bg); color: var(--text-light);
             display: flex; flex-direction: column; overflow: hidden; 
         }
-        body.modal-open { overflow: hidden; pointer-events: none; }
+        body.modal-open { overflow: hidden; pointer-events: none; -webkit-overflow-scrolling: touch; }    
         body.modal-open .modal-overlay { pointer-events: auto; }
 
         .hidden { display: none !important; }
@@ -179,12 +179,12 @@
         .custom-select-trigger::after { content: '▼'; font-size: 10px; color: var(--text-muted); flex-shrink: 0; margin-left: 10px;}
         .custom-select-options {
             position: absolute; top: 100%; left: 0; right: 0; 
-            background: rgba(21, 21, 21, 0.9); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
-            border: 1px solid var(--border-color); border-radius: 8px; margin-top: 5px; z-index: 999; 
-            overflow-y: auto; overflow-x: hidden; max-height: 180px; overscroll-behavior: contain; box-shadow: 0 15px 35px rgba(0,0,0,0.9);
+            background: rgba(21, 21, 21, 0.95); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--border-color); border-radius: 8px; margin-top: 5px; z-index: 99999; 
+            overflow-y: auto; overflow-x: hidden; max-height: 35vh; overscroll-behavior: contain; box-shadow: 0 15px 35px rgba(0,0,0,0.9);
             animation: slideDownGlass 0.2s ease-out; border-top: 1px solid rgba(255,255,255,0.1);
         }
-        #in-wallet-opts, #out-wallet-opts, #extra-wallet-opts, #cicil-wallet-opts, #edit-wallet-opts { max-height: none; overflow-y: visible; }
+        
         .custom-option { padding: 14px 12px; border-bottom: 1px solid rgba(255,255,255,0.05); cursor: pointer; color: var(--text-light); font-size: 14px; font-weight: 500; transition: 0.2s;}
         @media (hover: hover) { .custom-option:hover { background-color: rgba(255, 255, 255, 0.08); } }
         .custom-option:active { background-color: rgba(255, 255, 255, 0.15); }
@@ -270,9 +270,9 @@
             will-change: transform, opacity;
         }
         
-        #edit-modal .modal-box, #cloud-load-modal .modal-box, #import-modal .modal-box, #extra-form-box { max-height: 85vh; overflow-y: auto; overscroll-behavior: contain; }
-        #mutation-modal .modal-box { overflow: visible; max-height: none; }
-        
+        #edit-modal .modal-box, #cloud-load-modal .modal-box, #import-modal .modal-box, #extra-form-box { max-height: 85vh; overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
+        #mutation-modal .modal-box, #extra-cicil-box { overflow: visible; max-height: none; }
+
         .modal-actions { display: flex; gap: 10px; justify-content: center; margin-top: 15px; }
         #modal-text { white-space: pre-wrap; line-height: 1.5; font-size: 13px; font-weight: 600; margin-bottom: 10px; }
         #modal-input { width: 100%; padding: 14px; margin-bottom: 20px; border-radius: 8px; border: 1px solid var(--border-color); background: rgba(0,0,0,0.5); color: var(--text-light); text-align: center; font-size: 18px; font-weight: 700; box-sizing: border-box; transition: 0.3s; }
@@ -408,7 +408,7 @@
         #extra-form-box .modal-btn { padding: 10px !important; font-size: 12px !important; margin-top: 0 !important; }
     </style>
 </head>
-<body>
+ <body>
 <header>
     <div style="display: flex; flex-direction: column;">
         <h2 class="app-title" onclick="promptResetFormulir()" tabindex="0">
@@ -706,7 +706,7 @@
                 <span class="title-barla"><span class="letter" style="animation-delay: 1.4s">B</span><span class="letter" style="animation-delay: 1.6s">A</span><span class="letter" style="animation-delay: 1.8s">R</span><span class="letter" style="animation-delay: 2.0s">L</span><span class="letter" style="animation-delay: 2.2s">A</span></span>
             </h2>
             <div style="margin-top: 8px;">
-                <span id="app-version-display" style="background: rgba(255,255,255,0.1); padding: 4px 10px; border-radius: 12px; color: #ffffff; font-family: 'Montserrat', sans-serif; font-weight: 700; letter-spacing: 1px; font-size: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.5);">VERSI 5.0 (PRO)</span>
+                <span id="app-version-display" style="background: rgba(255,255,255,0.1); padding: 4px 10px; border-radius: 12px; color: #ffffff; font-family: 'Montserrat', sans-serif; font-weight: 700; letter-spacing: 1px; font-size: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.5);">VERSI 5.8 (PRO)</span>
             </div>
         </div>
         
@@ -888,18 +888,29 @@
         <h3 id="extra-cicil-title" class="audiowide-regular" style="margin-top:0; margin-bottom: 10px; font-size:15px;">Cicilan</h3>
         <p style="font-size: 11px; color: var(--text-muted); margin-bottom: 15px;"><span id="extra-cicil-desc"></span> <strong id="extra-cicil-nama" style="color:#fff;"></strong></p>
         
-        <div class="form-group" style="text-align:left; margin-bottom: 15px;" id="cicil-nominal-group">
+             <div class="form-group" style="text-align:left; margin-bottom: 15px;" id="cicil-nominal-group">
             <label style="color:var(--wa-green);">Nominal Bayar Saat Ini (Rp)</label>
             <input type="text" inputmode="numeric" id="cicil-nominal" placeholder="0" oninput="Utils.formatRibuanInput(event)">
         </div>
 
-        <div class="form-group" style="text-align:left;">
+        <div class="form-group" style="text-align:left; margin-bottom: 15px;">
+            <label id="cicil-wallet-label">Sumber Dana</label>
             <div class="custom-select-container">
                 <div class="custom-select-trigger text-ellipsis" id="cicil-wallet-trigger" onclick="toggleCustomSelect('cicil-wallet-opts', event)">Tunai</div>
                 <div class="custom-select-options hidden" id="cicil-wallet-opts"></div>
             </div>
             <input type="hidden" id="cicil-wallet" value="Tunai">
         </div>
+
+             <div class="form-group" style="text-align:left; margin-bottom: 15px;" id="cicil-plot-group">
+            <label>Ambil dari Plot (Opsional)</label>
+            <div class="custom-select-container">
+                <div class="custom-select-trigger text-ellipsis" id="cicil-plot-trigger" onclick="toggleCustomSelect('cicil-plot-opts', event)" style="color:var(--text-muted)">-- Tanpa Plot --</div>
+                <div class="custom-select-options hidden" id="cicil-plot-opts"></div>
+            </div>
+            <input type="hidden" id="cicil-plot" value="">
+        </div>
+   
         <input type="hidden" id="cicil-id-item" value="">
         <div class="modal-actions">
             <button id="btn-batal-cicil-extra" class="modal-btn cancel" onclick="tutupModalAman('extra-cicil-modal')">BATAL</button>
@@ -946,8 +957,10 @@
 </div>
 <input type="file" id="file-import" accept=".xlsx, .xls" class="hidden" onchange="importFromExcel(event)">
 <script>
-    const APP_VERSION = "5.0"; 
-    const CLOUD_URL = "https://script.google.com/macros/s/AKfycbyq966S9WQVJzT9mHPdGks2l6KfhK4V0rXSuCn5Ux64u6xBP2xq4GVp7j8aa4-bS6sCPA/exec";
+    const APP_VERSION = "5.9"; 
+    const CLOUD_URL = "https://script.google.com/macros/s/AKfycbxfX6FVX0XOpBq1m1o5Pt4UPF2Yi0YNZHRwAY1pqxFBg6O3ZuqKDJb4RpPBVueQaDA8/exec";
+    const CLOUD_TOKEN = "Rahas1aFambarLa2026";
+    const PIN_DARURAT = "170823";
     
     try {
         if ('serviceWorker' in navigator) {
@@ -1313,7 +1326,7 @@
 
     function verifyPin(callback, onCancelOrFail) {
         showPopup('pin', 'Masukkan PIN Keamanan 🔒:', 'var(--danger)', (val) => {
-            if (val === '170823') { if (callback) callback(); } 
+            if (val === PIN_DARURAT) { if (callback) callback(); } 
             else { showPopup('alert', 'Batal: PIN Salah!', 'var(--danger)'); if (onCancelOrFail) onCancelOrFail(); }
         });
         const btnBatal = document.getElementById('modal-btn-cancel');
@@ -1331,17 +1344,30 @@
         }
         if(!CLOUD_URL || CLOUD_URL.includes("ISI_DENGAN")) return showPopup('alert', "Penyimpanan Cloud belum disetel!", 'var(--danger)');
         
-        showPopup('confirm', "Peringatan Keamanan! ☁️\n\nTindakan ini akan mengunggah dan MENIMPA seluruh data yang ada di Cloud dengan data dari HP Anda saat ini.\n\nPastikan data di HP sudah benar. Lanjutkan?", 'var(--cloud)', () => {
+        showPopup('confirm', "Peringatan! \n\nUPLOAD data akan MENIMPA seluruh data yang ada di Cloud.\n\nPastikan data anda sudah benar.", 'var(--cloud)', () => {
             isNetworkProcessing = true;
             setTimeout(() => {
-                showPopup('loading', "Mengunggah data ke Cloud...\nMohon tunggu sebentar.", 'var(--cloud)');
+                showPopup('loading', "UPLOAD data ke Cloud...\nMohon tunggu sebentar.", 'var(--cloud)');
                 const payload = { activeMonth: "ALL", income: AppState.db.income, expense: AppState.db.expense, mutations: AppState.db.mutations, plots: AppState.db.plots, pengingat: AppState.db.pengingat, hutang: AppState.db.hutang, piutang: AppState.db.piutang, spaylater: AppState.db.spaylater, spinjam: AppState.db.spinjam };
                 const controller = new AbortController(); const timeoutId = setTimeout(() => controller.abort(), 30000); 
+                const secureUrl = CLOUD_URL + "?token=" + CLOUD_TOKEN;
                 
-                fetch(CLOUD_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(payload), signal: controller.signal })
-                .then(res => { clearTimeout(timeoutId); if(!res.ok) throw new Error("Gagal"); return res.text(); })
-                .then(res => { tutupModalAman('custom-modal'); showToast("Seluruh data berhasil di-Upload ke Cloud!", 'var(--cloud)'); })
-                .catch(err => { clearTimeout(timeoutId); showPopup('alert', "Gagal mengunggah! Pastikan koneksi internet aktif.", 'var(--danger)'); })
+                fetch(secureUrl, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(payload), signal: controller.signal })
+                .then(async res => { 
+                    clearTimeout(timeoutId); if(!res.ok) throw new Error("Gagal HTTP"); 
+                    const textRes = await res.text();
+                    let dataRes;
+                    try { dataRes = JSON.parse(textRes); } catch (e) { throw new Error("Server Google sedang sibuk atau respons tidak valid."); }
+                    if (dataRes && dataRes.error) throw new Error(dataRes.error);
+                    return dataRes;
+                })
+                .then(res => { tutupModalAman('custom-modal'); showToast("Berhasil di-Upload ke Cloud!", 'var(--cloud)'); })
+                .catch(err => { 
+                    clearTimeout(timeoutId); 
+                    let msg = err.message || "Gagal mengunggah! Pastikan koneksi internet aktif.";
+                    if (err.name === 'AbortError') msg = "Koneksi terlalu lambat (Timeout). Silakan cari sinyal yang lebih stabil.";
+                    showPopup('alert', msg, 'var(--danger)'); 
+                })
                 .finally(() => { isNetworkProcessing = false; });
             }, 300);
         });
@@ -1353,11 +1379,18 @@
         if(!CLOUD_URL || CLOUD_URL.includes("ISI_DENGAN")) return showPopup('alert', "Penyimpanan Cloud belum disetel!", 'var(--danger)');
         
         isNetworkProcessing = true; showPopup('loading', "Mencari daftar bulan di Cloud...\nMohon tunggu.", 'var(--cloud)');
-        const noCacheUrl = CLOUD_URL + "?action=listMonths&t=" + new Date().getTime();
+        const noCacheUrl = CLOUD_URL + "?action=listMonths&token=" + CLOUD_TOKEN + "&t=" + new Date().getTime();
         const controller = new AbortController(); const timeoutId = setTimeout(() => controller.abort(), 30000);
         
         fetch(noCacheUrl, { signal: controller.signal })
-        .then(res => { clearTimeout(timeoutId); if(!res.ok) throw new Error("Gagal"); return res.json(); })
+        .then(async res => { 
+            clearTimeout(timeoutId); if(!res.ok) throw new Error("Gagal HTTP"); 
+            const textRes = await res.text();
+            let dataRes;
+            try { dataRes = JSON.parse(textRes); } catch (e) { throw new Error("Server Google sedang sibuk atau respons tidak valid."); }
+            if (dataRes && dataRes.error) throw new Error(dataRes.error);
+            return dataRes;
+        })
         .then(months => {
             tutupModalAman('custom-modal');
             if(!months || months.length === 0) return showPopup('alert', "Belum ada data apa pun di Cloud.", 'var(--danger)');
@@ -1369,7 +1402,12 @@
             });
             document.getElementById('cloud-month-opts').innerHTML = htmlOpts; document.getElementById('cloud-month-trigger').innerText = "-- Pilih Bulan --"; document.getElementById('cloud-month-trigger').style.color = "var(--text-muted)"; document.getElementById('cloud-month-val').value = ""; document.getElementById('btn-execute-load-cloud').disabled = true; document.getElementById('cloud-load-modal').classList.remove('hidden'); document.body.classList.add('modal-open');
         })
-        .catch(err => { clearTimeout(timeoutId); showPopup('alert', "Gagal menyambung ke Cloud! Pastikan internet aktif.", 'var(--danger)'); })
+        .catch(err => { 
+            clearTimeout(timeoutId); 
+            let msg = err.message || "Gagal menyambung ke Cloud! Pastikan internet aktif.";
+            if (err.name === 'AbortError') msg = "Koneksi terlalu lambat (Timeout). Silakan cari sinyal yang lebih stabil.";
+            showPopup('alert', msg, 'var(--danger)'); 
+        })
         .finally(() => { isNetworkProcessing = false; });
     }
 
@@ -1378,9 +1416,9 @@
     function promptExecuteLoadCloud() {
         const selectedMonth = document.getElementById('cloud-month-val').value; if(!selectedMonth) return;
         closeCloudLoadModal(); const bulanIni = Utils.tglHariIni().substring(0, 7);
-        let pesanPeringatan = `Peringatan: Menarik data bulan ${selectedMonth} akan MENIMPA data lokal di bulan tersebut.\n\nLanjutkan?`, warnaTema = 'var(--cloud)';
+        let pesanPeringatan = `⚠️ PERINGATAN:\n\nMenarik data bulan ${selectedMonth} akan MENGHAPUS & MENIMPA semua data lokal Anda di bulan tersebut.\n\nLanjutkan?`, warnaTema = 'var(--cloud)';
         if (selectedMonth === bulanIni) {
-            pesanPeringatan = `⚠️ PERINGATAN KERAS! ⚠️\n\nAnda akan mengunduh data bulan ini (${selectedMonth}).\n\nJika Anda baru saja mencatat data baru di HP ini dan BELUM melakukan UPLOAD, catatan baru tersebut akan HILANG tertimpa data dari Cloud.\n\nSudah yakin ingin menimpa data lokal?`;
+            pesanPeringatan = `🚨 BAHAYA KEHILANGAN DATA! 🚨\n\nAnda akan menimpa data bulan ini (${selectedMonth}).\n\nJika Anda baru saja mencatat data baru di HP ini dan BELUM MENEKAN UPLOAD, catatan baru tersebut akan MUSNAH PERMANEN ditimpa data dari Cloud.\n\nLanjutkan penimpaan?`;
             warnaTema = 'var(--danger)';
         }
         showPopup('confirm', pesanPeringatan, warnaTema, () => { setTimeout(() => executeLoadCloud(selectedMonth), 300); });
@@ -1389,26 +1427,40 @@
     function executeLoadCloud(selectedMonth) {
         if (isNetworkProcessing) return showToast("Sedang memproses jaringan...", 'var(--cloud)');
         isNetworkProcessing = true; showPopup('loading', "Mengunduh data bulan " + selectedMonth + "...\nMohon tunggu.", 'var(--cloud)');
-        const noCacheUrl = CLOUD_URL + "?action=loadMonth&month=" + selectedMonth + "&t=" + new Date().getTime();
+        const noCacheUrl = CLOUD_URL + "?action=loadMonth&month=" + selectedMonth + "&token=" + CLOUD_TOKEN + "&t=" + new Date().getTime();
         const controller = new AbortController(); const timeoutId = setTimeout(() => controller.abort(), 30000);
         
         fetch(noCacheUrl, { signal: controller.signal })
         .then(async res => { 
             clearTimeout(timeoutId); if(!res.ok) throw new Error("Gagal HTTP: " + res.status); 
             const textResponse = await res.text();
-            try { return JSON.parse(textResponse); } catch (err) { throw new Error("Respons Server BUKAN JSON (Mungkin error jaringan Google)."); }
+            let dataRes;
+            try { dataRes = JSON.parse(textResponse); } catch (err) { throw new Error("Respons Server BUKAN JSON (Server Google Sibuk)."); }
+            if (dataRes && dataRes.error) throw new Error(dataRes.error);
+            return dataRes;
         })
         .then(data => {
             if(data && typeof data === 'object' && Array.isArray(data.income)) {
                 const backupDB = JSON.stringify(AppState.db);
                 try {
                     const isTargetMonth = (dateStr) => dateStr && dateStr.startsWith(selectedMonth);
-                    AppState.db.income = AppState.db.income.filter(i => !isTargetMonth(i.date));
-                    AppState.db.expense = AppState.db.expense.filter(e => !isTargetMonth(e.date));
-                    AppState.db.mutations = AppState.db.mutations.filter(m => !isTargetMonth(m.date));
+                    
+                    // 1. Ringkas Exemption (Data Ringkas kebal hapus)
+                    AppState.db.income = AppState.db.income.filter(i => !(isTargetMonth(i.date) && !String(i.id).startsWith('RINGKAS_')));
+                    AppState.db.expense = AppState.db.expense.filter(e => !(isTargetMonth(e.date) && !String(e.id).startsWith('RINGKAS_')));
+                    AppState.db.mutations = AppState.db.mutations.filter(m => !(isTargetMonth(m.date) && !String(m.id).startsWith('RINGKAS_')));
 
-                    data.income.forEach(i => AppState.db.income.push({...i, amount: Math.abs(Number(i.amount))}));
-                    data.expense.forEach(e => AppState.db.expense.push({...e, amount: Math.abs(Number(e.amount))}));
+                    // 2. Carryover Firewall (Cegah saldo ganda jika punya history lokal lampau)
+                    const hasLocalHistory = AppState.db.income.some(i => i.date < selectedMonth + "-01") || AppState.db.expense.some(e => e.date < selectedMonth + "-01");
+
+                    data.income.forEach(i => {
+                        if (String(i.id).startsWith('CARRYOVER_') && hasLocalHistory) return; 
+                        AppState.db.income.push({...i, amount: Math.abs(Number(i.amount))});
+                    });
+                    data.expense.forEach(e => {
+                        if (String(e.id).startsWith('CARRYOVER_') && hasLocalHistory) return;
+                        AppState.db.expense.push({...e, amount: Math.abs(Number(e.amount))});
+                    });
                     data.mutations.forEach(m => AppState.db.mutations.push({...m, amount: Math.abs(Number(m.amount))}));
                     
                     if (data.plots) {
@@ -1419,19 +1471,36 @@
                         });
                     }
 
+                    // 3. Absolute Delta Merge & Relational Garbage Collector
                     const mergeEkstraAman = (lokalArr, cloudArr) => {
                         if (!cloudArr || !Array.isArray(cloudArr)) return;
                         cloudArr.forEach(cItem => {
                             const idx = lokalArr.findIndex(lItem => lItem.id === cItem.id);
-                            if (idx === -1) { lokalArr.push(JSON.parse(JSON.stringify(cItem))); } 
-                            else {
-                                const lItem = lokalArr[idx];
-                                const safeLocalPayments = Array.isArray(lItem.paymentIds) ? lItem.paymentIds : [];
-                                const safeCloudPayments = Array.isArray(cItem.paymentIds) ? cItem.paymentIds : [];
-                                const mergedPayments = [...new Set([...safeLocalPayments, ...safeCloudPayments])];
-                                let finalStatus = (lItem.status === 'selesai' || cItem.status === 'selesai') ? 'selesai' : 'aktif';
-                                lokalArr[idx] = { ...cItem, nama: lItem.nama.length > cItem.nama.length ? lItem.nama : cItem.nama, paymentIds: mergedPayments, status: finalStatus };
-                            }
+                            let localPayments = (idx !== -1 && Array.isArray(lokalArr[idx].paymentIds)) ? lokalArr[idx].paymentIds : [];
+                            const cloudPayments = Array.isArray(cItem.paymentIds) ? cItem.paymentIds : [];
+
+                            const cloudSet = new Set(cloudPayments);
+                            const newLocalPayments = localPayments.filter(id => !cloudSet.has(id)); 
+                            const combinedPayments = [...cloudPayments, ...newLocalPayments];
+
+                            let totalTerbayarBaru = cItem.paidAmount || 0;
+                            let validPayments = [];
+
+                            combinedPayments.forEach(pid => {
+                                const trx = AppState.db.expense.find(x => x.id === pid) || AppState.db.income.find(x => x.id === pid);
+                                if (trx) {
+                                    validPayments.push(pid);
+                                    if (newLocalPayments.includes(pid)) {
+                                        totalTerbayarBaru += trx.amount;
+                                    }
+                                }
+                            });
+
+                            const finalStatus = (cItem.amount - totalTerbayarBaru <= 100) ? 'selesai' : 'aktif';
+                            const mergedObj = { ...cItem, paymentIds: validPayments, paidAmount: totalTerbayarBaru, status: finalStatus };
+
+                            if (idx === -1) { lokalArr.push(mergedObj); } 
+                            else { mergedObj.nama = lokalArr[idx].nama.length > cItem.nama.length ? lokalArr[idx].nama : cItem.nama; lokalArr[idx] = mergedObj; }
                         });
                     };
 
@@ -1442,11 +1511,16 @@
                     kalkulasiUlangSemuaSaldo(); 
                     simpanDatabase(); limitRekapIn = 15; limitRekapOut = 15;
                     updateRekap(); updatePlotList(); updateWalletDropdownBalances();
-                    tutupModalAman('custom-modal'); showToast("Data bulan " + selectedMonth + " berhasil ditarik!", 'var(--cloud)');
+                    tutupModalAman('custom-modal'); showToast("Data bulan " + selectedMonth + " berhasil di load!", 'var(--cloud)');
                 } catch (e) { AppState.db = JSON.parse(backupDB); showPopup('alert', "Gagal memproses data! Memori HP penuh atau data rusak. Sistem dikembalikan ke awal.", 'var(--danger)'); }
             } else { showPopup('alert', "Struktur data di Cloud tidak valid atau kosong.", 'var(--danger)'); }
         })
-        .catch(err => { clearTimeout(timeoutId); showPopup('alert', "Gagal mengunduh: " + err.message, 'var(--danger)'); })
+        .catch(err => { 
+            clearTimeout(timeoutId); 
+            let msg = err.message || "Gagal mengunduh: Kesalahan Jaringan.";
+            if (err.name === 'AbortError') msg = "Koneksi terlalu lambat (Timeout). Silakan cari sinyal yang lebih stabil.";
+            showPopup('alert', msg, 'var(--danger)'); 
+        })
         .finally(() => { isNetworkProcessing = false; });
     }
 
@@ -1472,7 +1546,7 @@
         ['in-desc', 'in-amount', 'out-desc', 'out-amount', 'rekap-search'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; }); 
         setCustomVal('in-wallet', 'in-wallet-trigger', 'in-wallet-opts', 'Tunai'); setCustomVal('out-wallet', 'out-wallet-trigger', 'out-wallet-opts', 'Tunai'); setCustomVal('out-plot', 'out-plot-trigger', 'out-plot-opts', '', '-- Tanpa Plot --');
         updateWalletDropdownBalances(); showPage(null, 'pemasukan', 0); 
-        limitRekapIn = 15; limitRekapOut = 15; updateRekap(); updatePlotList(); showToast("✨ Formulir telah dibersihkan!", 'var(--wa-green)');
+        limitRekapIn = 15; limitRekapOut = 15; updateRekap(); updatePlotList(); showToast("Formulir telah dibersihkan!", 'var(--wa-green)');
     }
 
     function updateWalletDropdownBalances() {
@@ -1517,7 +1591,7 @@
         const triggerEl = document.getElementById(triggerId);
         let displayTxt = customDisplay !== null ? customDisplay : (nilai === "" ? "-- Tanpa Plot --" : nilai);
         
-        if (['out-plot', 'edit-plot-val'].includes(inputId)) {
+        if (['out-plot', 'edit-plot-val', 'cicil-plot'].includes(inputId)) {
              if (nilai !== "") {
                  const plotObj = AppState.db.plots.find(p => p.id === nilai);
                  displayTxt = plotObj ? (customDisplay !== null ? customDisplay : `${plotObj.name} (Rp ${plotObj.target.toLocaleString('id-ID')})`) : (inputEl.value = "", "-- Tanpa Plot --");
@@ -1595,7 +1669,7 @@
         const hrIni = Utils.tglHariIni(), dateEl = document.getElementById(`${pfx}-date`);
         if(dateEl) { dateEl.dataset.rawDate = hrIni; dateEl.value = Utils.formatTglTampil(hrIni); }
 
-        limitRekapIn = 15; limitRekapOut = 15; updateRekap(); updateWalletDropdownBalances(); showToast("Catatan berhasil disimpan!", warnaTema); 
+        limitRekapIn = 15; limitRekapOut = 15; updateRekap(); updateWalletDropdownBalances(); showToast("Berhasil Simpan!", warnaTema); 
     }
 
     function saveData(event, tipe) {
@@ -1630,7 +1704,9 @@
     }
 
     function editData(tipe, idItem) {
+        if (String(idItem).includes('CARRYOVER_')) return showPopup('alert', 'Batal: Saldo Pindahan dari Cloud dikunci oleh sistem dan tidak dapat diedit secara manual.', 'var(--danger)');
         if (tipe === 'mutations') return showPopup('alert', "Mutasi tidak bisa diedit. Hapus (✖) dan buat ulang.", '#ffffff');
+        
         const ekstraTerkait = [...AppState.db.pengingat, ...AppState.db.hutang, ...AppState.db.piutang, ...AppState.db.spaylater, ...AppState.db.spinjam];
         const isAwal = ekstraTerkait.some(x => x.incomeId === idItem || x.expenseId === idItem), isCicilan = ekstraTerkait.some(x => x.paymentIds && x.paymentIds.includes(idItem));
         
@@ -1693,6 +1769,8 @@
 
     function deleteItem(event, tipe, idItem) {
         event.stopPropagation(); if (isGlobalSubmitting) return; 
+        if (String(idItem).includes('CARRYOVER_')) return showPopup('alert', 'Batal: Saldo Pindahan dari Cloud dikunci oleh sistem dan tidak dapat dihapus secara manual.', 'var(--danger)');
+        
         const ekstraTerkait = [...AppState.db.pengingat, ...AppState.db.hutang, ...AppState.db.piutang, ...AppState.db.spaylater, ...AppState.db.spinjam];
         if (ekstraTerkait.some(x => x.incomeId === idItem || x.expenseId === idItem) || ekstraTerkait.some(x => x.paymentIds && x.paymentIds.includes(idItem))) return showPopup('alert', 'Batal: Ini Riwayat Menu Ekstra! Hapus langsung melalui Menu Titik Empat.', 'var(--danger)');
 
@@ -1718,7 +1796,6 @@
             const btnBatal = document.getElementById('modal-btn-cancel'); if (btnBatal) { const originalClick = btnBatal.onclick; btnBatal.onclick = () => { if (originalClick) originalClick(); isGlobalSubmitting = false; }; }
         } catch (e) { isGlobalSubmitting = false; }
     }
-
     function openMutationModal() { 
         tutupSemuaMenuDrop(); document.getElementById('mutation-modal').classList.remove('hidden'); document.body.classList.add('modal-open');
         const mutDateEl = document.getElementById('mut-date'); if (mutDateEl) { const hrIni = Utils.tglHariIni(); mutDateEl.dataset.rawDate = hrIni; mutDateEl.value = Utils.formatTglTampil(hrIni); }
@@ -1785,6 +1862,7 @@
             simpanDatabase(); updatePlotList(); updateRekap(); buildPlotOptions('out-plot-opts', 'out-plot-trigger', 'out-plot'); buildPlotOptions('edit-plot-opts', 'edit-plot-trigger', 'edit-plot-val'); showToast("Plot dihapus!", 'var(--danger)');
         });
     }
+    
     function updatePlotList() {
         const filterEl = document.getElementById('plot-month-filter'); if(!filterEl) return;
         const filterBulan = filterEl.dataset.rawDate, wadah = document.getElementById('plot-list');
@@ -2118,16 +2196,29 @@
         XLSX.writeFile(wb, `uang_famBARLA_Backup_${Utils.tglHariIni()}.xlsx`);
     }
 
-    function parseExcelDate(val) {
+        function parseExcelDate(val) {
         if (!val) return null;
+        // Penanganan format Serial Number Excel
         if (!isNaN(val)) { 
-            let days = Math.floor(val); if (days < 60) days++; else if (days === 60) return "1900-02-28"; 
+            let days = Math.floor(val); 
+            if (days < 60) days++; 
+            else if (days === 60) return "1900-02-28"; 
             return new Date(Date.UTC(1899, 11, 30 + days, 12, 0, 0)).toISOString().split('T')[0]; 
         }
+        // Penanganan format String/Teks dengan Deteksi Cerdas
         if (typeof val === 'string') { 
             let p = val.split(/[-/]/); 
-            if (p.length === 3) { 
-                if (p[2].length === 4) { let m = parseInt(p[1], 10); return m > 12 ? `${p[2]}-${p[0].padStart(2,'0')}-${p[1].padStart(2,'0')}` : `${p[2]}-${p[1].padStart(2,'0')}-${p[0].padStart(2,'0')}`; }
+            if (p.length === 3) {
+                // Logika: Jika formatnya DD-MM-YYYY (Contoh: 31-12-2026)
+                if (p[2].length === 4) {
+                    let d = parseInt(p[0], 10);
+                    let m = parseInt(p[1], 10);
+                    // Cek jika posisi 0 adalah Bulan (MM/DD/YYYY)
+                    if (m > 12 || (d > 12 && m <= 12)) return `${p[2]}-${p[0].padStart(2,'0')}-${p[1].padStart(2,'0')}`;
+                    // Default anggap format DD/MM/YYYY
+                    return `${p[2]}-${p[1].padStart(2,'0')}-${p[0].padStart(2,'0')}`;
+                }
+                // Jika formatnya YYYY-MM-DD
                 if (p[0].length === 4) return `${p[0]}-${p[1].padStart(2,'0')}-${p[2].padStart(2,'0')}`; 
             } 
         }
@@ -2257,8 +2348,8 @@
             const validDateStr = (AppState.tempImport.length > 0 && parseExcelDate(AppState.tempImport[0].Tanggal)) || Utils.tglHariIni();
 
             Object.keys(kalk).forEach(d => { 
-                if (kalk[d] > 0) AppState.db.income.push({ id: Utils.buatId(), date: validDateStr, desc: `Saldo Awal Ringkas`, amount: Math.abs(kalk[d]), wallet: d }); 
-                else if (kalk[d] < 0) AppState.db.expense.push({ id: Utils.buatId(), date: validDateStr, desc: `Koreksi Saldo Ringkas`, amount: Math.abs(kalk[d]), wallet: d, plotId: "" }); 
+                if (kalk[d] > 0) AppState.db.income.push({ id: 'RINGKAS_' + Utils.buatId(), date: validDateStr, desc: `Saldo Awal Ringkas`, amount: Math.abs(kalk[d]), wallet: d }); 
+                else if (kalk[d] < 0) AppState.db.expense.push({ id: 'RINGKAS_' + Utils.buatId(), date: validDateStr, desc: `Koreksi Saldo Ringkas`, amount: Math.abs(kalk[d]), wallet: d, plotId: "" }); 
             });
         }
         
@@ -2636,6 +2727,16 @@
         
         const btnProses = document.getElementById('btn-proses-cicil-extra'); 
         btnProses.innerText = cfg.btn; btnProses.style.cssText = `background-color: #222222 !important; color: ${cfg.warna} !important; border: 1px solid ${cfg.warna} !important;`; document.getElementById('btn-batal-cicil-extra').style.cssText = `background-color: #222222 !important; color: ${cfg.warna} !important; border: 1px solid ${cfg.warna} !important;`;
+        
+        // Injeksi: Menampilkan opsi Plot hanya jika pembayaran mengurangi dompet (Expense)
+        if (cfg.klr === 'expense') {
+            document.getElementById('cicil-plot-group').style.display = 'block';
+            buildPlotOptions('cicil-plot-opts', 'cicil-plot-trigger', 'cicil-plot');
+            setCustomVal('cicil-plot', 'cicil-plot-trigger', 'cicil-plot-opts', '');
+        } else {
+            document.getElementById('cicil-plot-group').style.display = 'none';
+        }
+
         setCustomVal('cicil-wallet','cicil-wallet-trigger','cicil-wallet-opts','Tunai');
         document.getElementById('extra-cicil-modal').classList.remove('hidden');
     }
@@ -2650,6 +2751,7 @@
 
         const rawBayar = document.getElementById('cicil-nominal').value.trim(), bayar = Math.abs(Math.round(Number(rawBayar.replace(/[^\d]/g, ''))));
         const sisaSaatIni = Math.round(dataExt.amount - (dataExt.paidAmount || 0));
+        const plotCicil = document.getElementById('cicil-plot').value || ""; // Tangkap plot untuk cicilan
         
         if (bayar <= 0 || isNaN(bayar)) { showPopup('alert', 'Nominal bayar tidak valid!', 'var(--danger)'); return resetGlobalSubmit(); }
         if (bayar > sisaSaatIni) { showPopup('alert', `Batal: Maksimal pembayaran adalah sisa tagihan (${Utils.formatRp(sisaSaatIni)})!`, 'var(--danger)'); return resetGlobalSubmit(); }
@@ -2665,7 +2767,7 @@
                 let labelItem = dataExt.nama; const extracted = Utils.extractNameAndNote(labelItem);
                 if (!extracted.note && dataExt.catatan) labelItem = `${dataExt.nama} (${dataExt.catatan})`;
 
-                AppState.db[cfg.klr].push({ id: idBayar, date: Utils.tglHariIni(), desc: `${txtKlr}${labelItem}`, amount: bayar, wallet: dompet, plotId: "" });
+                AppState.db[cfg.klr].push({ id: idBayar, date: Utils.tglHariIni(), desc: `${txtKlr}${labelItem}`, amount: bayar, wallet: dompet, plotId: cfg.klr === 'expense' ? plotCicil : "" });
                 ubahSaldoDelta(dompet, bayar, cfg.klr === 'income'); 
 
                 const sisaSetelahBayar = Math.round(dataExt.amount - dataExt.paidAmount);
@@ -2791,11 +2893,10 @@
         if (warningList.length > 0) { setTimeout(() => { showPopup('alert', "PENGINGAT PEMBAYARAN:\n\n" + warningList.join('\n\n'), 'var(--danger)'); localStorage.setItem('FamBarla_LastNotif', hariIniStr); }, 1500); }
     }
 
-         function kirimWA(id) {
+    function kirimWA(id) {
         const dataExt = AppState.db[ModeEkstraAktif].find(x => x.id === id); if (!dataExt || !dataExt.noWA) return;
         let noWA = dataExt.noWA.replace(/\D/g, ''); if (noWA.startsWith('0')) noWA = '62' + noWA.substring(1);
 
-        // --- FORMAT GABUNGAN: SPAYLATER, TITIPAN, & HUTANG ---
         if (ModeEkstraAktif === 'spaylater' || ModeEkstraAktif === 'pengingat' || ModeEkstraAktif === 'hutang') {
             const tagihanTerkait = AppState.db[ModeEkstraAktif].filter(x => x.noWA === dataExt.noWA && x.status !== 'selesai');
             let totalSisaSekarang = 0, totalTagihanBulanIni = 0, rincianBarang = "";
@@ -2814,7 +2915,6 @@
                     totalTagihanBulanIni += itemTagihanBulanIni;
                     rincianBarang += `• *${namaBarang}* (Total Harga: Rp ${item.amount.toLocaleString('id-ID')})\n  Tenor Keseluruhan: ${itemTenor} Bulan | Sisa Tenor: ${itemSisaTenor} Bulan\n  Sisa Tagihan: Rp ${itemSisaSekarang.toLocaleString('id-ID')} | Cicilan Bulan Ini: *Rp ${itemTagihanBulanIni.toLocaleString('id-ID')}*\n\n`;
                 } else if (ModeEkstraAktif === 'pengingat') {
-                    // REVISI: Baris "Telah Dibayarkan/Dikembalikan" dihapus agar lebih rapi untuk nota Titipan
                     rincianBarang += `• *${namaBarang}* (Titipan Uang: Rp ${item.amount.toLocaleString('id-ID')})\n  Sisa Titipan: *Rp ${itemSisaSekarang.toLocaleString('id-ID')}*\n\n`;
                 } else if (ModeEkstraAktif === 'hutang') {
                     const tglJatuhTempoItem = item.dueDate ? Utils.formatTglTampil(item.dueDate) : '-';
@@ -2836,7 +2936,6 @@
             window.open(`https://wa.me/${noWA}?text=${encodeURIComponent(pesan)}`, '_blank'); return; 
         }
 
-        // --- FORMAT INDIVIDU: SPINJAM ---
         if (ModeEkstraAktif === 'spinjam') {
             const tenor = Math.max(1, parseInt(dataExt.tenor) || 1), tagihanBulananNormal = Math.max(1, Math.floor(dataExt.amount / tenor));
             const sisaSekarang = Math.round(dataExt.amount - (dataExt.paidAmount || 0)), bulanLunas = Math.floor((dataExt.paidAmount || 0) / tagihanBulananNormal);
@@ -2853,7 +2952,6 @@
             window.open(`https://wa.me/${noWA}?text=${encodeURIComponent(pesan)}`, '_blank'); return;
         }
 
-        // --- FORMAT INDIVIDU: PIUTANG UMUM ---
         const tglJatuhTempo = dataExt.dueDate ? Utils.formatTglTampil(dataExt.dueDate) : '-';
         const sisaSekarang = Math.round(dataExt.amount - (dataExt.paidAmount || 0));
         let keteranganBarang = ''; if (dataExt.catatan) keteranganBarang = `${dataExt.catatan}`; else { const extractedOuter = Utils.extractNameAndNote(dataExt.nama); if(extractedOuter.note) keteranganBarang = `${extractedOuter.note}`; else keteranganBarang = "-"; }
