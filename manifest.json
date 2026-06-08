@@ -1,14 +1,18 @@
 {
-  "id": "/uang-fambarla/",
+  "id": "/",
   "name": "uang famBARLA",
   "short_name": "My Money",
   "description": "Aplikasi Manajemen Keuangan Pribadi famBARLA",
-  "start_url": "./index.html",
+  "start_url": "./",
   "scope": "./",
   "display": "standalone",
-  "background_color": "#000000",
-  "theme_color": "#000000",
-  "orientation": "portrait",
+  "display_override": [
+    "window-controls-overlay",
+    "standalone"
+  ],
+  "background_color": "#111111",
+  "theme_color": "#111111",
+  "orientation": "portrait-primary",
   "lang": "id-ID",
   "icons": [
     {
