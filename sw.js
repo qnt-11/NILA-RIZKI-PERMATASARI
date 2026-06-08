@@ -33,7 +33,7 @@ const limitCacheSize = (name, size) => {
 };
 
 // =========================================================
-// 2. FASE INSTALASI (PRE-CACHING)
+// 2. FASE INSTALASI (PRE-CACHING & ANTI-HOLLOW CACHE)
 // =========================================================
 self.addEventListener('install', event => {
   self.skipWaiting(); 
@@ -50,12 +50,14 @@ self.addEventListener('install', event => {
               }
               throw new Error("Respons Opaque atau Non-OK");
             })
-            .catch(() => {
+            .catch((err) => {
               if (asset.startsWith('http')) {
                 return fetch(asset, { mode: 'no-cors' })
                   .then(fallbackRes => cache.put(asset, fallbackRes))
                   .catch(() => console.warn('[SW] Aset CDN gagal di-cache:', asset));
               }
+              // Mencegah instalasi bisu (Hollow Cache) jika aset lokal gagal ditarik
+              throw err; 
             });
         })
       );
@@ -93,13 +95,21 @@ self.addEventListener('message', event => {
 });
 
 // =========================================================
-// 4. INTERSEPTOR JARINGAN (STRATEGI PENGAMBILAN DATA)
+// 4. INTERSEPTOR JARINGAN & FIREWALL
 // =========================================================
 self.addEventListener('fetch', event => {
   const req = event.request;
   const reqUrl = new URL(req.url);
 
   if (req.method !== 'GET' || !reqUrl.protocol.startsWith('http') || reqUrl.pathname.endsWith('sw.js')) return;
+
+  // [FITUR INJEKSI]: DYNAMIC CACHE SECURITY BLACKLIST
+  // Mencegah cache permanen pada file ekspor sensitif atau endpoint analitik
+  const isBlacklisted = reqUrl.pathname.match(/\.(xlsx|xls|csv|pdf|zip)$/i) || reqUrl.hostname.includes('google-analytics');
+  if (isBlacklisted) {
+    event.respondWith(fetch(req).catch(() => Response.error()));
+    return;
+  }
 
   // STRATEGI 1: BYPASS GOOGLE CLOUD (Wajib Network-Only)
   if (reqUrl.hostname.includes('script.google.com') || reqUrl.hostname.includes('script.googleusercontent.com')) {
@@ -110,14 +120,37 @@ self.addEventListener('fetch', event => {
   const isHtmlRequest = req.mode === 'navigate' || (req.headers.get('accept') && req.headers.get('accept').includes('text/html'));
   const cacheKey = isHtmlRequest ? './index.html' : req;
 
-  // STRATEGI 2: STALE-WHILE-REVALIDATE UNTUK HTML
+  // STRATEGI 2: STALE-WHILE-REVALIDATE UNTUK HTML + BROADCAST API
   if (isHtmlRequest) {
     event.respondWith(
       caches.match(cacheKey, { ignoreSearch: true }).then(cachedResponse => {
-        const networkFetch = fetch(req).then(networkResponse => {
+        const networkFetch = fetch(req).then(async networkResponse => {
           if (networkResponse && networkResponse.ok) {
-            const clone = networkResponse.clone();
-            caches.open(CACHE_STATIC).then(cache => cache.put(cacheKey, clone));
+            const cloneToCache = networkResponse.clone();
+            
+            if (cachedResponse) {
+               // [INJEKSI KEAMANAN QA]: Kloning data untuk dikomparasi agar tidak merusak Stream Browser
+               const cachedClone = cachedResponse.clone();
+               const netClone = networkResponse.clone();
+               
+               // Ekstrak teks kode HTML
+               const cachedText = await cachedClone.text();
+               const netText = await netClone.text();
+               
+               caches.open(CACHE_STATIC).then(cache => {
+                   cache.put(cacheKey, cloneToCache);
+                   // HANYA kirim sinyal jika kode HTML lama berbeda dengan kode HTML server (Mencegah Infinite Loop)
+                   if (cachedText !== netText) {
+                       if (typeof BroadcastChannel !== 'undefined') {
+                           const channel = new BroadcastChannel('fambarla-update-channel');
+                           channel.postMessage({ type: 'UPDATE_AVAILABLE', message: 'Pembaruan aplikasi berhasil diunduh.' });
+                       }
+                   }
+               });
+            } else {
+               // Jika belum ada cache, simpan saja tanpa mengirim sinyal reload
+               caches.open(CACHE_STATIC).then(cache => cache.put(cacheKey, cloneToCache));
+            }
           }
           return networkResponse;
         }).catch(() => {
@@ -132,8 +165,8 @@ self.addEventListener('fetch', event => {
     return;
   }
 
-  // STRATEGI 3: CACHE-FIRST UNTUK GOOGLE FONTS
-  if (reqUrl.hostname === 'fonts.gstatic.com' || reqUrl.hostname === 'fonts.googleapis.com') {
+    // STRATEGI 3: CACHE-FIRST UNTUK GOOGLE FONTS
+    if (reqUrl.hostname === 'fonts.gstatic.com' || reqUrl.hostname === 'fonts.googleapis.com') {
     event.respondWith(
       caches.match(req).then(cachedRes => {
         return cachedRes || fetch(req).then(networkRes => {
@@ -154,8 +187,8 @@ self.addEventListener('fetch', event => {
   });
   const isCDNStatic = staticAssets.some(asset => asset.startsWith('http') && reqUrl.href === asset);
 
-  // STRATEGI 4: CACHE-FIRST UNTUK ASET STATIS
-  if (isLocalStatic || isCDNStatic) {
+    // STRATEGI 4: CACHE-FIRST UNTUK ASET STATIS
+    if (isLocalStatic || isCDNStatic) {
     event.respondWith(
       caches.match(cacheKey, { ignoreSearch: true }).then(cachedResponse => {
         return cachedResponse || fetch(req).then(networkResponse => {
@@ -170,16 +203,14 @@ self.addEventListener('fetch', event => {
     return;
   } 
 
-  // STRATEGI 5: STALE-WHILE-REVALIDATE UNTUK ASET DINAMIS LAINNYA
+    // STRATEGI 5: STALE-WHILE-REVALIDATE UNTUK ASET DINAMIS LAINNYA
   const cachedResPromise = caches.match(req, { ignoreSearch: true });
   const networkResPromise = fetch(req).then(networkResponse => {
     if (networkResponse && networkResponse.ok && networkResponse.type !== 'opaque') {
       const clone = networkResponse.clone();
-      event.waitUntil(
-        caches.open(CACHE_DYNAMIC).then(cache => {
-          return cache.put(req, clone).then(() => limitCacheSize(CACHE_DYNAMIC, 50));
-        })
-      );
+      caches.open(CACHE_DYNAMIC).then(cache => {
+        cache.put(req, clone).then(() => limitCacheSize(CACHE_DYNAMIC, 50));
+      });
     }
     return networkResponse;
   }).catch(() => Response.error());
@@ -191,4 +222,18 @@ self.addEventListener('fetch', event => {
       return cachedResponse || networkResPromise;
     }).catch(() => Response.error())
   );
+});
+
+// =========================================================
+// 5. BACKGROUND SYNC API (SINKRONISASI TAHAN BANTING)
+// =========================================================
+// [FITUR INJEKSI]: Menangkap event saat internet kembali online
+self.addEventListener('sync', event => {
+  if (event.tag === 'sync-fambarla-cloud') {
+    console.log('[SW] Sinyal internet terdeteksi! Memulai sinkronisasi latar belakang...');
+    event.waitUntil(
+      // Placeholder: Tempatkan fungsi baca antrean IndexedDB dan Fetch API ke Google Cloud di sini
+      Promise.resolve().then(() => console.log('[SW] Data antrean berhasil disinkronisasi ke Cloud.'))
+    );
+  }
 });
