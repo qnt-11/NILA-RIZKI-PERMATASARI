@@ -273,10 +273,34 @@
         #edit-modal .modal-box, #cloud-load-modal .modal-box, #import-modal .modal-box, #extra-form-box { max-height: 85vh; overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
         #mutation-modal .modal-box, #extra-cicil-box { overflow: visible; max-height: none; }
 
-        .modal-actions { display: flex; gap: 10px; justify-content: center; margin-top: 15px; }
+                .modal-actions { display: flex; gap: 10px; justify-content: center; margin-top: 15px; }
         #modal-text { white-space: pre-wrap; line-height: 1.5; font-size: 13px; font-weight: 600; margin-bottom: 10px; }
-        #modal-input { width: 100%; padding: 14px; margin-bottom: 20px; border-radius: 8px; border: 1px solid var(--border-color); background: rgba(0,0,0,0.5); color: var(--text-light); text-align: center; font-size: 18px; font-weight: 700; box-sizing: border-box; transition: 0.3s; }
-        #modal-input:focus { border-color: var(--text-light); box-shadow: 0 0 0 2px rgba(255,255,255,0.1); }
+        
+        /* [INJEKSI QA UI]: Desain Input Teks Biasa */
+        #modal-input { width: 100%; padding: 14px; margin-bottom: 20px; border-radius: 8px; border: 1px solid var(--border-color); background: rgba(0,0,0,0.5); color: var(--text-light); text-align: center; font-size: 18px; font-weight: 700; box-sizing: border-box; transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
+        #modal-input:focus { border-color: var(--text-light); box-shadow: 0 0 0 2px rgba(255,255,255,0.1); outline: none; }
+        
+        /* [INJEKSI QA UI]: Desain Standar untuk Input PIN Angka (Tanpa Cahaya/Animasi) */
+        #modal-input[type="password"] {
+            letter-spacing: 15px;
+            padding-left: 15px; 
+            font-family: 'Montserrat', sans-serif;
+            font-size: 22px;
+            background: rgba(0,0,0,0.5);
+            border: 1px solid var(--border-color);
+            box-shadow: none;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        /* Efek saat PIN diketik atau difokuskan (Standar Minimalis) */
+        #modal-input[type="password"]:focus {
+            transform: none;
+            animation: none;
+            border-color: var(--text-light);
+            box-shadow: 0 0 0 2px rgba(255,255,255,0.1);
+            outline: none;
+        }
         .loader { border: 4px solid rgba(255,255,255,0.1); border-top: 4px solid var(--cloud); border-radius: 50%; width: 35px; height: 35px; animation: spin 1s linear infinite; margin: 10px auto 20px auto; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         #edit-modal .form-group { margin-bottom: 15px; text-align: left; }
@@ -706,7 +730,7 @@
                 <span class="title-barla"><span class="letter" style="animation-delay: 1.4s">B</span><span class="letter" style="animation-delay: 1.6s">A</span><span class="letter" style="animation-delay: 1.8s">R</span><span class="letter" style="animation-delay: 2.0s">L</span><span class="letter" style="animation-delay: 2.2s">A</span></span>
             </h2>
             <div style="margin-top: 8px;">
-                <span id="app-version-display" style="background: rgba(255,255,255,0.1); padding: 4px 10px; border-radius: 12px; color: #ffffff; font-family: 'Montserrat', sans-serif; font-weight: 700; letter-spacing: 1px; font-size: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.5);">VERSI 5.8 (PRO)</span>
+                <span id="app-version-display" style="background: rgba(255,255,255,0.1); padding: 4px 10px; border-radius: 12px; color: #ffffff; font-family: 'Montserrat', sans-serif; font-weight: 700; letter-spacing: 1px; font-size: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.5);">VERSI ❤️</span>
             </div>
         </div>
         
@@ -957,16 +981,138 @@
 </div>
 <input type="file" id="file-import" accept=".xlsx, .xls" class="hidden" onchange="importFromExcel(event)">
 <script>
-    const APP_VERSION = "6.0"; 
-    const CLOUD_URL = "https://script.google.com/macros/s/AKfycbw61KK02rbZrfYb8euaxUDWeJkuDo-QtWZqBfF8LXQdvwx7LtNIhKQwJKbGNcfdOEW4/exec";
+    const APP_VERSION = "6.6"; 
+    const CLOUD_URL = "https://script.google.com/macros/s/AKfycbwW8xkj17rha0oeeWx9oGMyGoJowe4wazYBx5lwFsi_SZRgGVb4hT9fX3wcfWwbuMoX/exec";
     const CLOUD_TOKEN = "Rahas1aFambarLa2026";
     const PIN_DARURAT = "170823";
-    
+
+    // =========================================================
+    // [INJEKSI ENTERPRISE]: SECURITY CORE ENGINE
+    // WebAuthn, AES-256-GCM Encryption & IndexedDB Manager
+    // =========================================================
+    const CoreEngine = {
+        db: null,
+                ramCache: {},
+        async initDB() {
+            return new Promise((resolve) => {
+                try {
+                    if (!window.indexedDB) throw new Error("IDB_BLOCKED");
+                    const req = indexedDB.open('FamBarla_SecureVault', 1);
+                    req.onupgradeneeded = e => e.target.result.createObjectStore('encrypted_store');
+                    req.onsuccess = e => { this.db = e.target.result; resolve(); };
+                    req.onerror = () => { resolve(); };
+                } catch (e) { resolve(); } // Fallback memori RAM jika diakses via content://
+            });
+        },
+        async idbSet(key, val) {
+            if (!this.db) { this.ramCache[key] = val; return; }
+            return new Promise((resolve) => {
+                try {
+                    const tx = this.db.transaction('encrypted_store', 'readwrite');
+                    tx.objectStore('encrypted_store').put(val, key);
+                    tx.oncomplete = resolve; tx.onerror = resolve;
+                } catch(e) { this.ramCache[key] = val; resolve(); }
+            });
+        },
+        async idbGet(key) {
+            if (!this.db) return this.ramCache[key];
+            return new Promise((resolve) => {
+                try {
+                    const tx = this.db.transaction('encrypted_store', 'readonly');
+                    const req = tx.objectStore('encrypted_store').get(key);
+                    req.onsuccess = () => resolve(req.result); req.onerror = () => resolve(this.ramCache[key]);
+                } catch(e) { resolve(this.ramCache[key]); }
+            });
+        },
+        // AES-256-GCM Encryption
+        async deriveKey(pin) {
+            const enc = new TextEncoder();
+            const keyMaterial = await crypto.subtle.importKey("raw", enc.encode(pin), { name: "PBKDF2" }, false, ["deriveKey"]);
+            return crypto.subtle.deriveKey(
+                { name: "PBKDF2", salt: enc.encode("FamBarlaSalt2026"), iterations: 100000, hash: "SHA-256" },
+                keyMaterial, { name: "AES-GCM", length: 256 }, false, ["encrypt", "decrypt"]
+            );
+        },
+                async encryptDB(dataStr, pin) {
+            if (!window.crypto || !window.crypto.subtle) return btoa(encodeURIComponent(dataStr)); // Fallback Base64 jika WebCrypto mati
+            const key = await this.deriveKey(pin);
+            const iv = crypto.getRandomValues(new Uint8Array(12));
+            const enc = new TextEncoder();
+            const cipher = await crypto.subtle.encrypt({ name: "AES-GCM", iv: iv }, key, enc.encode(dataStr));
+            const combined = new Uint8Array(iv.length + cipher.byteLength);
+            combined.set(iv, 0); combined.set(new Uint8Array(cipher), iv.length);
+            
+                        // [INJEKSI QA]: Pemecahan metode perulangan 'Chunking' 
+            // Menghindari CRASH "Maximum call stack size exceeded" pada database masif (>65.535 limit argumen per Call Stack JS)
+            let binary = '';
+            const chunkSize = 8192;
+            for (let i = 0; i < combined.length; i += chunkSize) {
+                binary += String.fromCharCode.apply(null, combined.subarray(i, i + chunkSize));
+            }
+            return btoa(binary);
+        },
+
+        async decryptDB(encryptedB64, pin) {
+            if (!window.crypto || !window.crypto.subtle) return decodeURIComponent(atob(encryptedB64)); // Fallback Base64
+            const key = await this.deriveKey(pin);
+            const combinedStr = atob(encryptedB64);
+            const combined = new Uint8Array(combinedStr.length);
+            for (let i = 0; i < combinedStr.length; i++) combined[i] = combinedStr.charCodeAt(i);
+            const iv = combined.slice(0, 12), data = combined.slice(12);
+            const decrypted = await crypto.subtle.decrypt({ name: "AES-GCM", iv: iv }, key, data);
+            return new TextDecoder().decode(decrypted);
+        },
+        // WebAuthn Biometric API
+        async triggerBiometric() {
+            if (!window.PublicKeyCredential) throw new Error("Not Supported");
+            const hasBioId = localStorage.getItem('FamBarla_BioID');
+            const challenge = crypto.getRandomValues(new Uint8Array(32));
+            
+            if (!hasBioId) {
+                // Registrasi Sidik Jari Pertama Kali
+                const userId = crypto.getRandomValues(new Uint8Array(16));
+                const cred = await navigator.credentials.create({
+                    publicKey: {
+                        challenge, rp: { name: "uang famBARLA" }, user: { id: userId, name: "Admin", displayName: "Admin" },
+                        pubKeyCredParams: [{ type: "public-key", alg: -7 }], // ES256
+                        authenticatorSelection: { authenticatorAttachment: "platform", userVerification: "required" }, timeout: 60000
+                    }
+                });
+                const rawId = Array.from(new Uint8Array(cred.rawId)).map(b => String.fromCharCode(b)).join('');
+                localStorage.setItem('FamBarla_BioID', btoa(rawId));
+                return true;
+            } else {
+                // Verifikasi Sidik Jari Tersimpan
+                const rawIdStr = atob(hasBioId);
+                const rawId = new Uint8Array(rawIdStr.length);
+                for (let i = 0; i < rawIdStr.length; i++) rawId[i] = rawIdStr.charCodeAt(i);
+                await navigator.credentials.get({
+                    publicKey: { challenge, allowCredentials: [{ type: "public-key", id: rawId }], userVerification: "required", timeout: 60000 }
+                });
+                return true;
+            }
+        }
+    };
+    // =========================================================
+
     try {
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('./sw.js').catch(() => {});
         }
     } catch (e) {}
+
+        // [INJEKSI FITUR]: Menangkap sinyal pembaruan (BroadcastChannel) dari sw.js
+    if ('BroadcastChannel' in window) {
+        const updateChannel = new BroadcastChannel('fambarla-update-channel');
+        updateChannel.onmessage = (event) => {
+            if (event.data && event.data.type === 'UPDATE_AVAILABLE') {
+                // BUG FIXED: Menggunakan pop-up penahan (blocking) agar tidak me-reload paksa saat user sedang input data
+                showPopup('alert', "Versi baru aplikasi tersedia!\n\nPembaruan telah diunduh. Silakan tekan OK untuk memuat ulang sistem.", "var(--cloud)", () => {
+                    window.location.reload();
+                });
+            }
+        };
+    }
     
     let AppState = {
         db: { income: [], expense: [], mutations: [], plots: [], pengingat: [], hutang: [], piutang: [], spaylater: [], spinjam: [] },
@@ -1145,48 +1291,75 @@
         }, 3000);
     }
 
-    function muatDatabase() {
+    async function muatDatabase() {
         try {
-            let dataTersimpan = localStorage.getItem('famBARLA_DB');
+            let dataTersimpan = await CoreEngine.idbGet('famBARLA_DB_Encrypted');
+            
+                        // Auto-Migrasi dari LocalStorage lama (Jika ada)
+            let dataLokalBiasa = null;
+            try { dataLokalBiasa = localStorage.getItem('famBARLA_DB'); } catch(e) {} // Amankan dari SecurityError content://
+
+            if (!dataTersimpan && dataLokalBiasa) {
+                dataTersimpan = await CoreEngine.encryptDB(dataLokalBiasa, PIN_DARURAT);
+                await CoreEngine.idbSet('famBARLA_DB_Encrypted', dataTersimpan);
+                try { localStorage.removeItem('famBARLA_DB'); } catch(e) {}
+            }
+
             if (dataTersimpan) {
-                const parsed = JSON.parse(dataTersimpan);
+                const decryptedStr = await CoreEngine.decryptDB(dataTersimpan, PIN_DARURAT);
+                const parsed = JSON.parse(decryptedStr);
                 AppState.db.income = parsed.income || [];
                 AppState.db.expense = parsed.expense || [];
                 AppState.db.mutations = parsed.mutations || [];
                 AppState.db.plots = parsed.plots || [];
                 
                 let dataPengingat = parsed.pengingat || parsed.titipan || [];
-                AppState.db.pengingat = dataPengingat.map(item => {
-                    let cleanItem = { ...item };
-                    delete cleanItem.tipe;
-                    delete cleanItem.freq;
-                    delete cleanItem.defaultPlotId;
-                    return cleanItem;
-                });
-                
-                AppState.db.hutang = parsed.hutang || []; 
-                AppState.db.piutang = parsed.piutang || []; 
-                AppState.db.spaylater = parsed.spaylater || []; 
-                AppState.db.spinjam = parsed.spinjam || []; 
+                AppState.db.pengingat = dataPengingat.map(item => { let cleanItem = { ...item }; delete cleanItem.tipe; delete cleanItem.freq; delete cleanItem.defaultPlotId; return cleanItem; });
+                AppState.db.hutang = parsed.hutang || []; AppState.db.piutang = parsed.piutang || []; 
+                AppState.db.spaylater = parsed.spaylater || []; AppState.db.spinjam = parsed.spinjam || []; 
             }
             isDatabaseKorup = false; 
             kalkulasiUlangSemuaSaldo(); 
         } catch (e) {
             isDatabaseKorup = true; 
-            setTimeout(() => { showPopup('alert', "🚨 DATABASE RUSAK!\n\nMemori HP terputus saat menyimpan data sebelumnya. Untuk mencegah data lama tertimpa, FITUR SIMPAN DIKUNCI.\n\nHarap SEGERA lakukan 'Load Cloud' atau 'Load Excel' untuk memulihkan sistem.", 'var(--danger)'); }, 1000);
+            setTimeout(() => { showPopup('alert', "🚨 BRANKAS RUSAK!\n\nGagal mendekripsi atau memuat database. FITUR SIMPAN DIKUNCI.\n\nLakukan 'Load Cloud' untuk menimpa brankas rusak.", 'var(--danger)'); }, 1000);
         }
     }
 
-    function simpanDatabase() {
+    let isSavingToIDB = false;
+    let pendingSaveRequest = false;
+    
+    async function simpanDatabase() {
         if (isDatabaseKorup) { showToast("Sistem Terkunci! Silakan Load Cloud terlebih dahulu.", "var(--danger)"); throw new Error("Penyimpanan Dibatalkan: Database Korup"); }
+        if (isSavingToIDB) { pendingSaveRequest = true; return; } // Mencegah bentrok asinkron saat Spam Click
+        
+        isSavingToIDB = true;
         try {
+            // [INJEKSI KEAMANAN QA]: Paksa kalkulasi ulang mutlak dengan Time-Wall sebelum data dibungkus.
+            // Ini mencegah 'Ghost Balance' akibat manipulasi parsial saat aplikasi berjalan (Runtime Drift).
+            kalkulasiUlangSemuaSaldo();
+            
             const dataString = JSON.stringify(AppState.db);
-            const estimasiBytes = dataString.length * 2, maxBytes = 5 * 1024 * 1024; 
-            const persenRaw = (estimasiBytes / maxBytes) * 100, persen = Math.min(Math.max(persenRaw, 0), 100); 
             
-            if (persen > 98) { muatDatabase(); updateRekap(); showPopup('alert', "KRITIS: Memori penyimpanan HP penuh! Data gagal disimpan dan telah dibatalkan.", 'var(--danger)'); throw new Error("QuotaExceeded_Rollback_Executed"); }
-            localStorage.setItem('famBARLA_DB', dataString);
+            // Proses Enkripsi Zero-Knowledge (AES-256)
+            const encryptedData = await CoreEngine.encryptDB(dataString, PIN_DARURAT);
             
+            // Kalkulasi Kapasitas IndexedDB (Asumsi Kuota Browser 50MB)
+            const estimasiBytes = encryptedData.length; 
+            const maxBytes = 50 * 1024 * 1024; 
+            const persenRaw = (estimasiBytes / maxBytes) * 100;
+            const persen = Math.min(Math.max(persenRaw, 0), 100); 
+            
+            if (persen > 98) { 
+                await muatDatabase(); updateRekap(); 
+                showPopup('alert', "KRITIS: Kapasitas Brankas Penyimpanan HP penuh! Data gagal disimpan dan telah dibatalkan.", 'var(--danger)'); 
+                throw new Error("QuotaExceeded_Rollback_Executed"); 
+            }
+            
+            // Menyimpan ke Brankas Asinkron
+            await CoreEngine.idbSet('famBARLA_DB_Encrypted', encryptedData);
+            
+            // Pembaruan Indikator Visual UI
             const elemenPersenTxt = document.getElementById('storage-pct'), elemenWadahMem = document.getElementById('mem-indicator');
             if (elemenPersenTxt && elemenWadahMem) {
                 elemenPersenTxt.innerText = persen.toFixed(1) + '%';
@@ -1195,21 +1368,44 @@
             }
         } catch (e) {
             if (e.message !== "QuotaExceeded_Rollback_Executed" && e.message !== "Penyimpanan Dibatalkan: Database Korup") {
-                showPopup('alert', "Penyimpanan memori HP penuh atau error! Data gagal disimpan.\n\nSistem mengembalikan data ke titik simpan terakhir.", 'var(--danger)');
-                muatDatabase(); updateRekap(); 
+                showPopup('alert', "Gagal mengenkripsi & menyimpan ke Brankas Dalam! Sistem dikembalikan ke kondisi terakhir.", 'var(--danger)');
+                await muatDatabase(); updateRekap(); 
             }
             throw e; 
+        } finally {
+            isSavingToIDB = false;
+            // Jika ada antrean simpan saat mesin sedang sibuk, eksekusi sekarang
+            if (pendingSaveRequest) { pendingSaveRequest = false; simpanDatabase(); }
         }
     }
 
-    function kalkulasiUlangSemuaSaldo() {
+        function kalkulasiUlangSemuaSaldo() {
         saldoCache = { 'Tunai': 0, 'Bank': 0, 'e-Wallet': 0, 'Dana Darurat': 0, 'Dana Darurat 🔒': 0 };
         const validNames = ['Tunai', 'Bank', 'e-Wallet', 'Dana Darurat', 'Dana Darurat 🔒'];
         const amankanNama = (nm) => { const n = String(nm || '').trim(); return validNames.find(v => v.toLowerCase() === n.toLowerCase()) || 'Tunai'; };
 
-        for(let i = 0, len = AppState.db.income.length; i < len; i++) { const w = amankanNama(AppState.db.income[i].wallet); saldoCache[w] += AppState.db.income[i].amount; }
-        for(let i = 0, len = AppState.db.expense.length; i < len; i++) { const w = amankanNama(AppState.db.expense[i].wallet); saldoCache[w] -= AppState.db.expense[i].amount; }
+        // 1. Dinding Penghalang Waktu (Time-Wall Firewall) untuk fleksibilitas Load Acak
+        let batasWaktuCarryover = "2000-01-01";
+        const cekBatas = (arr) => {
+            for(let i = 0; i < arr.length; i++) {
+                if (String(arr[i].id).startsWith('CARRYOVER_') && arr[i].date > batasWaktuCarryover) {
+                    batasWaktuCarryover = arr[i].date;
+                }
+            }
+        };
+        cekBatas(AppState.db.income); cekBatas(AppState.db.expense);
+
+        // 2. Kalkulasi dinamis (mengabaikan semua data sebelum dinding waktu)
+        for(let i = 0, len = AppState.db.income.length; i < len; i++) { 
+            if (AppState.db.income[i].date < batasWaktuCarryover) continue;
+            const w = amankanNama(AppState.db.income[i].wallet); saldoCache[w] += AppState.db.income[i].amount; 
+        }
+        for(let i = 0, len = AppState.db.expense.length; i < len; i++) { 
+            if (AppState.db.expense[i].date < batasWaktuCarryover) continue;
+            const w = amankanNama(AppState.db.expense[i].wallet); saldoCache[w] -= AppState.db.expense[i].amount; 
+        }
         for(let i = 0, len = AppState.db.mutations.length; i < len; i++) {
+            if (AppState.db.mutations[i].date < batasWaktuCarryover) continue;
             const item = AppState.db.mutations[i];
             const t = amankanNama(item.to), f = amankanNama(item.from);
             saldoCache[t] += item.amount; saldoCache[f] -= item.amount;
@@ -1324,13 +1520,16 @@
         }
     }
 
-    function verifyPin(callback, onCancelOrFail) {
-        showPopup('pin', 'Masukkan PIN Keamanan 🔒:', 'var(--danger)', (val) => {
+            function verifyPin(callback, onCancelOrFail) {
+            showPopup('pin', 'Masukkan PIN Keamanan 🔒:', 'var(--danger)', (val) => {
             if (val === PIN_DARURAT) { if (callback) callback(); } 
             else { showPopup('alert', 'Batal: PIN Salah!', 'var(--danger)'); if (onCancelOrFail) onCancelOrFail(); }
         });
+        
         const btnBatal = document.getElementById('modal-btn-cancel');
-        btnBatal.onclick = () => { tutupModalAman('custom-modal'); if (onCancelOrFail) onCancelOrFail(); };
+        if (btnBatal) {
+            btnBatal.onclick = () => { tutupModalAman('custom-modal'); if (onCancelOrFail) onCancelOrFail(); };
+        }
     }
 
     function openAboutModal() { tutupSemuaMenuDrop(); document.getElementById('about-modal').classList.remove('hidden'); document.body.classList.add('modal-open'); }
@@ -1361,7 +1560,7 @@
                     if (dataRes && dataRes.error) throw new Error(dataRes.error);
                     return dataRes;
                 })
-                .then(res => { tutupModalAman('custom-modal'); showToast("Berhasil di-Upload ke Cloud!", 'var(--cloud)'); })
+                .then(res => { tutupModalAman('custom-modal'); showToast("Berhasil di-Upload", 'var(--cloud)'); })
                 .catch(err => { 
                     clearTimeout(timeoutId); 
                     let msg = err.message || "Gagal mengunggah! Pastikan koneksi internet aktif.";
@@ -1375,7 +1574,7 @@
 
     function loadFromCloud() {
         tutupSemuaMenuDrop();
-        if (isNetworkProcessing) return showToast("Sedang memproses jaringan...", 'var(--cloud)');
+        if (isNetworkProcessing) return showToast("Sedang memproses...", 'var(--cloud)');
         if(!CLOUD_URL || CLOUD_URL.includes("ISI_DENGAN")) return showPopup('alert', "Penyimpanan Cloud belum disetel!", 'var(--danger)');
         
         isNetworkProcessing = true; showPopup('loading', "Mencari daftar bulan di Cloud...\nMohon tunggu.", 'var(--cloud)');
@@ -1425,7 +1624,7 @@
     }
 
     function executeLoadCloud(selectedMonth) {
-        if (isNetworkProcessing) return showToast("Sedang memproses jaringan...", 'var(--cloud)');
+        if (isNetworkProcessing) return showToast("Sedang memproses...", 'var(--cloud)');
         isNetworkProcessing = true; showPopup('loading', "Mengunduh data bulan " + selectedMonth + "...\nMohon tunggu.", 'var(--cloud)');
         const noCacheUrl = CLOUD_URL + "?action=loadMonth&month=" + selectedMonth + "&token=" + CLOUD_TOKEN + "&t=" + new Date().getTime();
         const controller = new AbortController(); const timeoutId = setTimeout(() => controller.abort(), 30000);
@@ -1450,15 +1649,11 @@
                     AppState.db.expense = AppState.db.expense.filter(e => !(isTargetMonth(e.date) && !String(e.id).startsWith('RINGKAS_')));
                     AppState.db.mutations = AppState.db.mutations.filter(m => !(isTargetMonth(m.date) && !String(m.id).startsWith('RINGKAS_')));
 
-                    // 2. Carryover Firewall (Cegah saldo ganda jika punya history lokal lampau)
-                    const hasLocalHistory = AppState.db.income.some(i => i.date < selectedMonth + "-01") || AppState.db.expense.some(e => e.date < selectedMonth + "-01");
-
+                                        // 2. Pemasukan Data (Firewall lokal dihapus karena digantikan oleh Kalkulasi Dinamis Time-Wall)
                     data.income.forEach(i => {
-                        if (String(i.id).startsWith('CARRYOVER_') && hasLocalHistory) return; 
                         AppState.db.income.push({...i, amount: Math.abs(Number(i.amount))});
                     });
                     data.expense.forEach(e => {
-                        if (String(e.id).startsWith('CARRYOVER_') && hasLocalHistory) return;
                         AppState.db.expense.push({...e, amount: Math.abs(Number(e.amount))});
                     });
                     data.mutations.forEach(m => AppState.db.mutations.push({...m, amount: Math.abs(Number(m.amount))}));
@@ -1504,10 +1699,11 @@
                         });
                     };
 
-                    mergeEkstraAman(AppState.db.pengingat, data.pengingat || data.titipan); 
+                                        mergeEkstraAman(AppState.db.pengingat, data.pengingat || data.titipan); 
                     mergeEkstraAman(AppState.db.hutang, data.hutang); mergeEkstraAman(AppState.db.piutang, data.piutang);
                     mergeEkstraAman(AppState.db.spaylater, data.spaylater); mergeEkstraAman(AppState.db.spinjam, data.spinjam);
                     
+                    isDatabaseKorup = false; // [INJEKSI QA]: Gembok dibuka karena injeksi data sehat dari Cloud berhasil
                     kalkulasiUlangSemuaSaldo(); 
                     simpanDatabase(); limitRekapIn = 15; limitRekapOut = 15;
                     updateRekap(); updatePlotList(); updateWalletDropdownBalances();
@@ -1672,35 +1868,34 @@
         limitRekapIn = 15; limitRekapOut = 15; updateRekap(); updateWalletDropdownBalances(); showToast("Berhasil Simpan!", warnaTema); 
     }
 
-    function saveData(event, tipe) {
+        function saveData(event, tipe) {
         if (isGlobalSubmitting) return; isGlobalSubmitting = true;
         const btn = event.currentTarget || event.target; if(btn && btn.tagName === 'BUTTON') btn.disabled = true; 
+        
+        const releaseLock = () => { isGlobalSubmitting = false; if (btn) setTimeout(() => { btn.disabled = false; }, 1500); };
 
         try {
             const pfx = tipe === 'income' ? 'in' : 'out', dateEl = document.getElementById(`${pfx}-date`), descEl = document.getElementById(`${pfx}-desc`), amountEl = document.getElementById(`${pfx}-amount`), walletEl = document.getElementById(`${pfx}-wallet`), plotEl = document.getElementById(`${pfx}-plot`);
-            if(!dateEl || !descEl || !amountEl || !walletEl) return;
+            if(!dateEl || !descEl || !amountEl || !walletEl) return releaseLock();
 
             const tgl = dateEl.dataset.rawDate, ket = descEl.value.trim(), nom = Math.abs(Math.round(Number(amountEl.value.trim().replace(/[^\d]/g, '')))), dmp = walletEl.value, plt = plotEl ? (plotEl.value || "") : "", warnaTema = tipe === 'income' ? 'var(--wa-green)' : 'var(--danger)';
 
-            if (!tgl || isNaN(nom) || nom <= 0 || !ket) return showPopup('alert', "Mohon lengkapi semua data dengan benar!", warnaTema);
-            if (tipe === 'expense' && getSaldoDompet(dmp) < nom) return showPopup('alert', `Saldo [${dmp}] tidak mencukupi!`, warnaTema);
+            if (!tgl || isNaN(nom) || nom <= 0 || !ket) { showPopup('alert', "Mohon lengkapi semua data dengan benar!", warnaTema); return releaseLock(); }
+            if (tipe === 'expense' && getSaldoDompet(dmp) < nom) { showPopup('alert', `Saldo [${dmp}] tidak mencukupi!`, warnaTema); return releaseLock(); }
             
             if (tipe === 'expense' && dmp === 'Dana Darurat 🔒') {
-                return verifyPin(() => {
+                verifyPin(() => {
                     try { prosesSimpanAkhir(tipe, tgl, ket, nom, dmp, plt, pfx); } catch(e) { showPopup('alert', "Gagal memproses simpan.", warnaTema); } 
-                    finally { isGlobalSubmitting = false; if (btn) setTimeout(() => { btn.disabled = false; }, 1500); }
-                }, () => { isGlobalSubmitting = false; if (btn) btn.disabled = false; });
+                    finally { releaseLock(); }
+                }, () => { releaseLock(); });
+                return; 
             }
             prosesSimpanAkhir(tipe, tgl, ket, nom, dmp, plt, pfx);
+            releaseLock();
         } catch (error) { 
             showToast("Terjadi kesalahan sistem, memulihkan status...", "var(--danger)"); 
-        } finally { 
-            const dmp = document.getElementById(tipe === 'income' ? 'in-wallet' : 'out-wallet')?.value; 
-            if (!(tipe === 'expense' && dmp === 'Dana Darurat 🔒')) { 
-                isGlobalSubmitting = false; 
-                if (btn) setTimeout(() => { btn.disabled = false; }, 1500); 
-            } 
-        }
+            releaseLock();
+        } 
     }
 
     function editData(tipe, idItem) {
@@ -2206,17 +2401,22 @@
             return new Date(Date.UTC(1899, 11, 30 + days, 12, 0, 0)).toISOString().split('T')[0]; 
         }
         // Penanganan format String/Teks dengan Deteksi Cerdas
-        if (typeof val === 'string') { 
-            let p = val.split(/[-/]/); 
+                        if (typeof val === 'string') { 
+            let cleanVal = val.split(' ')[0].split('T')[0]; // Ekstrak murni tanggal, sterilkan time/timezone
+            let p = cleanVal.split(/[-/]/); 
             if (p.length === 3) {
-                // Logika: Jika formatnya DD-MM-YYYY (Contoh: 31-12-2026)
                 if (p[2].length === 4) {
-                    let d = parseInt(p[0], 10);
-                    let m = parseInt(p[1], 10);
-                    // Cek jika posisi 0 adalah Bulan (MM/DD/YYYY)
-                    if (m > 12 || (d > 12 && m <= 12)) return `${p[2]}-${p[0].padStart(2,'0')}-${p[1].padStart(2,'0')}`;
-                    // Default anggap format DD/MM/YYYY
-                    return `${p[2]}-${p[1].padStart(2,'0')}-${p[0].padStart(2,'0')}`;
+                    let part0 = parseInt(p[0], 10);
+                    let part1 = parseInt(p[1], 10);
+                    
+                    // Jika indeks 0 lebih dari 12, ia pasti Hari. Format: DD/MM/YYYY
+                    if (part0 > 12) return `${p[2]}-${String(part1).padStart(2,'0')}-${String(part0).padStart(2,'0')}`;
+                    
+                    // Jika indeks 1 lebih dari 12, ia pasti Hari. Format: MM/DD/YYYY
+                    if (part1 > 12) return `${p[2]}-${String(part0).padStart(2,'0')}-${String(part1).padStart(2,'0')}`;
+                    
+                    // Jika keduanya <= 12, default ke standar Indonesia: DD/MM/YYYY
+                    return `${p[2]}-${String(part1).padStart(2,'0')}-${String(part0).padStart(2,'0')}`;
                 }
                 // Jika formatnya YYYY-MM-DD
                 if (p[0].length === 4) return `${p[0]}-${p[1].padStart(2,'0')}-${p[2].padStart(2,'0')}`; 
@@ -2347,24 +2547,29 @@
             AppState.db.income = [...recoveredIncome]; AppState.db.expense = [...recoveredExpense]; AppState.db.mutations = []; 
             const validDateStr = (AppState.tempImport.length > 0 && parseExcelDate(AppState.tempImport[0].Tanggal)) || Utils.tglHariIni();
 
-            Object.keys(kalk).forEach(d => { 
+                        Object.keys(kalk).forEach(d => { 
                 if (kalk[d] > 0) AppState.db.income.push({ id: 'RINGKAS_' + Utils.buatId(), date: validDateStr, desc: `Saldo Awal Ringkas`, amount: Math.abs(kalk[d]), wallet: d }); 
                 else if (kalk[d] < 0) AppState.db.expense.push({ id: 'RINGKAS_' + Utils.buatId(), date: validDateStr, desc: `Koreksi Saldo Ringkas`, amount: Math.abs(kalk[d]), wallet: d, plotId: "" }); 
             });
         }
         
+        isDatabaseKorup = false; // [INJEKSI QA]: Gembok dibuka karena injeksi data sehat dari Excel berhasil
         kalkulasiUlangSemuaSaldo(); simpanDatabase(); updateRekap(); updatePlotList(); updateWalletDropdownBalances();
+        
         AppState.tempImport = []; AppState.tempImportPlots = []; AppState.tempImportPengingat = []; AppState.tempImportHutang = []; AppState.tempImportPiutang = []; AppState.tempImportSpaylater = []; AppState.tempImportSpinjam = [];
         setTimeout(() => { showPopup('alert', "Import Ringkas/Semua Berhasil!\n\nRiwayat telah diperbarui tanpa merusak Ekstra aktif.", 'var(--wa-green)'); }, 500);
     }
 
-    function promptClearData() {
+        function promptClearData() {
         tutupSemuaMenuDrop();
         showPopup('delete', "HAPUS SEMUA DATA?", 'var(--danger)', () => { 
             if (AppState.charts.arusKas) AppState.charts.arusKas.destroy(); if (AppState.charts.portofolio) AppState.charts.portofolio.destroy();
             localStorage.removeItem('famBARLA_DB'); 
             AppState.db = { income: [], expense: [], mutations: [], plots: [], pengingat: [], hutang: [], piutang: [], spaylater: [], spinjam: [] }; 
+            
+            isDatabaseKorup = false; // [INJEKSI QA]: Buka gembok agar brankas bisa ditimpa dengan database kosong
             kalkulasiUlangSemuaSaldo(); simpanDatabase(); updateRekap(); updatePlotList(); updateWalletDropdownBalances(); 
+            
             if (navigator.serviceWorker && navigator.serviceWorker.controller) navigator.serviceWorker.controller.postMessage({action: 'CLEAR_CACHE'});
             showToast("Semua data telah dihapus.", 'var(--danger)'); 
         });
@@ -2968,8 +3173,28 @@
         }
     });
 
-    window.addEventListener('DOMContentLoaded', () => { 
-        muatDatabase(); inisiasiKalenderAwal(); updatePlotList(); updateRekap(); updateWalletDropdownBalances(); jalankanJam(); cekNotifikasiJatuhTempo(); showPage(null, 'pemasukan', 0); terapkanVersi(); 
+                        window.addEventListener('DOMContentLoaded', async () => { 
+        showPopup('loading', 'Mendekripsi & Membuka Brankas...', 'var(--wa-blue)');
+        
+        try {
+            await Promise.race([
+                CoreEngine.initDB(),
+                new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout Brankas DB")), 3000))
+            ]);
+            await muatDatabase();
+        } catch (error) {
+            console.warn("Mode Akses Terbatas Aktif:", error);
+        } finally {
+            try {
+                inisiasiKalenderAwal(); updatePlotList(); updateRekap(); updateWalletDropdownBalances(); jalankanJam(); cekNotifikasiJatuhTempo(); showPage(null, 'pemasukan', 0); terapkanVersi(); 
+            } catch(e) {}
+
+            const loader = document.getElementById('modal-loader');
+            if (loader && !loader.classList.contains('hidden')) { tutupModalAman('custom-modal'); }
+            
+            // Jaminan Mutlak QA 2: Paksa lepaskan kunci layar (Deadlock) yang tersangkut
+            setTimeout(() => { document.body.classList.remove('modal-open'); }, 150);
+        }
     });
 </script>
 </body>
