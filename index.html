@@ -2226,8 +2226,8 @@
         elMasuk.innerHTML = dataMasukArr.length ? dataMasukArr.slice(0, limitRekapIn).map(item => renderBaris(item, false, true)).join('') : emptyState;
         elKeluar.innerHTML = dataKeluarArr.length ? dataKeluarArr.slice(0, limitRekapOut).map(item => renderBaris(item, item.type === 'mutations', false)).join('') : emptyState;
         
-        document.getElementById('load-more-in-container').innerHTML = dataMasukArr.length > limitRekapIn ? `<button class="extra-btn" style="background:transparent; border:1px dashed var(--wa-green); color:var(--wa-green); width:100%; margin-top:10px; padding:10px;" onclick="loadMoreRekap('in')">⬇️ MUAT LEBIH BANYAK (${dataMasukArr.length - limitRekapIn})</button>` : '';
-        document.getElementById('load-more-out-container').innerHTML = dataKeluarArr.length > limitRekapOut ? `<button class="extra-btn" style="background:transparent; border:1px dashed var(--danger); color:var(--danger); width:100%; margin-top:10px; padding:10px;" onclick="loadMoreRekap('out')">⬇️ MUAT LEBIH BANYAK (${dataKeluarArr.length - limitRekapOut})</button>` : '';
+        document.getElementById('load-more-in-container').innerHTML = dataMasukArr.length > limitRekapIn ? `<button class="extra-btn" style="background:transparent; border:1px dashed var(--wa-green); color:var(--wa-green); width:100%; margin-top:10px; padding:10px;" onclick="loadMoreRekap('in')"> MUAT LEBIH BANYAK (${dataMasukArr.length - limitRekapIn})</button>` : '';
+        document.getElementById('load-more-out-container').innerHTML = dataKeluarArr.length > limitRekapOut ? `<button class="extra-btn" style="background:transparent; border:1px dashed var(--danger); color:var(--danger); width:100%; margin-top:10px; padding:10px;" onclick="loadMoreRekap('out')"> MUAT LEBIH BANYAK (${dataKeluarArr.length - limitRekapOut})</button>` : '';
         if(!kunciRaw && !isEkstraUpdate) { elMasuk.scrollTop = scrollIn; elKeluar.scrollTop = scrollOut; }
 
         let summaryBox = document.getElementById('search-live-summary');
