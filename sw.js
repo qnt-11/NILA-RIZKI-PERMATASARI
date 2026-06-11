@@ -1,4 +1,4 @@
-const APP_VERSION = '6.6';
+const APP_VERSION = '6.7';
 const CACHE_PREFIX = 'uang-fambarla-';
 const CACHE_STATIC = CACHE_PREFIX + 'static-v' + APP_VERSION;
 const CACHE_DYNAMIC = CACHE_PREFIX + 'dynamic-v' + APP_VERSION;
