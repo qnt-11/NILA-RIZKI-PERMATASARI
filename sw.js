@@ -1,4 +1,4 @@
-const APP_VERSION = '7.4'; // PASTIKAN VERSI INI SAMA DENGAN DI index.html
+const APP_VERSION = '7.5'; // PASTIKAN VERSI INI SAMA DENGAN DI index.html
 const CACHE_PREFIX = 'uang-fambarla-';
 const CACHE_STATIC = CACHE_PREFIX + 'static-v' + APP_VERSION;
 const CACHE_DYNAMIC = CACHE_PREFIX + 'dynamic-v' + APP_VERSION;
@@ -118,44 +118,18 @@ self.addEventListener('fetch', event => {
   const isHtmlRequest = req.mode === 'navigate' || (req.headers.get('accept') && req.headers.get('accept').includes('text/html'));
   const cacheKey = isHtmlRequest ? './index.html' : req;
 
-  // STRATEGI 2: STALE-WHILE-REVALIDATE UNTUK HTML + BROADCAST API
+    // STRATEGI 2: STALE-WHILE-REVALIDATE UNTUK HTML (Pure Stream, No RAM Bottleneck)
   if (isHtmlRequest) {
     event.respondWith(
       caches.match(cacheKey, { ignoreSearch: true }).then(cachedResponse => {
-        
-        // [INJEKSI QA FINAL]: Kloning Cache SEKARANG, sebelum stream dikunci & ditelan oleh event.respondWith!
-        const safeCachedCloneForCompare = cachedResponse ? cachedResponse.clone() : null;
-
-        const networkFetch = fetch(req).then(async networkResponse => {
+        const networkFetch = fetch(req).then(networkResponse => {
           if (networkResponse && networkResponse.ok) {
             const cloneToCache = networkResponse.clone();
-            
-            if (safeCachedCloneForCompare) {
-               const netClone = networkResponse.clone();
-               
-               // Ekstrak teks kode HTML dari kloningan yang aman
-               const cachedText = await safeCachedCloneForCompare.text();
-               const netText = await netClone.text();
-               
-               caches.open(CACHE_STATIC).then(cache => {
-                   cache.put(cacheKey, cloneToCache);
-                   // HANYA kirim sinyal jika kode HTML lama berbeda dengan kode HTML server
-                   if (cachedText !== netText) {
-                       if (typeof BroadcastChannel !== 'undefined') {
-                           const channel = new BroadcastChannel('fambarla-update-channel');
-                           channel.postMessage({ type: 'UPDATE_AVAILABLE', message: 'Pembaruan aplikasi berhasil diunduh.' });
-                       }
-                   }
-               });
-            } else {
-               // Jika belum ada cache, simpan saja tanpa mengirim sinyal reload
-               caches.open(CACHE_STATIC).then(cache => cache.put(cacheKey, cloneToCache));
-            }
+            caches.open(CACHE_STATIC).then(cache => cache.put(cacheKey, cloneToCache));
           }
           return networkResponse;
         }).catch(() => {
           console.log('[SW] Offline/Timeout. Menggunakan HTML Fallback.');
-          // [INJEKSI QA PERBAIKAN OFFLINE]: Panggil secara spesifik './index.html' agar layar tidak blank saat offline
           return caches.match('./index.html', { ignoreSearch: true });
         });
 
@@ -223,16 +197,4 @@ self.addEventListener('fetch', event => {
       return cachedResponse || networkResPromise;
     }).catch(() => Response.error())
   );
-});
-
-// =========================================================
-// 5. BACKGROUND SYNC API (SINKRONISASI TAHAN BANTING)
-// =========================================================
-self.addEventListener('sync', event => {
-  if (event.tag === 'sync-fambarla-cloud') {
-    console.log('[SW] Sinyal internet terdeteksi! Memulai sinkronisasi latar belakang...');
-    event.waitUntil(
-      Promise.resolve().then(() => console.log('[SW] Data antrean berhasil disinkronisasi ke Cloud.'))
-    );
-  }
 });
