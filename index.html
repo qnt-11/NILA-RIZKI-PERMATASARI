@@ -981,7 +981,7 @@
 </div>
 <input type="file" id="file-import" accept=".xlsx, .xls" class="hidden" onchange="importFromExcel(event)">
 <script>
-    const APP_VERSION = "7.1"; 
+    const APP_VERSION = "7.4"; 
     const CLOUD_URL = "https://script.google.com/macros/s/AKfycbwW8xkj17rha0oeeWx9oGMyGoJowe4wazYBx5lwFsi_SZRgGVb4hT9fX3wcfWwbuMoX/exec";
     const CLOUD_TOKEN = "Rahas1aFambarLa2026";
     const PIN_DARURAT = "170823";
@@ -1053,47 +1053,24 @@
             return btoa(binary);
         },
 
-        async decryptDB(encryptedB64, pin) {
-            if (!window.crypto || !window.crypto.subtle) return decodeURIComponent(atob(encryptedB64)); // Fallback Base64
-            const key = await this.deriveKey(pin);
-            const combinedStr = atob(encryptedB64);
-            const combined = new Uint8Array(combinedStr.length);
-            for (let i = 0; i < combinedStr.length; i++) combined[i] = combinedStr.charCodeAt(i);
-            const iv = combined.slice(0, 12), data = combined.slice(12);
-            const decrypted = await crypto.subtle.decrypt({ name: "AES-GCM", iv: iv }, key, data);
-            return new TextDecoder().decode(decrypted);
-        },
-        // WebAuthn Biometric API
-        async triggerBiometric() {
-            if (!window.PublicKeyCredential) throw new Error("Not Supported");
-            const hasBioId = localStorage.getItem('FamBarla_BioID');
-            const challenge = crypto.getRandomValues(new Uint8Array(32));
-            
-            if (!hasBioId) {
-                // Registrasi Sidik Jari Pertama Kali
-                const userId = crypto.getRandomValues(new Uint8Array(16));
-                const cred = await navigator.credentials.create({
-                    publicKey: {
-                        challenge, rp: { name: "uang famBARLA" }, user: { id: userId, name: "Admin", displayName: "Admin" },
-                        pubKeyCredParams: [{ type: "public-key", alg: -7 }], // ES256
-                        authenticatorSelection: { authenticatorAttachment: "platform", userVerification: "required" }, timeout: 60000
-                    }
-                });
-                const rawId = Array.from(new Uint8Array(cred.rawId)).map(b => String.fromCharCode(b)).join('');
-                localStorage.setItem('FamBarla_BioID', btoa(rawId));
-                return true;
-            } else {
-                // Verifikasi Sidik Jari Tersimpan
-                const rawIdStr = atob(hasBioId);
-                const rawId = new Uint8Array(rawIdStr.length);
-                for (let i = 0; i < rawIdStr.length; i++) rawId[i] = rawIdStr.charCodeAt(i);
-                await navigator.credentials.get({
-                    publicKey: { challenge, allowCredentials: [{ type: "public-key", id: rawId }], userVerification: "required", timeout: 60000 }
-                });
-                return true;
+                async decryptDB(encryptedB64, pin) {
+            if (!window.crypto || !window.crypto.subtle) {
+                try { return decodeURIComponent(atob(encryptedB64)); } catch(e) { throw new Error("Akses HTTPS/Secure Context diperlukan untuk dekripsi Brankas AES"); }
             }
-        }
-    };
+            try {
+                const key = await this.deriveKey(pin);
+                const combinedStr = atob(encryptedB64);
+                const combined = new Uint8Array(combinedStr.length);
+                for (let i = 0; i < combinedStr.length; i++) combined[i] = combinedStr.charCodeAt(i);
+                const iv = combined.slice(0, 12), data = combined.slice(12);
+                const decrypted = await crypto.subtle.decrypt({ name: "AES-GCM", iv: iv }, key, data);
+                return new TextDecoder().decode(decrypted);
+            } catch (e) {
+                // Adaptasi mulus jika pengguna bermigrasi dari HTTP ke HTTPS dengan data lama
+                try { return decodeURIComponent(atob(encryptedB64)); } catch(err) { throw e; }
+            }
+        },
+     };
     // =========================================================
 
             // =========================================================
@@ -1111,12 +1088,19 @@
         }
     }
 
-    try {
+        try {
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('./sw.js').catch(() => {});
             
+            // [INJEKSI QA FINAL]: Filter Ghost Update (Anti Pop-Up Palsu)
+            let hasController = !!navigator.serviceWorker.controller;
+
             // ANTENA 1 (HARD UPDATE): Mendeteksi saat Service Worker baru (yang agresif) selesai mengambil alih halaman
             navigator.serviceWorker.addEventListener('controllerchange', () => {
+                if (!hasController) {
+                    hasController = true;
+                    return; // Abaikan! Ini hanya instalasi pertama, BUKAN pembaruan versi.
+                }
                 setTimeout(tampilkanPopUpUpdate, 500);
             });
         }
@@ -3209,8 +3193,8 @@
         }
     });
 
-                        window.addEventListener('DOMContentLoaded', async () => { 
-        showPopup('loading', 'Mendekripsi & Membuka Brankas...', 'var(--wa-blue)');
+                            window.addEventListener('DOMContentLoaded', async () => { 
+        // [STEALTH BOOT]: Pop-up loading dihapus total untuk transisi aplikasi yang mulus
         
         try {
             await Promise.race([
@@ -3225,16 +3209,11 @@
                 inisiasiKalenderAwal(); updatePlotList(); updateRekap(); updateWalletDropdownBalances(); jalankanJam(); cekNotifikasiJatuhTempo(); showPage(null, 'pemasukan', 0); terapkanVersi(); 
             } catch(e) {}
 
-                    const loader = document.getElementById('modal-loader');
-        // [INJEKSI QA FINAL]: Cegah trigger penutup jika sistem terkunci oleh Pop-Up Kritis
-        if (loader && !loader.classList.contains('hidden') && !isSystemLockedByCriticalPopup) { tutupModalAman('custom-modal'); }
-
-                // Jaminan Mutlak QA 2: Paksa lepaskan kunci layar (Deadlock) yang tersangkut
-        setTimeout(() => { 
-            // [INJEKSI QA FINAL]: Jangan lepaskan kuncian UI background jika Pop-up Kritis sedang tampil!
-            if (typeof isSystemLockedByCriticalPopup !== 'undefined' && isSystemLockedByCriticalPopup) return;
-            document.body.classList.remove('modal-open'); 
-        }, 150);
+            // Eksekusi pelepasan sistem pengunci background secara instan
+            setTimeout(() => { 
+                if (typeof isSystemLockedByCriticalPopup !== 'undefined' && isSystemLockedByCriticalPopup) return;
+                document.body.classList.remove('modal-open'); 
+            }, 50);
         }
     });
 </script>
