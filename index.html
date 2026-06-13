@@ -803,7 +803,7 @@
     </div>
 </div>
 
-<div id="custom-modal" class="modal-overlay hidden" style="z-index: 100000 !important;" onclick="if(event.target===this) { const inp = document.getElementById('modal-input'); if(inp && inp.type==='password') return; const btnC = document.getElementById('modal-btn-cancel'); const btnO = document.getElementById('modal-btn-ok'); if(btnC && !btnC.classList.contains('hidden')) btnC.click(); else if(btnO && !btnO.classList.contains('hidden')) btnO.click(); }">
+<div id="custom-modal" class="modal-overlay hidden" style="z-index: 100000 !important;" onclick="if(event.target===this) { const inp = document.getElementById('modal-input'); if(inp && inp.type==='password') return; const btnC = document.getElementById('modal-btn-cancel'); if(btnC && !btnC.classList.contains('hidden')) btnC.click(); }">
     <div class="modal-box">
         <h3 id="modal-title" class="audiowide-regular" style="margin-top:0; margin-bottom: 15px; font-size: 16px;">Informasi</h3>
         <div id="modal-loader" class="loader hidden"></div>
@@ -981,10 +981,11 @@
 </div>
 <input type="file" id="file-import" accept=".xlsx, .xls" class="hidden" onchange="importFromExcel(event)">
 <script>
-    const APP_VERSION = "6.6"; 
+    const APP_VERSION = "7.1"; 
     const CLOUD_URL = "https://script.google.com/macros/s/AKfycbwW8xkj17rha0oeeWx9oGMyGoJowe4wazYBx5lwFsi_SZRgGVb4hT9fX3wcfWwbuMoX/exec";
     const CLOUD_TOKEN = "Rahas1aFambarLa2026";
     const PIN_DARURAT = "170823";
+    let isSystemLockedByCriticalPopup = false;
 
     // =========================================================
     // [INJEKSI ENTERPRISE]: SECURITY CORE ENGINE
@@ -1095,24 +1096,42 @@
     };
     // =========================================================
 
+            // =========================================================
+    // [INJEKSI QA FINAL]: OMNI-ANTENNA UPDATE SENSOR (Anti Skip-Waiting)
+    // =========================================================
+    let isUpdatePopupShown = false; // Mencegah pop-up ganda jika kedua antena menangkap sinyal
+    
+    function tampilkanPopUpUpdate() {
+        if (isUpdatePopupShown) return;
+        isUpdatePopupShown = true;
+        if (typeof showPopup === 'function') {
+            showPopup('alert', "Versi baru aplikasi tersedia!\n\nPembaruan sistem telah diperbarui.", "var(--cloud)", () => {
+                window.location.reload();
+            }, null, false, true);
+        }
+    }
+
     try {
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('./sw.js').catch(() => {});
+            
+            // ANTENA 1 (HARD UPDATE): Mendeteksi saat Service Worker baru (yang agresif) selesai mengambil alih halaman
+            navigator.serviceWorker.addEventListener('controllerchange', () => {
+                setTimeout(tampilkanPopUpUpdate, 500);
+            });
         }
     } catch (e) {}
 
-        // [INJEKSI FITUR]: Menangkap sinyal pembaruan (BroadcastChannel) dari sw.js
+    // ANTENA 2 (SOFT UPDATE): Mendeteksi sinyal teks beda dari BroadcastChannel
     if ('BroadcastChannel' in window) {
         const updateChannel = new BroadcastChannel('fambarla-update-channel');
         updateChannel.onmessage = (event) => {
             if (event.data && event.data.type === 'UPDATE_AVAILABLE') {
-                // BUG FIXED: Menggunakan pop-up penahan (blocking) agar tidak me-reload paksa saat user sedang input data
-                showPopup('alert', "Versi baru aplikasi tersedia!\n\nPembaruan telah diunduh. Silakan tekan OK untuk memuat ulang sistem.", "var(--cloud)", () => {
-                    window.location.reload();
-                });
+                tampilkanPopUpUpdate();
             }
         };
     }
+    // =========================================================
     
     let AppState = {
         db: { income: [], expense: [], mutations: [], plots: [], pengingat: [], hutang: [], piutang: [], spaylater: [], spinjam: [] },
@@ -1166,8 +1185,12 @@
     }
 
     function tutupModalAman(modalId) {
-        const modal = document.getElementById(modalId);
-        if(modal) modal.classList.add('hidden');
+    // [INJEKSI QA FINAL]: Hard-Guard Firewall. Tolak perintah tutup dari background jika pop-up kritis aktif!
+    if (modalId === 'custom-modal' && typeof isSystemLockedByCriticalPopup !== 'undefined' && isSystemLockedByCriticalPopup) return;
+
+    const modal = document.getElementById(modalId);
+    if(modal) modal.classList.add('hidden');
+    // ...
         
         setTimeout(() => {
             const openModals = document.querySelectorAll('.modal-overlay:not(.hidden)');
@@ -1385,10 +1408,11 @@
         const amankanNama = (nm) => { const n = String(nm || '').trim(); return validNames.find(v => v.toLowerCase() === n.toLowerCase()) || 'Tunai'; };
 
         // 1. Dinding Penghalang Waktu (Time-Wall Firewall) untuk fleksibilitas Load Acak
-        let batasWaktuCarryover = "2000-01-01";
+                let batasWaktuCarryover = "2000-01-01";
         const cekBatas = (arr) => {
             for(let i = 0; i < arr.length; i++) {
-                if (String(arr[i].id).startsWith('CARRYOVER_') && arr[i].date > batasWaktuCarryover) {
+                // [INJEKSI QA]: Tangkap juga awalan RINGKAS_ agar Memory Leak tidak terjadi paska Import Ringkas
+                if ((String(arr[i].id).startsWith('CARRYOVER_') || String(arr[i].id).startsWith('RINGKAS_')) && arr[i].date > batasWaktuCarryover) {
                     batasWaktuCarryover = arr[i].date;
                 }
             }
@@ -1480,7 +1504,11 @@
         if (extMenu && !extMenu.classList.contains('hidden') && !e.target.closest('.extra-menu-wrapper')) tutupSemuaMenuDrop();
         document.querySelectorAll('.custom-select-options').forEach(el => { if (!el.classList.contains('hidden') && !e.target.closest('.custom-select-container')) el.classList.add('hidden'); });
     });
-    function showPopup(mode, pesan, warnaTema = '#ffffff', callback = null, nilaiAwal = null, isAngka = false) {
+    function showPopup(mode, pesan, warnaTema = '#ffffff', callback = null, nilaiAwal = null, isAngka = false, isCritical = false) {
+        // [INJEKSI QA]: Blokir pop-up rutin (jatuh tempo, dll) jika pop-up kritis sedang tampil
+        if (isSystemLockedByCriticalPopup && !isCritical) return; 
+        if (isCritical) isSystemLockedByCriticalPopup = true;
+
         const overlay = document.getElementById('custom-modal');
         if (!overlay.classList.contains('hidden') && mode !== 'loading' && document.getElementById('modal-loader').classList.contains('hidden') === false) tutupModalAman('custom-modal'); 
 
@@ -1496,7 +1524,12 @@
         input.classList.add('hidden'); btnBatal.classList.add('hidden'); btnOk.classList.add('hidden'); if(loader) loader.classList.add('hidden');
         input.value = ''; input.oninput = null; btnOk.onclick = null; btnBatal.onclick = null;
 
-        const closeFunc = () => { input.type = 'text'; tutupModalAman('custom-modal'); };
+        const closeFunc = () => {
+    input.type = 'text';
+    // [INJEKSI QA FINAL]: Lepaskan kunci sistem LEBIH AWAL sebelum penutupan modal
+    if (isCritical) isSystemLockedByCriticalPopup = false; 
+    tutupModalAman('custom-modal');
+};
         const wrapCallback = (val) => { btnOk.disabled = true; setTimeout(() => { if (btnOk) btnOk.disabled = false; }, 1500); closeFunc(); if(callback) callback(val); };
 
         if (mode === 'loading') { if(loader) loader.classList.remove('hidden'); } 
@@ -1674,20 +1707,19 @@
                             let localPayments = (idx !== -1 && Array.isArray(lokalArr[idx].paymentIds)) ? lokalArr[idx].paymentIds : [];
                             const cloudPayments = Array.isArray(cItem.paymentIds) ? cItem.paymentIds : [];
 
-                            const cloudSet = new Set(cloudPayments);
-                            const newLocalPayments = localPayments.filter(id => !cloudSet.has(id)); 
-                            const combinedPayments = [...cloudPayments, ...newLocalPayments];
+                                                        const cloudSet = new Set(cloudPayments);
+                            // [INJEKSI QA]: Kepercayaan Mutlak pada Cloud, jangan hidupkan ID lokal yang sudah dihapus di Cloud
+                            const combinedPayments = [...cloudPayments];
 
-                            let totalTerbayarBaru = cItem.paidAmount || 0;
+                                                        let totalTerbayarBaru = cItem.paidAmount || 0;
                             let validPayments = [];
 
                             combinedPayments.forEach(pid => {
                                 const trx = AppState.db.expense.find(x => x.id === pid) || AppState.db.income.find(x => x.id === pid);
                                 if (trx) {
                                     validPayments.push(pid);
-                                    if (newLocalPayments.includes(pid)) {
-                                        totalTerbayarBaru += trx.amount;
-                                    }
+                                    // [INJEKSI QA]: Logika penambahan dihapus. Nilai 'totalTerbayarBaru' 
+                                    // kini 100% akurat mengikuti data mutlak dari Cloud.
                                 }
                             });
 
@@ -2391,7 +2423,7 @@
         XLSX.writeFile(wb, `uang_famBARLA_Backup_${Utils.tglHariIni()}.xlsx`);
     }
 
-        function parseExcelDate(val) {
+    function parseExcelDate(val) {
         if (!val) return null;
         // Penanganan format Serial Number Excel
         if (!isNaN(val)) { 
@@ -2401,22 +2433,26 @@
             return new Date(Date.UTC(1899, 11, 30 + days, 12, 0, 0)).toISOString().split('T')[0]; 
         }
         // Penanganan format String/Teks dengan Deteksi Cerdas
-                        if (typeof val === 'string') { 
+        if (typeof val === 'string') { 
             let cleanVal = val.split(' ')[0].split('T')[0]; // Ekstrak murni tanggal, sterilkan time/timezone
             let p = cleanVal.split(/[-/]/); 
             if (p.length === 3) {
-                if (p[2].length === 4) {
+                let yearPart = p[2];
+                // [INJEKSI QA]: Tangani otomatis format tahun YY menjadi YYYY (asumsi tahun 2000-an)
+                if (yearPart.length === 2) yearPart = "20" + yearPart; 
+
+                if (yearPart.length === 4) {
                     let part0 = parseInt(p[0], 10);
                     let part1 = parseInt(p[1], 10);
                     
                     // Jika indeks 0 lebih dari 12, ia pasti Hari. Format: DD/MM/YYYY
-                    if (part0 > 12) return `${p[2]}-${String(part1).padStart(2,'0')}-${String(part0).padStart(2,'0')}`;
+                    if (part0 > 12) return `${yearPart}-${String(part1).padStart(2,'0')}-${String(part0).padStart(2,'0')}`;
                     
                     // Jika indeks 1 lebih dari 12, ia pasti Hari. Format: MM/DD/YYYY
-                    if (part1 > 12) return `${p[2]}-${String(part0).padStart(2,'0')}-${String(part1).padStart(2,'0')}`;
+                    if (part1 > 12) return `${yearPart}-${String(part0).padStart(2,'0')}-${String(part1).padStart(2,'0')}`;
                     
                     // Jika keduanya <= 12, default ke standar Indonesia: DD/MM/YYYY
-                    return `${p[2]}-${String(part1).padStart(2,'0')}-${String(part0).padStart(2,'0')}`;
+                    return `${yearPart}-${String(part1).padStart(2,'0')}-${String(part0).padStart(2,'0')}`;
                 }
                 // Jika formatnya YYYY-MM-DD
                 if (p[0].length === 4) return `${p[0]}-${p[1].padStart(2,'0')}-${p[2].padStart(2,'0')}`; 
@@ -3189,11 +3225,16 @@
                 inisiasiKalenderAwal(); updatePlotList(); updateRekap(); updateWalletDropdownBalances(); jalankanJam(); cekNotifikasiJatuhTempo(); showPage(null, 'pemasukan', 0); terapkanVersi(); 
             } catch(e) {}
 
-            const loader = document.getElementById('modal-loader');
-            if (loader && !loader.classList.contains('hidden')) { tutupModalAman('custom-modal'); }
-            
-            // Jaminan Mutlak QA 2: Paksa lepaskan kunci layar (Deadlock) yang tersangkut
-            setTimeout(() => { document.body.classList.remove('modal-open'); }, 150);
+                    const loader = document.getElementById('modal-loader');
+        // [INJEKSI QA FINAL]: Cegah trigger penutup jika sistem terkunci oleh Pop-Up Kritis
+        if (loader && !loader.classList.contains('hidden') && !isSystemLockedByCriticalPopup) { tutupModalAman('custom-modal'); }
+
+                // Jaminan Mutlak QA 2: Paksa lepaskan kunci layar (Deadlock) yang tersangkut
+        setTimeout(() => { 
+            // [INJEKSI QA FINAL]: Jangan lepaskan kuncian UI background jika Pop-up Kritis sedang tampil!
+            if (typeof isSystemLockedByCriticalPopup !== 'undefined' && isSystemLockedByCriticalPopup) return;
+            document.body.classList.remove('modal-open'); 
+        }, 150);
         }
     });
 </script>
