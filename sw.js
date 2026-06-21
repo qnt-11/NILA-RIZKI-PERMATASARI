@@ -1,4 +1,8 @@
-const APP_VERSION = '7.5'; // PASTIKAN VERSI INI SAMA DENGAN DI index.html
+// ====================
+// SERVICE WORKER (PWA)
+// ====================
+
+const APP_VERSION = '7.6'; // PASTIKAN VERSI INI SAMA DENGAN DI index.html
 const CACHE_PREFIX = 'uang-fambarla-';
 const CACHE_STATIC = CACHE_PREFIX + 'static-v' + APP_VERSION;
 const CACHE_DYNAMIC = CACHE_PREFIX + 'dynamic-v' + APP_VERSION;
@@ -56,7 +60,10 @@ self.addEventListener('install', event => {
                   .then(fallbackRes => cache.put(asset, fallbackRes))
                   .catch(() => console.warn('[SW] Aset CDN gagal di-cache:', asset));
               }
-              throw err; 
+              // [INJEKSI QA]: Mencegah "Hollow Cache" (Cache Kosong)
+              // Jangan gagalkan seluruh proses instalasi SW hanya karena 1 aset lokal gagal di-fetch (misal karena strict routing server).
+              console.warn('[SW] Aset lokal gagal di-cache, diabaikan agar instalasi berlanjut:', asset);
+              return Promise.resolve(); 
             });
         })
       );
@@ -115,27 +122,37 @@ self.addEventListener('fetch', event => {
     return;
   }
 
-  const isHtmlRequest = req.mode === 'navigate' || (req.headers.get('accept') && req.headers.get('accept').includes('text/html'));
+    const isHtmlRequest = req.mode === 'navigate' || (req.headers.get('accept') && req.headers.get('accept').includes('text/html'));
   const cacheKey = isHtmlRequest ? './index.html' : req;
 
-    // STRATEGI 2: STALE-WHILE-REVALIDATE UNTUK HTML (Pure Stream, No RAM Bottleneck)
+  // STRATEGI 2: STALE-WHILE-REVALIDATE UNTUK HTML (Multi-Fallback Resolusi Kuat)
   if (isHtmlRequest) {
     event.respondWith(
-      caches.match(cacheKey, { ignoreSearch: true }).then(cachedResponse => {
-        const networkFetch = fetch(req).then(networkResponse => {
-          if (networkResponse && networkResponse.ok) {
-            const cloneToCache = networkResponse.clone();
-            caches.open(CACHE_STATIC).then(cache => cache.put(cacheKey, cloneToCache));
-          }
-          return networkResponse;
-        }).catch(() => {
-          console.log('[SW] Offline/Timeout. Menggunakan HTML Fallback.');
-          return caches.match('./index.html', { ignoreSearch: true });
-        });
+      // [INJEKSI QA]: Multi-Lapis Fallback. Mulai dari request asli -> root '/' -> '/index.html'
+      caches.match(req, { ignoreSearch: true })
+        .then(res => res || caches.match('./', { ignoreSearch: true }))
+        .then(res => res || caches.match('./index.html', { ignoreSearch: true }))
+        .then(cachedResponse => {
+          
+          const networkFetch = fetch(req).then(networkResponse => {
+            if (networkResponse && networkResponse.ok) {
+              const cloneToCache = networkResponse.clone();
+              // Simpan dengan key request asli agar cache lebih akurat di masa depan
+              caches.open(CACHE_STATIC).then(cache => cache.put(req, cloneToCache));
+            }
+            return networkResponse;
+          }).catch(() => {
+            console.log('[SW] Offline/Timeout. Menggunakan HTML Fallback Multi-Lapis.');
+            // [CRITICAL FIX]: Jika offline dan cache benar-benar kosong, paksa Response.error()
+            // Jika me-return `undefined`, browser otomatis meledak ke layar "Anda Offline".
+            return cachedResponse || Response.error();
+          });
 
-        event.waitUntil(networkFetch);
-        return cachedResponse || networkFetch;
-      })
+          event.waitUntil(networkFetch);
+          
+          // Pastikan kembalian akhir selalu berupa object Response yang valid
+          return cachedResponse || networkFetch;
+        })
     );
     return;
   }
