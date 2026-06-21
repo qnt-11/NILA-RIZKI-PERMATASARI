@@ -981,8 +981,8 @@
 </div>
 <input type="file" id="file-import" accept=".xlsx, .xls" class="hidden" onchange="importFromExcel(event)">
 <script>
-    const APP_VERSION = "7.5"; 
-    const CLOUD_URL = "https://script.google.com/macros/s/AKfycbwW8xkj17rha0oeeWx9oGMyGoJowe4wazYBx5lwFsi_SZRgGVb4hT9fX3wcfWwbuMoX/exec";
+    const APP_VERSION = "7.6"; 
+    const CLOUD_URL = "https://script.google.com/macros/s/AKfycbxCKZAIpzmjWFJpciepeFgQIdWmEw3_o34RXk18Rw_-6oiJ2iWxlTe44-GEnW58sT5g/exec";
     const CLOUD_TOKEN = "Rahas1aFambarLa2026";
     const PIN_DARURAT = "170823";
     let isSystemLockedByCriticalPopup = false;
@@ -2407,7 +2407,7 @@
         XLSX.writeFile(wb, `uang_famBARLA_Backup_${Utils.tglHariIni()}.xlsx`);
     }
 
-    function parseExcelDate(val) {
+        function parseExcelDate(val) {
         if (!val) return null;
         // Penanganan format Serial Number Excel
         if (!isNaN(val)) { 
@@ -2421,8 +2421,11 @@
             let cleanVal = val.split(' ')[0].split('T')[0]; // Ekstrak murni tanggal, sterilkan time/timezone
             let p = cleanVal.split(/[-/]/); 
             if (p.length === 3) {
+                // [INJEKSI QA]: Validasi format YYYY-MM-DD ISO (Standar ekspor sistem) harus dieksekusi SEBELUM manipulasi asumsi tanggal/tahun!
+                if (p[0].length === 4) return `${p[0]}-${p[1].padStart(2,'0')}-${p[2].padStart(2,'0')}`; 
+
                 let yearPart = p[2];
-                // [INJEKSI QA]: Tangani otomatis format tahun YY menjadi YYYY (asumsi tahun 2000-an)
+                // Tangani otomatis format tahun YY menjadi YYYY (asumsi tahun 2000-an)
                 if (yearPart.length === 2) yearPart = "20" + yearPart; 
 
                 if (yearPart.length === 4) {
@@ -2438,8 +2441,6 @@
                     // Jika keduanya <= 12, default ke standar Indonesia: DD/MM/YYYY
                     return `${yearPart}-${String(part1).padStart(2,'0')}-${String(part0).padStart(2,'0')}`;
                 }
-                // Jika formatnya YYYY-MM-DD
-                if (p[0].length === 4) return `${p[0]}-${p[1].padStart(2,'0')}-${p[2].padStart(2,'0')}`; 
             } 
         }
         return null;
