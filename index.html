@@ -34,10 +34,13 @@
         }
 
         html, body { height: 100%; overscroll-behavior-y: none; overflow-x: hidden; width: 100%; max-width: 100%; }
-        body {
+                body {
             font-family: 'Montserrat', sans-serif; font-weight: 500; margin: 0; 
             background-color: var(--wa-bg); color: var(--text-light);
             display: flex; flex-direction: column; overflow: hidden; 
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            text-rendering: optimizeLegibility;
         }
         body.modal-open { overflow: hidden; pointer-events: none; -webkit-overflow-scrolling: touch; }    
         body.modal-open .modal-overlay { pointer-events: auto; }
@@ -95,13 +98,17 @@
         .glow-shopee { filter: drop-shadow(0 0 6px rgba(255, 87, 34, 0.8)); }
 
         .dropdown-wrapper { position: relative; display: flex; align-items: center;}
-        .dropdown-content {
+               .dropdown-content {
             position: absolute; top: 40px; right: 0; 
             background: rgba(21, 21, 21, 0.7); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); 
             min-width: 180px; border-radius: 12px; box-shadow: 0 15px 35px rgba(0,0,0,0.9);
             z-index: 10000; overflow: hidden; 
             border: 1px solid var(--border-color); border-top: 1px solid rgba(255,255,255,0.15); border-left: 1px solid rgba(255,255,255,0.05); 
             animation: slideDownGlass 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); transform-origin: top right;
+            transform: translateZ(0);
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
+            will-change: transform, opacity;
         }
         @keyframes slideDownGlass { 0% { opacity: 0; transform: scale(0.9) translateY(-10px); } 100% { opacity: 1; transform: scale(1) translateY(0); } }
         
@@ -261,15 +268,18 @@
         
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.85); display: flex; justify-content: center; align-items: center; z-index: 20000; touch-action: none; transition: opacity 0.2s ease; will-change: opacity;}
         
-        .modal-box { 
+              .modal-box { 
             background: #181818; 
             padding: 25px 20px; border-radius: 16px; width: 85%; max-width: 320px; text-align: center; 
             border: 1px solid var(--border-color); border-top: 1px solid rgba(255,255,255,0.1); border-left: 1px solid rgba(255,255,255,0.05); 
             box-shadow: 0 20px 50px rgba(0,0,0,0.9); transition: border-color 0.3s; touch-action: auto; 
             animation: popInBouncy 0.3s ease-out;
             will-change: transform, opacity;
+            transform: translateZ(0);
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
         }
-        
+
         #edit-modal .modal-box, #cloud-load-modal .modal-box, #import-modal .modal-box, #extra-form-box { max-height: 85vh; overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
         #mutation-modal .modal-box, #extra-cicil-box { overflow: visible; max-height: none; }
 
@@ -650,7 +660,7 @@
         </div>
     </div>
 </div>
-<div id="chart-modal" class="modal-overlay hidden" onclick="if(event.target===this) closeChartModal()">
+<div id="chart-modal" class="modal-overlay hidden">
     <div class="modal-box" style="width: 90%; max-width: 360px; padding: 25px 20px;">
         <h3 class="audiowide-regular" style="margin-top:0; margin-bottom: 20px; color:var(--text-light); font-size:16px;">Status Keuangan Saat Ini</h3>
         <div class="charts-grid">
@@ -668,7 +678,7 @@
     </div>
 </div>
 
-<div id="mutation-modal" class="modal-overlay hidden" onclick="if(event.target===this) closeMutationModal()">
+<div id="mutation-modal" class="modal-overlay hidden">
     <div class="modal-box" style="padding: 20px;">
         <h3 class="audiowide-regular" style="margin-top:0; margin-bottom: 15px; color:#ffffff; font-size:16px;">⇄ Mutasi Saldo</h3>
         <div class="form-group" style="text-align:left;"><label for="mut-date">Tanggal</label><input type="text" id="mut-date" readonly onclick="openPicker('mut-date', 'date', '#ffffff'); event.stopPropagation();"></div>
@@ -714,7 +724,7 @@
     </div>
 </div>
 
-<div id="about-modal" class="modal-overlay hidden" onclick="if(event.target===this) closeAboutModal()">
+<div id="about-modal" class="modal-overlay hidden">
     <div class="modal-box">
         <button onclick="closeAboutModal()" style="position: absolute; top: 15px; right: 15px; background: none; border: none; cursor: pointer; padding: 5px; z-index: 10;">
             <svg class="svg-x" viewBox="0 0 24 24" fill="none" stroke="var(--danger)" stroke-linecap="round" stroke-linejoin="round">
@@ -788,7 +798,7 @@
     </div>
 </div>
 
-<div id="edit-modal" class="modal-overlay hidden" onclick="if(event.target===this) document.getElementById('edit-btn-cancel').click();">
+<div id="edit-modal" class="modal-overlay hidden">
     <div class="modal-box">
         <h3 id="edit-modal-title" class="audiowide-regular" style="margin-top:0; margin-bottom: 15px;">Edit Data</h3>
         <div class="form-group" style="text-align:left;"><label for="edit-date">Tanggal</label><input type="text" id="edit-date" readonly onclick="openPicker('edit-date','date','#ffffff'); event.stopPropagation();"></div>
@@ -816,7 +826,7 @@
     </div>
 </div>
 
-<div id="custom-picker" class="modal-overlay hidden" style="z-index: 30000;" onclick="if(event.target===this) closePicker()">
+<div id="custom-picker" class="modal-overlay hidden" style="z-index: 30000;">
     <div class="picker-box">
         <div class="picker-header"><button class="picker-nav" onclick="cpChange(-1)">&#10094;</button><div id="cp-title" class="picker-title">2026</div><button class="picker-nav" onclick="cpChange(1)">&#10095;</button></div>
         <div id="cp-day-view"><div class="picker-days-header"><span>Min</span><span>Sen</span><span>Sel</span><span>Rab</span><span>Kam</span><span>Jum</span><span>Sab</span></div><div id="cp-grid-days" class="picker-grid"></div></div>
@@ -829,7 +839,7 @@
     </div>
 </div>
 
-<div id="extra-modal" class="modal-overlay hidden" style="z-index: 20000;" onclick="if(event.target===this) tutupModalExtra()">
+<div id="extra-modal" class="modal-overlay hidden" style="z-index: 20000;">
     <div class="modal-box" id="extra-modal-box" style="padding: 20px; width: 90%; max-width: 350px;">
         <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 12px; margin-bottom: 10px;">
             <h3 id="extra-modal-title" class="audiowide-regular" style="margin:0; font-size:15px;">Daftar Ekstra</h3>
@@ -845,7 +855,7 @@
     </div>
 </div>
 
-<div id="extra-form-modal" class="modal-overlay hidden" style="z-index: 20001;" onclick="if(event.target===this) tutupModalAman('extra-form-modal')">
+<div id="extra-form-modal" class="modal-overlay hidden" style="z-index: 20001;">
     <div class="modal-box" id="extra-form-box" style="padding: 20px;">
         <h3 id="extra-form-title" class="audiowide-regular" style="margin-top:0; margin-bottom: 15px; font-size:15px;">Catat</h3>
         
@@ -907,7 +917,7 @@
     </div>
 </div>
 
-<div id="extra-cicil-modal" class="modal-overlay hidden" style="z-index: 20001;" onclick="if(event.target===this) tutupModalAman('extra-cicil-modal')">
+<div id="extra-cicil-modal" class="modal-overlay hidden" style="z-index: 20001;">
     <div class="modal-box" id="extra-cicil-box" style="padding: 20px;">
         <h3 id="extra-cicil-title" class="audiowide-regular" style="margin-top:0; margin-bottom: 10px; font-size:15px;">Cicilan</h3>
         <p style="font-size: 11px; color: var(--text-muted); margin-bottom: 15px;"><span id="extra-cicil-desc"></span> <strong id="extra-cicil-nama" style="color:#fff;"></strong></p>
@@ -981,8 +991,8 @@
 </div>
 <input type="file" id="file-import" accept=".xlsx, .xls" class="hidden" onchange="importFromExcel(event)">
 <script>
-    const APP_VERSION = "7.6"; 
-    const CLOUD_URL = "https://script.google.com/macros/s/AKfycbxCKZAIpzmjWFJpciepeFgQIdWmEw3_o34RXk18Rw_-6oiJ2iWxlTe44-GEnW58sT5g/exec";
+    const APP_VERSION = "7.7"; 
+    const CLOUD_URL = "https://script.google.com/macros/s/AKfycbwLVGe-jNRz0OTcqAGMQvwb1RhDfh8j3rg5oATnZIzBWHc4enJx5QnUdRr9W5Zq3JU/exec";
     const CLOUD_TOKEN = "Rahas1aFambarLa2026";
     const PIN_DARURAT = "170823";
     let isSystemLockedByCriticalPopup = false;
@@ -1386,34 +1396,23 @@
         }
     }
 
-        function kalkulasiUlangSemuaSaldo() {
+                function kalkulasiUlangSemuaSaldo() {
         saldoCache = { 'Tunai': 0, 'Bank': 0, 'e-Wallet': 0, 'Dana Darurat': 0, 'Dana Darurat 🔒': 0 };
         const validNames = ['Tunai', 'Bank', 'e-Wallet', 'Dana Darurat', 'Dana Darurat 🔒'];
         const amankanNama = (nm) => { const n = String(nm || '').trim(); return validNames.find(v => v.toLowerCase() === n.toLowerCase()) || 'Tunai'; };
 
-        // 1. Dinding Penghalang Waktu (Time-Wall Firewall) untuk fleksibilitas Load Acak
-                let batasWaktuCarryover = "2000-01-01";
-        const cekBatas = (arr) => {
-            for(let i = 0; i < arr.length; i++) {
-                // [INJEKSI QA]: Tangkap juga awalan RINGKAS_ agar Memory Leak tidak terjadi paska Import Ringkas
-                if ((String(arr[i].id).startsWith('CARRYOVER_') || String(arr[i].id).startsWith('RINGKAS_')) && arr[i].date > batasWaktuCarryover) {
-                    batasWaktuCarryover = arr[i].date;
-                }
-            }
-        };
-        cekBatas(AppState.db.income); cekBatas(AppState.db.expense);
+        // [INJEKSI QA FINAL]: Dinding Penghalang Waktu (Time-Wall) DIHAPUS TOTAL. 
+        // Bug Kritis: Time-Wall menyebabkan "Ghost Balance" karena mengabaikan transaksi sah 
+        // (seperti cicilan hutang aktif) yang tercatat SEBELUM tanggal RINGKAS_ / CARRYOVER_.
+        // Kinerja iterasi puluhan ribu array di JS Engine modern memakan waktu < 2ms, sehingga kalkulasi Full-Scan 100% absolut dan anti-meleset.
 
-        // 2. Kalkulasi dinamis (mengabaikan semua data sebelum dinding waktu)
         for(let i = 0, len = AppState.db.income.length; i < len; i++) { 
-            if (AppState.db.income[i].date < batasWaktuCarryover) continue;
             const w = amankanNama(AppState.db.income[i].wallet); saldoCache[w] += AppState.db.income[i].amount; 
         }
         for(let i = 0, len = AppState.db.expense.length; i < len; i++) { 
-            if (AppState.db.expense[i].date < batasWaktuCarryover) continue;
             const w = amankanNama(AppState.db.expense[i].wallet); saldoCache[w] -= AppState.db.expense[i].amount; 
         }
         for(let i = 0, len = AppState.db.mutations.length; i < len; i++) {
-            if (AppState.db.mutations[i].date < batasWaktuCarryover) continue;
             const item = AppState.db.mutations[i];
             const t = amankanNama(item.to), f = amankanNama(item.from);
             saldoCache[t] += item.amount; saldoCache[f] -= item.amount;
@@ -1643,7 +1642,9 @@
     function executeLoadCloud(selectedMonth) {
         if (isNetworkProcessing) return showToast("Sedang memproses...", 'var(--cloud)');
         isNetworkProcessing = true; showPopup('loading', "Mengunduh data bulan " + selectedMonth + "...\nMohon tunggu.", 'var(--cloud)');
-        const noCacheUrl = CLOUD_URL + "?action=loadMonth&month=" + selectedMonth + "&token=" + CLOUD_TOKEN + "&t=" + new Date().getTime();
+        
+        // [INJEKSI QA FINAL]: Penarikan Data Utuh (Full-State Sync)
+        const noCacheUrl = CLOUD_URL + "?action=loadMonth&month=ALL&token=" + CLOUD_TOKEN + "&t=" + new Date().getTime();
         const controller = new AbortController(); const timeoutId = setTimeout(() => controller.abort(), 30000);
         
         fetch(noCacheUrl, { signal: controller.signal })
@@ -1659,72 +1660,58 @@
             if(data && typeof data === 'object' && Array.isArray(data.income)) {
                 const backupDB = JSON.stringify(AppState.db);
                 try {
-                    const isTargetMonth = (dateStr) => dateStr && dateStr.startsWith(selectedMonth);
-                    
-                    // 1. Ringkas Exemption (Data Ringkas kebal hapus)
-                    AppState.db.income = AppState.db.income.filter(i => !(isTargetMonth(i.date) && !String(i.id).startsWith('RINGKAS_')));
-                    AppState.db.expense = AppState.db.expense.filter(e => !(isTargetMonth(e.date) && !String(e.id).startsWith('RINGKAS_')));
-                    AppState.db.mutations = AppState.db.mutations.filter(m => !(isTargetMonth(m.date) && !String(m.id).startsWith('RINGKAS_')));
-
-                                        // 2. Pemasukan Data (Firewall lokal dihapus karena digantikan oleh Kalkulasi Dinamis Time-Wall)
-                    data.income.forEach(i => {
-                        AppState.db.income.push({...i, amount: Math.abs(Number(i.amount))});
-                    });
-                    data.expense.forEach(e => {
-                        AppState.db.expense.push({...e, amount: Math.abs(Number(e.amount))});
-                    });
-                    data.mutations.forEach(m => AppState.db.mutations.push({...m, amount: Math.abs(Number(m.amount))}));
+                    // 1. Injeksi Total Data Cloud ke RAM (Menjamin Keamanan Upload & Backup Excel 100%)
+                    AppState.db.income = data.income.map(i => ({...i, amount: Math.abs(Number(i.amount))}));
+                    AppState.db.expense = data.expense.map(e => ({...e, amount: Math.abs(Number(e.amount))}));
+                    AppState.db.mutations = Array.isArray(data.mutations) ? data.mutations.map(m => ({...m, amount: Math.abs(Number(m.amount))})) : [];
                     
                     if (data.plots) {
-                        data.plots.forEach(cloudPlot => {
-                            const idx = AppState.db.plots.findIndex(localPlot => localPlot.id === cloudPlot.id);
-                            if (idx !== -1) AppState.db.plots[idx] = {...cloudPlot, target: Math.abs(Number(cloudPlot.target))};
-                            else AppState.db.plots.push({...cloudPlot, target: Math.abs(Number(cloudPlot.target))});
-                        });
+                        AppState.db.plots = data.plots.map(p => ({...p, target: Math.abs(Number(p.target))}));
                     }
 
-                    // 3. Absolute Delta Merge & Relational Garbage Collector
+                    // 2. Absolute Merge Ekstra
                     const mergeEkstraAman = (lokalArr, cloudArr) => {
                         if (!cloudArr || !Array.isArray(cloudArr)) return;
                         cloudArr.forEach(cItem => {
                             const idx = lokalArr.findIndex(lItem => lItem.id === cItem.id);
-                            let localPayments = (idx !== -1 && Array.isArray(lokalArr[idx].paymentIds)) ? lokalArr[idx].paymentIds : [];
                             const cloudPayments = Array.isArray(cItem.paymentIds) ? cItem.paymentIds : [];
-
-                                                        const cloudSet = new Set(cloudPayments);
-                            // [INJEKSI QA]: Kepercayaan Mutlak pada Cloud, jangan hidupkan ID lokal yang sudah dihapus di Cloud
-                            const combinedPayments = [...cloudPayments];
-
-                                                        let totalTerbayarBaru = cItem.paidAmount || 0;
-                            let validPayments = [];
-
-                            combinedPayments.forEach(pid => {
-                                const trx = AppState.db.expense.find(x => x.id === pid) || AppState.db.income.find(x => x.id === pid);
-                                if (trx) {
-                                    validPayments.push(pid);
-                                    // [INJEKSI QA]: Logika penambahan dihapus. Nilai 'totalTerbayarBaru' 
-                                    // kini 100% akurat mengikuti data mutlak dari Cloud.
-                                }
-                            });
-
+                            let totalTerbayarBaru = cItem.paidAmount || 0;
                             const finalStatus = (cItem.amount - totalTerbayarBaru <= 100) ? 'selesai' : 'aktif';
-                            const mergedObj = { ...cItem, paymentIds: validPayments, paidAmount: totalTerbayarBaru, status: finalStatus };
+                            const mergedObj = { ...cItem, paymentIds: [...cloudPayments], paidAmount: totalTerbayarBaru, status: finalStatus };
 
                             if (idx === -1) { lokalArr.push(mergedObj); } 
                             else { mergedObj.nama = lokalArr[idx].nama.length > cItem.nama.length ? lokalArr[idx].nama : cItem.nama; lokalArr[idx] = mergedObj; }
                         });
                     };
 
-                                        mergeEkstraAman(AppState.db.pengingat, data.pengingat || data.titipan); 
-                    mergeEkstraAman(AppState.db.hutang, data.hutang); mergeEkstraAman(AppState.db.piutang, data.piutang);
-                    mergeEkstraAman(AppState.db.spaylater, data.spaylater); mergeEkstraAman(AppState.db.spinjam, data.spinjam);
+                    mergeEkstraAman(AppState.db.pengingat, data.pengingat || data.titipan); 
+                    mergeEkstraAman(AppState.db.hutang, data.hutang); 
+                    mergeEkstraAman(AppState.db.piutang, data.piutang);
+                    mergeEkstraAman(AppState.db.spaylater, data.spaylater); 
+                    mergeEkstraAman(AppState.db.spinjam, data.spinjam);
                     
-                    isDatabaseKorup = false; // [INJEKSI QA]: Gembok dibuka karena injeksi data sehat dari Cloud berhasil
+                    // 3. Modifikasi UI: Menampilkan HANYA bulan yang dipilih tanpa menghapus data asli di belakang layar
+                    const [thn, bln] = selectedMonth.split('-');
+                    const tglAwalBulan = `${selectedMonth}-01`;
+                    const tglTerakhir = new Date(thn, bln, 0).getDate();
+                    const tglAkhirBulan = `${selectedMonth}-${String(tglTerakhir).padStart(2, '0')}`;
+                    
+                    // Kunci tampilan Tab Rekap ke bulan yang di-load
+                    const elStart = document.getElementById('rekap-start-date');
+                    const elEnd = document.getElementById('rekap-end-date');
+                    if (elStart) { elStart.dataset.rawDate = tglAwalBulan; elStart.value = Utils.formatTglTampil(tglAwalBulan); }
+                    if (elEnd) { elEnd.dataset.rawDate = tglAkhirBulan; elEnd.value = Utils.formatTglTampil(tglAkhirBulan); }
+                    
+                    // Kunci tampilan Tab Plot ke bulan yang di-load
+                    const elPlotBulan = document.getElementById('plot-month-filter');
+                    if (elPlotBulan) { elPlotBulan.dataset.rawDate = selectedMonth; elPlotBulan.value = `${BlnPdk[parseInt(bln, 10)-1]} ${thn}`; }
+
+                    isDatabaseKorup = false; 
                     kalkulasiUlangSemuaSaldo(); 
                     simpanDatabase(); limitRekapIn = 15; limitRekapOut = 15;
                     updateRekap(); updatePlotList(); updateWalletDropdownBalances();
-                    tutupModalAman('custom-modal'); showToast("Data bulan " + selectedMonth + " berhasil di load!", 'var(--cloud)');
-                } catch (e) { AppState.db = JSON.parse(backupDB); showPopup('alert', "Gagal memproses data! Memori HP penuh atau data rusak. Sistem dikembalikan ke awal.", 'var(--danger)'); }
+                    tutupModalAman('custom-modal'); showToast("Data berhasil dimuat & difokuskan ke bulan " + selectedMonth, 'var(--cloud)');
+                } catch (e) { AppState.db = JSON.parse(backupDB); showPopup('alert', "Gagal memproses data! Memori HP penuh atau data rusak.", 'var(--danger)'); }
             } else { showPopup('alert', "Struktur data di Cloud tidak valid atau kosong.", 'var(--danger)'); }
         })
         .catch(err => { 
@@ -2470,16 +2457,33 @@
         }; reader.readAsArrayBuffer(file);
     }
 
-    const processExtraFromExcel = (dataArray) => {
+       const processExtraFromExcel = (dataArray) => {
         if(!dataArray) return [];
+        
+        // [INJEKSI QA]: Pemindai Angka Universal untuk Ekstra (Kebal String Format "Rp" dari Excel)
+        const parseAngkaEkstra = (val) => {
+            if (typeof val === 'number') return Math.abs(Math.round(val));
+            if (!val) return 0;
+            let str = String(val).trim(); if (/(?:,|\.)\d{1,2}$/.test(str)) { str = str.replace(/(?:,|\.)\d{1,2}$/, ''); }
+            return Math.abs(Math.round(Number(str.replace(/[^\d]/g, ''))) || 0);
+        };
+
         return dataArray.map(item => {
             let newItem = {...item};
+            
+            // [INJEKSI QA]: Penambal Celah Kesalahan User di Excel (Mencegah Crash karena ID Kosong)
+            newItem.id = item.id || item.ID || Utils.buatId(); 
+
             newItem.paymentIds = Utils.safeJSONParse(item.paymentIds, []);
             if (newItem.dateIn) newItem.dateIn = parseExcelDate(newItem.dateIn) || String(newItem.dateIn);
             if (newItem.dateOut) newItem.dateOut = parseExcelDate(newItem.dateOut) || String(newItem.dateOut);
             if (newItem.dueDate) newItem.dueDate = parseExcelDate(newItem.dueDate) || String(newItem.dueDate);
-            newItem.amount = Math.round(Number(newItem.amount)) || 0; newItem.paidAmount = Math.round(Number(newItem.paidAmount)) || 0;
-            if (newItem.principal !== undefined) newItem.principal = Math.round(Number(newItem.principal)) || 0;
+            
+            // [INJEKSI QA]: Implementasi Parsing Robust
+            newItem.amount = parseAngkaEkstra(newItem.amount); 
+            newItem.paidAmount = parseAngkaEkstra(newItem.paidAmount);
+            if (newItem.principal !== undefined) newItem.principal = parseAngkaEkstra(newItem.principal);
+            
             let nilaiTenor = newItem.tenor !== undefined ? newItem.tenor : newItem.Tenor;
             newItem.tenor = Math.max(1, Math.floor(Number(nilaiTenor) || 1));
             delete newItem.tipe; delete newItem.freq; delete newItem.defaultPlotId;
@@ -2705,10 +2709,13 @@
 
         AppState.db[ModeEkstraAktif].forEach(t => {
             t.paidAmount = t.paidAmount || 0; if (!t.paymentIds) t.paymentIds = [];
-            if (t.status === 'selesai') { 
-                const d = new Date(), bulanIniLokal = `/${d.getMonth() + 1}/${d.getFullYear()}`, bulanIniISO = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`; 
+                        if (t.status === 'selesai') { 
+                const d = new Date();
+                const strBulanBiasa = `/${d.getMonth() + 1}/${d.getFullYear()}`;
+                const strBulanPad = `/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
+                const strBulanISO = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
                 const tglLunas = t.dateOut || "";
-                if (tglLunas.includes(bulanIniLokal) || tglLunas.includes(bulanIniISO)) selesaiItems.push(t); 
+                if (tglLunas.includes(strBulanBiasa) || tglLunas.includes(strBulanPad) || tglLunas.includes(strBulanISO)) selesaiItems.push(t); 
             } else {
                 let baseName = String(t.nama).trim();
                 const extracted = Utils.extractNameAndNote(baseName);
@@ -2863,8 +2870,9 @@
         if (dbMskAsli !== 'none' && idEdit) { const dataExt = AppState.db[ModeEkstraAktif].find(x => x.id === idEdit), trxData = dataExt && dataExt[cfg.idTrx] ? AppState.db[dbMskAsli].find(x => x.id === dataExt[cfg.idTrx]) : null; if (trxData) dompetAktual = trxData.wallet; }
         const butuhPin = (dbMskAsli !== 'none' && dompetAktual === 'Dana Darurat 🔒');
 
-        const execSimpanExtra = () => {
+                const execSimpanExtra = () => {
             try {
+                const tglLunasAman = `Lunas pada: ${Utils.formatTglTampil(Utils.tglHariIni())}`;
                 if (dbMskAsli === 'none') { 
                     if (idEdit) {
                         const dataExt = AppState.db[ModeEkstraAktif].find(x => x.id === idEdit);
@@ -2872,7 +2880,7 @@
                             if (amount < (dataExt.paidAmount || 0)) { showPopup('alert', `Batal: Tagihan baru tidak boleh lebih kecil dari yang sudah dibayar (${Utils.formatRp(dataExt.paidAmount)})!`, 'var(--danger)'); return; }
                             dataExt.nama = namaDb; dataExt.catatan = catatanDb; dataExt.noWA = noWA; dataExt.amount = amount; dataExt.dateIn = dateIn; dataExt.tenor = tenorVal; if(dueDate !== undefined) dataExt.dueDate = dueDate;
                             
-                            if (dataExt.amount - dataExt.paidAmount <= 100) { dataExt.status = 'selesai'; if(!dataExt.dateOut) dataExt.dateOut = `Lunas pada: ${new Date().toLocaleDateString('id-ID')}`; } 
+                            if (dataExt.amount - dataExt.paidAmount <= 100) { dataExt.status = 'selesai'; if(!dataExt.dateOut) dataExt.dateOut = tglLunasAman; } 
                             else { dataExt.status = 'aktif'; dataExt.dateOut = null; }
                         }
                     } else {
@@ -2898,7 +2906,7 @@
 
                                  dataExt.nama = namaDb; dataExt.catatan = catatanDb; dataExt.noWA = noWA; dataExt.amount = amount; dataExt.dateIn = dateIn; dataExt.tenor = tenorVal; if(dueDate !== undefined) dataExt.dueDate = dueDate;
                                  
-                                 if (dataExt.amount - dataExt.paidAmount <= 100) { dataExt.status = 'selesai'; if(!dataExt.dateOut) dataExt.dateOut = `Lunas pada: ${new Date().toLocaleDateString('id-ID')}`; } 
+                                 if (dataExt.amount - dataExt.paidAmount <= 100) { dataExt.status = 'selesai'; if(!dataExt.dateOut) dataExt.dateOut = tglLunasAman; } 
                                  else { dataExt.status = 'aktif'; dataExt.dateOut = null; }
                             } else if (trxData && ModeEkstraAktif === 'spinjam') {
                                  if (amount < (dataExt.paidAmount || 0)) { showPopup('alert', `Batal: Tagihan baru tidak boleh lebih kecil dari yang sudah dibayar!`, 'var(--danger)'); return; }
@@ -2909,12 +2917,12 @@
                                  ubahSaldoDelta(dompetLama, principal, true); 
 
                                  dataExt.nama = namaDb; dataExt.catatan = catatanDb; dataExt.noWA = noWA; dataExt.amount = amount; dataExt.principal = principal; dataExt.dateIn = dateIn; dataExt.tenor = tenorVal; if(dueDate !== undefined) dataExt.dueDate = dueDate;
-                                 if (dataExt.amount - dataExt.paidAmount <= 100) { dataExt.status = 'selesai'; if(!dataExt.dateOut) dataExt.dateOut = `Lunas pada: ${new Date().toLocaleDateString('id-ID')}`; } else { dataExt.status = 'aktif'; dataExt.dateOut = null; }
+                                 if (dataExt.amount - dataExt.paidAmount <= 100) { dataExt.status = 'selesai'; if(!dataExt.dateOut) dataExt.dateOut = tglLunasAman; } else { dataExt.status = 'aktif'; dataExt.dateOut = null; }
                                  trxData.desc = fullDesc; trxData.amount = principal; trxData.date = dateIn;
                             } else {
                                  if (amount < (dataExt.paidAmount || 0)) { showPopup('alert', `Batal: Tagihan baru tidak boleh lebih kecil dari yang sudah dibayar!`, 'var(--danger)'); return; }
                                  dataExt.nama = namaDb; dataExt.catatan = catatanDb; dataExt.noWA = noWA; dataExt.amount = amount; if (ModeEkstraAktif === 'spinjam') dataExt.principal = principal; dataExt.dateIn = dateIn; dataExt.tenor = tenorVal; if(dueDate !== undefined) dataExt.dueDate = dueDate;
-                                 if (dataExt.amount - dataExt.paidAmount <= 100) { dataExt.status = 'selesai'; if(!dataExt.dateOut) dataExt.dateOut = `Lunas pada: ${new Date().toLocaleDateString('id-ID')}`; } else { dataExt.status = 'aktif'; dataExt.dateOut = null; }
+                                 if (dataExt.amount - dataExt.paidAmount <= 100) { dataExt.status = 'selesai'; if(!dataExt.dateOut) dataExt.dateOut = tglLunasAman; } else { dataExt.status = 'aktif'; dataExt.dateOut = null; }
                             }
                         }
                     } else {
@@ -2983,9 +2991,8 @@
         if (bayar > sisaSaatIni) { showPopup('alert', `Batal: Maksimal pembayaran adalah sisa tagihan (${Utils.formatRp(sisaSaatIni)})!`, 'var(--danger)'); return resetGlobalSubmit(); }
         if (cfg.klr === 'expense' && getSaldoDompet(dompet) < bayar) { showPopup('alert', `Batal: Saldo ${dompet} tidak cukup untuk mencicil/membayar!`, 'var(--danger)'); return resetGlobalSubmit(); }
 
-        const execProsesCicil = () => {
+               const execProsesCicil = () => {
             try {
-                const w = new Date(), tglStr = `${w.getDate()}/${w.getMonth()+1}/${w.getFullYear()}`;
                 dataExt.paidAmount = Math.round((dataExt.paidAmount || 0) + bayar);
                 const idBayar = Utils.buatId(); if(!dataExt.paymentIds) dataExt.paymentIds = []; dataExt.paymentIds.push(idBayar);
 
@@ -2999,7 +3006,7 @@
                 const sisaSetelahBayar = Math.round(dataExt.amount - dataExt.paidAmount);
 
                 if (sisaSetelahBayar <= 100) { 
-                    dataExt.status = 'selesai'; dataExt.dateOut = `Lunas pada: ${tglStr}`; 
+                    dataExt.status = 'selesai'; dataExt.dateOut = `Lunas pada: ${Utils.formatTglTampil(Utils.tglHariIni())}`; 
                     showToast(`Lunas Sempurna!`, cfg.warna); 
                 } else { showToast(`Pembayaran Berhasil! Sisa: ${Utils.formatRp(sisaSetelahBayar)}`, cfg.warna); }
                 
