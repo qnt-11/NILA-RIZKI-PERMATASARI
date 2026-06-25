@@ -2,7 +2,7 @@
 // SERVICE WORKER (PWA)
 // ====================
 
-const APP_VERSION = '7.6'; // PASTIKAN VERSI INI SAMA DENGAN DI index.html
+const APP_VERSION = '7.7'; // PASTIKAN VERSI INI SAMA DENGAN DI index.html
 const CACHE_PREFIX = 'uang-fambarla-';
 const CACHE_STATIC = CACHE_PREFIX + 'static-v' + APP_VERSION;
 const CACHE_DYNAMIC = CACHE_PREFIX + 'dynamic-v' + APP_VERSION;
@@ -72,7 +72,7 @@ self.addEventListener('install', event => {
 });
 
 // =========================================================
-// 3. FASE AKTIVASI (MENGHAPUS CACHE VERSI LAMA)
+// 3. FASE AKTIVASI (MENGHAPUS CACHE VERSI LAMA & BROADCAST UPDATE)
 // =========================================================
 self.addEventListener('activate', event => {
   self.clients.claim();
@@ -85,7 +85,14 @@ self.addEventListener('activate', event => {
             return caches.delete(key);
           }
         })
-      );
+      ).then(() => {
+        // [INJEKSI QA FINAL]: Menghidupkan Sinyal untuk Antena 2 (Soft Update)
+        // Memastikan UI DOMPET GINANJAR selalu tahu jika ada PWA versi baru di latar belakang.
+        if ('BroadcastChannel' in self) {
+          const updateChannel = new BroadcastChannel('fambarla-update-channel');
+          updateChannel.postMessage({ type: 'UPDATE_AVAILABLE' });
+        }
+      });
     })
   );
 });
@@ -125,44 +132,42 @@ self.addEventListener('fetch', event => {
     const isHtmlRequest = req.mode === 'navigate' || (req.headers.get('accept') && req.headers.get('accept').includes('text/html'));
   const cacheKey = isHtmlRequest ? './index.html' : req;
 
-  // STRATEGI 2: STALE-WHILE-REVALIDATE UNTUK HTML (Multi-Fallback Resolusi Kuat)
+  // STRATEGI 2: NETWORK-FIRST UNTUK HTML (Mencegah Ghost-Update & Memory Leak)
   if (isHtmlRequest) {
     event.respondWith(
-      // [INJEKSI QA]: Multi-Lapis Fallback. Mulai dari request asli -> root '/' -> '/index.html'
-      caches.match(req, { ignoreSearch: true })
-        .then(res => res || caches.match('./', { ignoreSearch: true }))
-        .then(res => res || caches.match('./index.html', { ignoreSearch: true }))
-        .then(cachedResponse => {
-          
-          const networkFetch = fetch(req).then(networkResponse => {
-            if (networkResponse && networkResponse.ok) {
-              const cloneToCache = networkResponse.clone();
-              // Simpan dengan key request asli agar cache lebih akurat di masa depan
-              caches.open(CACHE_STATIC).then(cache => cache.put(req, cloneToCache));
-            }
-            return networkResponse;
-          }).catch(() => {
-            console.log('[SW] Offline/Timeout. Menggunakan HTML Fallback Multi-Lapis.');
-            // [CRITICAL FIX]: Jika offline dan cache benar-benar kosong, paksa Response.error()
-            // Jika me-return `undefined`, browser otomatis meledak ke layar "Anda Offline".
+      fetch(req).then(networkResponse => {
+        if (networkResponse && networkResponse.ok) {
+          const cloneToCache = networkResponse.clone();
+          // [INJEKSI QA FINAL]: Simpan HANYA pada CACHE_DYNAMIC atau kunci normalisasi './index.html'
+          // Mencegah kebocoran memori (Memory Leak) CACHE_STATIC akibat spam parameter URL dinamis
+          caches.open(CACHE_DYNAMIC).then(cache => {
+            cache.put('./index.html', cloneToCache).then(() => limitCacheSize(CACHE_DYNAMIC, 50));
+          });
+        }
+        return networkResponse;
+      }).catch(() => {
+        console.log('[SW] Offline/Timeout. Menggunakan HTML Fallback Multi-Lapis.');
+        // Fallback membaca cache internal JIKA DAN HANYA JIKA sistem sedang benar-benar Offline
+        return caches.match(req, { ignoreSearch: true })
+          .then(res => res || caches.match('./', { ignoreSearch: true }))
+          .then(res => res || caches.match('./index.html', { ignoreSearch: true }))
+          .then(cachedResponse => {
             return cachedResponse || Response.error();
           });
-
-          event.waitUntil(networkFetch);
-          
-          // Pastikan kembalian akhir selalu berupa object Response yang valid
-          return cachedResponse || networkFetch;
-        })
+      })
     );
     return;
   }
 
-  // STRATEGI 3: CACHE-FIRST UNTUK GOOGLE FONTS
+    // STRATEGI 3: CACHE-FIRST UNTUK GOOGLE FONTS
   if (reqUrl.hostname === 'fonts.gstatic.com' || reqUrl.hostname === 'fonts.googleapis.com') {
     event.respondWith(
       caches.match(req).then(cachedRes => {
         return cachedRes || fetch(req).then(networkRes => {
-          if (networkRes && networkRes.ok && networkRes.type !== 'opaque') {
+          // [PERBAIKAN SEC-EXPERT]: Toleransi Opaque Response untuk CSS Fonts.
+          // CSS dari <link> tag tanpa crossorigin selalu menghasilkan respons opaque (ok: false).
+          // Jika ditolak, tipografi aplikasi akan rusak parah saat PWA berada di Mode Offline.
+          if (networkRes && (networkRes.ok || networkRes.type === 'opaque')) {
             const clone = networkRes.clone();
             caches.open(CACHE_STATIC).then(cache => cache.put(req, clone));
           }
@@ -179,12 +184,15 @@ self.addEventListener('fetch', event => {
   });
   const isCDNStatic = staticAssets.some(asset => asset.startsWith('http') && reqUrl.href === asset);
 
-  // STRATEGI 4: CACHE-FIRST UNTUK ASET STATIS
+    // STRATEGI 4: CACHE-FIRST UNTUK ASET STATIS
   if (isLocalStatic || isCDNStatic) {
     event.respondWith(
       caches.match(cacheKey, { ignoreSearch: true }).then(cachedResponse => {
         return cachedResponse || fetch(req).then(networkResponse => {
-          if (networkResponse && networkResponse.ok && networkResponse.type !== 'opaque') {
+          // [PERBAIKAN LEAD QA]: Sinkronisasi toleransi Opaque dengan fase Instalasi.
+          // Menjamin aset krusial (seperti Chart.js & XLSX.js) tetap terkunci di Brankas Cache
+          // meskipun di-fetch ulang secara dinamis setelah cache dibersihkan oleh pengguna.
+          if (networkResponse && (networkResponse.ok || networkResponse.type === 'opaque')) {
             const clone = networkResponse.clone();
             caches.open(CACHE_STATIC).then(cache => cache.put(cacheKey, clone));
           }
