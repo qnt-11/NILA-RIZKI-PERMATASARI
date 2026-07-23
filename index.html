@@ -437,9 +437,18 @@
         #extra-form-box h3 { margin-bottom: 8px !important; }
         #extra-form-box .form-group { margin-bottom: 5px !important; }
         #extra-form-box label { margin-bottom: 2px !important; font-size: 10px !important; }
+
         #extra-form-box input, #extra-form-box .custom-select-trigger { padding: 8px 10px !important; font-size: 12px !important; }
         #extra-form-box .modal-actions { margin-top: 8px !important; }
         #extra-form-box .modal-btn { padding: 10px !important; font-size: 12px !important; margin-top: 0 !important; }
+        
+        /* [INJEKSI QA]: Animasi Siluman Auto-Upload */
+        @keyframes syncPulse { 
+            0% { transform: scale(1); filter: drop-shadow(0 0 2px var(--cloud)); opacity: 1; } 
+            50% { transform: scale(1.15); filter: drop-shadow(0 0 10px var(--cloud)); opacity: 0.5; } 
+            100% { transform: scale(1); filter: drop-shadow(0 0 2px var(--cloud)); opacity: 1; } 
+        }
+        .sync-active { animation: syncPulse 1.5s infinite ease-in-out; stroke: #ffffff !important; }
     </style>
 </head>
  <body>
@@ -1135,6 +1144,55 @@
         prevBalances: { total: 0, in: 0, out: 0, tunai: 0, bank: 0, ewal: 0, darurat1: 0, darurat2: 0 }
     };
 
+    // [INJEKSI QA]: Mesin Auto-Sync Latar Belakang (Lazy Sync Engine)
+    const AppSync = {
+        isDirty: false,
+        syncTimer: null,
+        isSyncing: false,
+        markDirty: function() {
+            this.isDirty = true;
+            clearTimeout(this.syncTimer);
+            this.syncTimer = setTimeout(() => this.executeSilentSync(), 5000); // Tunda 5 detik (Debounce) saat idle
+        },
+        executeSilentSync: async function() {
+            // Evaluasi gembok kognitif: Batal jika offline, sedang load/upload manual, atau tidak ada data
+            if (!this.isDirty || this.isSyncing || !navigator.onLine || isNetworkProcessing || isDatabaseKorup) return;
+            if (AppState.db.income.length === 0 && AppState.db.expense.length === 0 && AppState.db.mutations.length === 0 && AppState.db.plots.length === 0 && AppState.db.pengingat.length === 0 && AppState.db.hutang.length === 0 && AppState.db.piutang.length === 0 && AppState.db.spaylater.length === 0 && AppState.db.spinjam.length === 0) return;
+            if (!CLOUD_URL || CLOUD_URL.includes("ISI_DENGAN")) return;
+
+            this.isSyncing = true;
+            const cloudIcon = document.querySelector('button[onclick="backupToCloud()"] svg');
+            if(cloudIcon) cloudIcon.classList.add('sync-active');
+
+            try {
+                const payload = { activeMonth: "ALL", income: AppState.db.income, expense: AppState.db.expense, mutations: AppState.db.mutations, plots: AppState.db.plots, pengingat: AppState.db.pengingat, hutang: AppState.db.hutang, piutang: AppState.db.piutang, spaylater: AppState.db.spaylater, spinjam: AppState.db.spinjam };
+                const secureUrl = CLOUD_URL + "?token=" + CLOUD_TOKEN;
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 detik timeout
+
+                const res = await fetch(secureUrl, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(payload), signal: controller.signal });
+                clearTimeout(timeoutId);
+                
+                if (!res.ok) throw new Error("Gagal HTTP");
+                const textRes = await res.text();
+                let dataRes;
+                try { dataRes = JSON.parse(textRes); } catch (e) { throw new Error("Format Server Invalid"); }
+                if (dataRes && dataRes.error) throw new Error(dataRes.error);
+
+                this.isDirty = false; // Berhasil, bersihkan status kotor
+            } catch (e) {
+                // Sengaja dibiarkan mati hening (Silent Fail). 
+                // Status isDirty tetap true, akan dicoba otomatis di trigger berikutnya.
+            } finally {
+                this.isSyncing = false;
+                if(cloudIcon) cloudIcon.classList.remove('sync-active');
+            }
+        }
+    };
+
+    // Deteksi cerdas: Jika HP kembali mendapat sinyal internet, segera Flush data yang tertunda!
+    window.addEventListener('online', () => { if (AppSync.isDirty) AppSync.markDirty(); });
+
     let saldoCache = { 'Tunai': 0, 'Bank': 0, 'e-Wallet': 0, 'Dana Darurat': 0, 'Dana Darurat 🔒': 0 };
     
     let jamTerakhir = "";
@@ -1383,6 +1441,10 @@
                 if (persen > 85) { elemenWadahMem.style.color = 'var(--danger)'; elemenWadahMem.classList.add('mem-blink'); } 
                 else { elemenWadahMem.style.color = 'var(--text-muted)'; elemenWadahMem.classList.remove('mem-blink'); }
             }
+            
+            // [INJEKSI QA]: Trigger Auto-Sync. Kirim sinyal bahwa database lokal baru saja diubah.
+            if (typeof AppSync !== 'undefined') AppSync.markDirty();
+
         } catch (e) {
             if (e.message !== "QuotaExceeded_Rollback_Executed" && e.message !== "Penyimpanan Dibatalkan: Database Korup") {
                 showPopup('alert', "Gagal mengenkripsi & menyimpan ke Brankas Dalam! Sistem dikembalikan ke kondisi terakhir.", 'var(--danger)');
@@ -1401,21 +1463,16 @@
         const validNames = ['Tunai', 'Bank', 'e-Wallet', 'Dana Darurat', 'Dana Darurat 🔒'];
         const amankanNama = (nm) => { const n = String(nm || '').trim(); return validNames.find(v => v.toLowerCase() === n.toLowerCase()) || 'Tunai'; };
 
-        // [INJEKSI QA FINAL]: Dinding Penghalang Waktu (Time-Wall) DIHAPUS TOTAL. 
-        // Bug Kritis: Time-Wall menyebabkan "Ghost Balance" karena mengabaikan transaksi sah 
-        // (seperti cicilan hutang aktif) yang tercatat SEBELUM tanggal RINGKAS_ / CARRYOVER_.
-        // Kinerja iterasi puluhan ribu array di JS Engine modern memakan waktu < 2ms, sehingga kalkulasi Full-Scan 100% absolut dan anti-meleset.
-
         for(let i = 0, len = AppState.db.income.length; i < len; i++) { 
-            const w = amankanNama(AppState.db.income[i].wallet); saldoCache[w] += AppState.db.income[i].amount; 
+            const w = amankanNama(AppState.db.income[i].wallet); saldoCache[w] += (Number(AppState.db.income[i].amount) || 0); 
         }
         for(let i = 0, len = AppState.db.expense.length; i < len; i++) { 
-            const w = amankanNama(AppState.db.expense[i].wallet); saldoCache[w] -= AppState.db.expense[i].amount; 
+            const w = amankanNama(AppState.db.expense[i].wallet); saldoCache[w] -= (Number(AppState.db.expense[i].amount) || 0); 
         }
         for(let i = 0, len = AppState.db.mutations.length; i < len; i++) {
             const item = AppState.db.mutations[i];
             const t = amankanNama(item.to), f = amankanNama(item.from);
-            saldoCache[t] += item.amount; saldoCache[f] -= item.amount;
+            saldoCache[t] += (Number(item.amount) || 0); saldoCache[f] -= (Number(item.amount) || 0);
         }
     }
 
@@ -1669,26 +1726,22 @@
                         AppState.db.plots = data.plots.map(p => ({...p, target: Math.abs(Number(p.target))}));
                     }
 
-                    // 2. Absolute Merge Ekstra
-                    const mergeEkstraAman = (lokalArr, cloudArr) => {
-                        if (!cloudArr || !Array.isArray(cloudArr)) return;
-                        cloudArr.forEach(cItem => {
-                            const idx = lokalArr.findIndex(lItem => lItem.id === cItem.id);
+                    // 2. Absolute Override Ekstra (Anti-Ghost References)
+                    const formatEkstraAman = (cloudArr) => {
+                        if (!cloudArr || !Array.isArray(cloudArr)) return [];
+                        return cloudArr.map(cItem => {
                             const cloudPayments = Array.isArray(cItem.paymentIds) ? cItem.paymentIds : [];
                             let totalTerbayarBaru = cItem.paidAmount || 0;
                             const finalStatus = (cItem.amount - totalTerbayarBaru <= 100) ? 'selesai' : 'aktif';
-                            const mergedObj = { ...cItem, paymentIds: [...cloudPayments], paidAmount: totalTerbayarBaru, status: finalStatus };
-
-                            if (idx === -1) { lokalArr.push(mergedObj); } 
-                            else { mergedObj.nama = lokalArr[idx].nama.length > cItem.nama.length ? lokalArr[idx].nama : cItem.nama; lokalArr[idx] = mergedObj; }
+                            return { ...cItem, paymentIds: [...cloudPayments], paidAmount: totalTerbayarBaru, status: finalStatus };
                         });
                     };
 
-                    mergeEkstraAman(AppState.db.pengingat, data.pengingat || data.titipan); 
-                    mergeEkstraAman(AppState.db.hutang, data.hutang); 
-                    mergeEkstraAman(AppState.db.piutang, data.piutang);
-                    mergeEkstraAman(AppState.db.spaylater, data.spaylater); 
-                    mergeEkstraAman(AppState.db.spinjam, data.spinjam);
+                    AppState.db.pengingat = formatEkstraAman(data.pengingat || data.titipan); 
+                    AppState.db.hutang = formatEkstraAman(data.hutang); 
+                    AppState.db.piutang = formatEkstraAman(data.piutang);
+                    AppState.db.spaylater = formatEkstraAman(data.spaylater); 
+                    AppState.db.spinjam = formatEkstraAman(data.spinjam);
                     
                     // 3. Modifikasi UI: Menampilkan HANYA bulan yang dipilih tanpa menghapus data asli di belakang layar
                     const [thn, bln] = selectedMonth.split('-');
@@ -2068,7 +2121,7 @@
         
         const isAllTime = filterBulan === 'ALL'; let currentPlotFilter = "";
         if (!isAllTime) { let [fbY, fbM] = filterBulan.split('-'); currentPlotFilter = `${fbY}-${fbM}`; }
-        const expenseValid = AppState.db.expense.filter(e => isAllTime ? true : e.date.startsWith(currentPlotFilter));
+        const expenseValid = AppState.db.expense.filter(e => isAllTime ? true : String(e.date || "").startsWith(currentPlotFilter));
         const svgHistory = `<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path><path d="M12 7v5l4 2"></path></svg>`;
 
         let htmlList = ''; const sortedPlots = [...AppState.db.plots].sort((a, b) => a.name.localeCompare(b.name));
@@ -3080,7 +3133,7 @@
         tutupSemuaMenuDrop(); const filterEl = document.getElementById('plot-month-filter'), filterBulan = filterEl ? filterEl.dataset.rawDate : 'ALL', isAllTime = filterBulan === 'ALL';
         let currentPlotFilter = "", teksBulan = "(Semua Waktu)"; if (!isAllTime) { let [fbY, fbM] = filterBulan.split('-'); currentPlotFilter = `${fbY}-${fbM}`; teksBulan = `(Bulan: ${BlnPdk[parseInt(fbM, 10)-1]} ${fbY})`; }
         document.getElementById('plot-detail-title').innerText = `Rincian: ${namaPlot}`; document.getElementById('plot-detail-title').style.color = warna; document.getElementById('plot-detail-box').style.borderTopColor = warna; document.getElementById('plot-detail-filter').innerText = teksBulan;
-        const pengeluaranTerkait = AppState.db.expense.filter(e => e.plotId === idPlot && (isAllTime ? true : e.date.startsWith(currentPlotFilter))).sort((a, b) => b.date.localeCompare(a.date));
+        const pengeluaranTerkait = AppState.db.expense.filter(e => e.plotId === idPlot && (isAllTime ? true : String(e.date || "").startsWith(currentPlotFilter))).sort((a, b) => String(b.date || "").localeCompare(String(a.date || "")));
         const ul = document.getElementById('list-plot-detail'); let html = '';
         if (pengeluaranTerkait.length === 0) { html = `<li style="text-align:center; padding: 30px 0; color:var(--border-color); font-size:11px;">- Belum ada pengeluaran -</li>`; } 
         else { pengeluaranTerkait.forEach(e => { html += `<li class="titipan-item"><div class="titipan-header"><div class="titipan-name"><span style="color:var(--text-muted); font-size: 10px;">${Utils.formatTglTampil(e.date)}</span><span style="color:var(--text-light); font-size: 12px; margin-top: 2px;">${Utils.amanHTML(e.desc)}</span></div><div style="display:flex; align-items:center; gap:10px;"><span style="font-size:12px; font-weight:700; color:var(--danger);">- ${Utils.formatRp(e.amount)}</span></div></div></li>`; }); }
