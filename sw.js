@@ -2,7 +2,7 @@
 // SERVICE WORKER (PWA)
 // ====================
 
-const APP_VERSION = '7.9'; // PASTIKAN VERSI INI SAMA DENGAN DI index.html
+const APP_VERSION = '8.0'; // PASTIKAN VERSI INI SAMA DENGAN DI index.html
 const CACHE_PREFIX = 'uang-fambarla-';
 const CACHE_STATIC = CACHE_PREFIX + 'static-v' + APP_VERSION;
 const CACHE_DYNAMIC = CACHE_PREFIX + 'dynamic-v' + APP_VERSION;
